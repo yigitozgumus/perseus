@@ -36,7 +36,6 @@ class PerseusNavigatorImpl(
 
     override fun navigateTo(key: RouterKey, groupName: GroupName?): NavigationHandle {
         val correlationId = UUID.randomUUID().toString()
-        val context = NavigationContext(key, correlationId)
 
         if (groupName != null) entryRegistry.setPendingGroup(key, groupName)
         entryRegistry.setPendingCorrelationId(key, correlationId)
@@ -79,14 +78,7 @@ class PerseusNavigatorImpl(
 
     override fun resetTab(tabIndex: Int, resetRoot: Boolean) {
         if (!stateHolder.isAttached) return
-        val removed = if (resetRoot) {
-            val bs = stateHolder.state.currentBackStack.toList().drop(1)
-            bs
-        } else {
-            stateHolder.state.currentBackStack.toList().drop(1)
-        }
         stateHolder.state.resetTab(tabIndex, resetRoot)
-        // Also clean up any other tab's tracking if we're resetting a different tab
     }
 
     override fun resetCurrentTab(resetRoot: Boolean) {

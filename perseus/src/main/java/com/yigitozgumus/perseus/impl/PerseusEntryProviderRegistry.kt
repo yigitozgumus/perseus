@@ -30,9 +30,9 @@ import java.util.concurrent.ConcurrentHashMap
  * - Correlation IDs for result routing
  */
 class PerseusEntryProviderRegistry(
-    private val composeProviders: List<ComposeScreenProvider<*>> = emptyList(),
-    private val fragmentProviders: List<ScreenProvider<*>> = emptyList(),
-    private val sceneProviders: List<ComposeSceneProvider<*>> = emptyList(),
+    private val composeProviders: List<ComposeScreenProvider<*>>,
+    private val fragmentProviders: List<ScreenProvider<*>>,
+    private val sceneProviders: List<ComposeSceneProvider<*>>,
     private val resultBus: ResultBusAdapter
 ) {
     // Group tracking: key → groupName
