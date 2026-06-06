@@ -26,7 +26,6 @@ import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.impl.PerseusNavHost
 import com.yigitozgumus.perseus.sample.di.sampleModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import com.yigitozgumus.perseus.sample.keys.LoginKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import org.koin.android.ext.android.inject
 import org.koin.android.scope.AndroidScopeComponent
@@ -65,7 +64,7 @@ class SampleActivity : ComponentActivity(), AndroidScopeComponent, KoinComponent
                 stateHolder = stateHolder,
                 entryRegistry = entryRegistry,
                 onPop = { navigator.pop() },
-                initialKey = LoginKey,
+                initialKey = HomeKey,
                 bottomBar = { currentIndex, onTabSelected ->
                     NavigationBar {
                         NavigationBarItem(

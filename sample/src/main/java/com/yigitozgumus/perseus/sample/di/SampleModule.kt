@@ -11,6 +11,7 @@ import com.yigitozgumus.perseus.impl.PerseusViewModelStoreRegistry
 import com.yigitozgumus.perseus.impl.ResultBusAdapter
 import com.yigitozgumus.perseus.sample.compose.DetailScreenProvider
 import com.yigitozgumus.perseus.sample.compose.HomeScreenProvider
+import com.yigitozgumus.perseus.sample.compose.LoginScreenProvider
 import com.yigitozgumus.perseus.sample.fragment.ProfileFragmentProvider
 import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.dsl.module
@@ -36,6 +37,7 @@ val sampleModule = module {
     // Screen providers
     single<ComposeScreenProvider<*>> { HomeScreenProvider() }
     single<ComposeScreenProvider<*>> { DetailScreenProvider() }
+    single<ComposeScreenProvider<*>> { LoginScreenProvider() }
     single<ScreenProvider<*>> { ProfileFragmentProvider() }
 }
 
