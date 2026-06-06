@@ -69,19 +69,21 @@ class SampleActivity : ComponentActivity(), AndroidScopeComponent, KoinComponent
                     NavigationBar {
                         NavigationBarItem(
                             selected = currentIndex == 0,
-                            onClick = { onTabSelected(0); selectedTab = 0 },
+                            onClick = { onTabSelected(0) },
                             icon = { Icon(Icons.Default.Home, "Home") },
                             label = { Text("Home") }
                         )
                         NavigationBarItem(
                             selected = currentIndex == 1,
-                            onClick = { onTabSelected(1); selectedTab = 1 },
+                            onClick = { onTabSelected(1) },
                             icon = { Icon(Icons.Default.Person, "Profile") },
                             label = { Text("Profile") }
                         )
                     }
                 },
                 onTabChanged = { selectedTab = it },
+                onSwitchTab = { navigator.switchTab(it) },
+                onResetCurrentTab = { navigator.resetCurrentTab(resetRoot = false) },
                 modifier = Modifier.fillMaxSize()
             )
         }

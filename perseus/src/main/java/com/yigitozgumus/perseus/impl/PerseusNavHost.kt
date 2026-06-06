@@ -23,15 +23,6 @@ import com.yigitozgumus.perseus.api.RouterKey
 
 private const val FADE_MS = 200
 
-/**
- * Main navigation host composable for Perseus.
- *
- * Renders a [NavDisplay] driven by [PerseusNavigationState]. Handles:
- * - Unauthenticated mode (single stack)
- * - Authenticated mode (tabbed with bottom navigation)
- * - Dialog and bottom sheet scenes via [SceneStrategy]
- * - Process death survival via `rememberSaveable`
- */
 @Composable
 fun PerseusNavHost(
     stateHolder: PerseusNavigationStateHolder,
@@ -40,6 +31,8 @@ fun PerseusNavHost(
     initialKey: RouterKey,
     bottomBar: @Composable (selectedIndex: Int, onTabSelected: (Int) -> Unit) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
+    onSwitchTab: (Int) -> Unit = {},
+    onResetCurrentTab: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val navigationState = rememberSaveable(saver = PerseusNavigationState.Saver) {
@@ -78,6 +71,8 @@ fun PerseusNavHost(
             onPop = onPop,
             bottomBar = bottomBar,
             onTabChanged = onTabChanged,
+            onSwitchTab = onSwitchTab,
+            onResetCurrentTab = onResetCurrentTab,
             modifier = modifier
         )
     }
@@ -91,6 +86,8 @@ private fun AuthenticatedHost(
     onPop: () -> Unit,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
     onTabChanged: (Int) -> Unit,
+    onSwitchTab: (Int) -> Unit,
+    onResetCurrentTab: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(navigationState.currentTabIndex) {
@@ -122,7 +119,11 @@ private fun AuthenticatedHost(
         }
         if (showBottomBar) {
             bottomBar(navigationState.currentTabIndex) { index ->
-                onTabChanged(index)
+                if (index == navigationState.currentTabIndex) {
+                    onResetCurrentTab()
+                } else {
+                    onSwitchTab(index)
+                }
             }
         }
     }
