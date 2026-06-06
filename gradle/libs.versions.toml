@@ -11,6 +11,9 @@ composeBom = "2026.02.01"
 navigation3 = "1.2.0-alpha02"
 fragmentCompose = "1.8.9"
 koin = "4.2.1"
+koinAnnotations = "4.2.1"
+koinKspCompiler = "2.3.1"
+ksp = "2.3.6"
 lifecycleViewmodelNav3 = "2.11.0-beta01"
 kotlinxSerialization = "1.11.0"
 
@@ -35,6 +38,8 @@ androidx-fragment-compose = { module = "androidx.fragment:fragment-compose", ver
 androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNav3" }
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 koin-navigation3 = { group = "io.insert-koin", name = "koin-compose-navigation3", version.ref = "koin" }
+koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koinAnnotations" }
+koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinKspCompiler" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
@@ -44,3 +49,4 @@ android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

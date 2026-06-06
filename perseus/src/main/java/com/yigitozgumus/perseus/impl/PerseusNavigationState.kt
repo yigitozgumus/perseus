@@ -10,11 +10,6 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import com.yigitozgumus.perseus.api.RouterKey
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.modules.SerializersModule
-import kotlinx.serialization.modules.polymorphic
-import kotlinx.serialization.modules.subclass
 
 /**
  * Navigation state that survives process death via [Saver].
@@ -24,10 +19,10 @@ import kotlinx.serialization.modules.subclass
  *
  * ## Process Death
  *
- * Keys are serialized as JSON using kotlinx.serialization polymorphic mode.
- * Register RouterKey subclasses via [registerKeyType] before first use.
- * Data objects (singletons) are automatically handled. Data classes with
- * constructor args require the type to be registered.
+ * Keys are stored by their fully-qualified class name. For data objects (singletons),
+ * this is sufficient to resolve the key on restore. For data classes with constructor
+ * arguments, process death persistence requires a custom [KeyResolver]
+ * to be provided (see [companion.resolver]).
  */
 @Stable
 class PerseusNavigationState private constructor(
@@ -135,27 +130,19 @@ class PerseusNavigationState private constructor(
 
     fun toSnapshot(): Snapshot = Snapshot(
         modeOrdinal = mode.ordinal,
-        unauthBackStack = _unauthBackStack.map { encodeKey(it) },
-        topLevelRoutes = _topLevelRoutes.map { encodeKey(it) },
-        tabBackStacks = _tabBackStacks.mapValues { (_, v) -> v.map { encodeKey(it) } },
+        unauthBackStack = _unauthBackStack.map { keyClassName(it) },
+        topLevelRoutes = _topLevelRoutes.map { keyClassName(it) },
+        tabBackStacks = _tabBackStacks.mapValues { (_, v) -> v.map { keyClassName(it) } },
         currentTabIndex = currentTabIndex
     )
 
     companion object {
-        private val json = Json {
-            serializersModule = SerializersModule {
-                // Subclasses register themselves via registerKeyType()
-            }
-            ignoreUnknownKeys = true
-            classDiscriminator = "type"
-        }
-
-        /** Register a RouterKey subclass for polymorphic serialization. */
-        inline fun <reified T : RouterKey> registerKeyType() {
-            // This doesn't actually modify the Json instance since it's immutable.
-            // Instead we build the module lazily.
-            // For v1, keys must be registered before first save/restore.
-        }
+        /**
+         * Resolver for restoring RouterKey instances from class names.
+         * By default, resolves data objects (singletons) via Class.forName + objectInstance.
+         * Register a custom resolver for data class keys that need constructor arguments.
+         */
+        var resolver: KeyResolver = DefaultKeyResolver
 
         fun unauthenticated(rootKey: RouterKey) = PerseusNavigationState(
             initialMode = Mode.Unauthenticated,
@@ -168,10 +155,10 @@ class PerseusNavigationState private constructor(
         fun fromSnapshot(snapshot: Snapshot): PerseusNavigationState {
             return PerseusNavigationState(
                 initialMode = Mode.entries[snapshot.modeOrdinal],
-                initialBackStack = snapshot.unauthBackStack.mapNotNull { decodeKey(it) },
-                initialTopLevelRoutes = snapshot.topLevelRoutes.mapNotNull { decodeKey(it) },
+                initialBackStack = snapshot.unauthBackStack.mapNotNull { resolver.resolve(it) },
+                initialTopLevelRoutes = snapshot.topLevelRoutes.mapNotNull { resolver.resolve(it) },
                 initialTabBackStacks = snapshot.tabBackStacks.mapValues { (_, v) ->
-                    v.mapNotNull { decodeKey(it) }
+                    v.mapNotNull { resolver.resolve(it) }
                 },
                 initialTabIndex = snapshot.currentTabIndex
             )
@@ -184,19 +171,23 @@ class PerseusNavigationState private constructor(
     }
 }
 
-// ── Serialization helpers ──────────────────────────────────────────────────
+// ── Key serialization ──────────────────────────────────────────────────────
 
-private val keyJson = Json {
-    ignoreUnknownKeys = true
-    classDiscriminator = "type"
+interface KeyResolver {
+    fun resolve(className: String): RouterKey?
 }
 
-internal fun encodeKey(key: RouterKey): String = keyJson.encodeToString(key)
-
-internal fun decodeKey(jsonString: String): RouterKey? {
-    return try {
-        keyJson.decodeFromString<RouterKey>(jsonString)
-    } catch (_: Exception) {
-        null
+private object DefaultKeyResolver : KeyResolver {
+    override fun resolve(className: String): RouterKey? {
+        return try {
+            val clazz = Class.forName(className)
+            if (RouterKey::class.java.isAssignableFrom(clazz)) {
+                clazz.kotlin.objectInstance as? RouterKey
+            } else null
+        } catch (_: Exception) {
+            null
+        }
     }
 }
+
+internal fun keyClassName(key: RouterKey): String = key::class.qualifiedName ?: key::class.java.name

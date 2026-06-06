@@ -13,35 +13,37 @@ import com.yigitozgumus.perseus.sample.compose.DetailScreenProvider
 import com.yigitozgumus.perseus.sample.compose.HomeScreenProvider
 import com.yigitozgumus.perseus.sample.compose.LoginScreenProvider
 import com.yigitozgumus.perseus.sample.fragment.ProfileFragmentProvider
-import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.dsl.module
 
 val sampleModule = module {
-    // Infrastructure (activity-scoped, wired with explicit provider lists)
-    activityRetainedScope {
-        scoped { PerseusNavigationStateHolder() }
-        scoped { ResultBusAdapter() }
-        scoped { PerseusViewModelStoreRegistry() }
+    // Infrastructure
+    single { PerseusNavigationStateHolder() }
+    single { ResultBusAdapter() }
+    single { PerseusViewModelStoreRegistry() }
 
-        scoped {
-            PerseusEntryProviderRegistry(
-                composeProviders = listOf(
-                    HomeScreenProvider(),
-                    DetailScreenProvider(),
-                    LoginScreenProvider()
-                ),
-                fragmentProviders = listOf(
-                    ProfileFragmentProvider()
-                ),
-                sceneProviders = emptyList(),
-                resultBus = get()
-            )
-        }
-
-        scoped<PerseusNavigator> { PerseusNavigatorImpl(get(), get(), get(), get()) }
+    single {
+        PerseusEntryProviderRegistry(
+            composeProviders = listOf(
+                HomeScreenProvider(),
+                DetailScreenProvider(),
+                LoginScreenProvider()
+            ),
+            fragmentProviders = listOf(ProfileFragmentProvider()),
+            sceneProviders = emptyList(),
+            resultBus = get()
+        )
     }
+
+    single<PerseusNavigator> { PerseusNavigatorImpl(get(), get(), get(), get()) }
+
+    // Screen providers
+    single<ComposeScreenProvider<*>> { HomeScreenProvider() }
+    single<ComposeScreenProvider<*>> { DetailScreenProvider() }
+    single<ComposeScreenProvider<*>> { LoginScreenProvider() }
+    single<ScreenProvider<*>> { ProfileFragmentProvider() }
 }
 
-fun createEntryProvider(registry: PerseusEntryProviderRegistry): (RouterKey) -> androidx.navigation3.runtime.NavEntry<RouterKey> = { key ->
-    registry.provide(key)
-}
+fun createEntryProvider(registry: PerseusEntryProviderRegistry): (RouterKey) -> androidx.navigation3.runtime.NavEntry<RouterKey> =
+    { key ->
+        registry.provide(key)
+    }

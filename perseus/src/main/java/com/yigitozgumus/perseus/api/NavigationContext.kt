@@ -1,66 +1,47 @@
 package com.yigitozgumus.perseus.api
 
 import android.os.Bundle
-import android.util.Base64
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import java.util.UUID
 
 /**
  * Context passed to child screens containing navigation metadata.
  *
- * Wraps a [RouterKey] with a [correlationId] for scoped result routing.
- * The child screen uses this context to send results back to the correct parent
- * via [PerseusNavigator.sendResult].
- *
- * @param K The specific RouterKey type for type-safe access.
+ * For process death / fragment argument transport, keys are stored
+ * by their fully-qualified class name. Data objects (singletons) are
+ * resolved via Class.forName + objectInstance. For data classes with
+ * constructor arguments, the fragment must use a custom resolver.
  */
 data class NavigationContext<out K : RouterKey>(
     val key: K,
     val correlationId: String = UUID.randomUUID().toString()
 ) {
     companion object {
-        @PublishedApi internal const val KEY_BUNDLE_ENTRY = "perseus_key"
-        @PublishedApi internal const val CORRELATION_ID_BUNDLE_ENTRY = "perseus_correlation_id"
-
-        @PublishedApi internal val json = Json { ignoreUnknownKeys = true }
-
-        inline fun <reified K : RouterKey> writeToBundle(bundle: Bundle, context: NavigationContext<K>) {
-            bundle.putString(KEY_BUNDLE_ENTRY, Base64.encodeToString(
-                json.encodeToString(context.key).toByteArray(), Base64.NO_WRAP
-            ))
-            bundle.putString(CORRELATION_ID_BUNDLE_ENTRY, context.correlationId)
-        }
+        const val KEY_CLASS_ENTRY = "perseus_key_class"
+        const val CORRELATION_ID_ENTRY = "perseus_correlation_id"
     }
 }
 
 /**
  * Retrieves the NavigationContext from fragment arguments.
- *
- * Usage in Fragment:
- * ```kotlin
- * private val navigationContext: NavigationContext<DetailKey> by lazy {
- *     requireArguments().getNavigationContext()
- * }
- * ```
- *
- * @throws IllegalStateException if context is not found.
+ * Resolves the RouterKey from its class name.
  */
+@Suppress("UNCHECKED_CAST")
 inline fun <reified K : RouterKey> Bundle.getNavigationContext(): NavigationContext<K> {
-    val keyJson = getString(NavigationContext.KEY_BUNDLE_ENTRY)
-        ?: error("NavigationContext key not found. Ensure the screen was opened via PerseusNavigator.")
-    val correlationId = getString(NavigationContext.CORRELATION_ID_BUNDLE_ENTRY)
-        ?: error("NavigationContext correlationId not found.")
-    val decoded = String(Base64.decode(keyJson, Base64.NO_WRAP))
-    val key = Json.decodeFromString<K>(decoded)
+    val keyClassName = getString(NavigationContext.KEY_CLASS_ENTRY)
+        ?: error("RouterKey class name not found in arguments.")
+    val correlationId = getString(NavigationContext.CORRELATION_ID_ENTRY)
+        ?: error("Correlation ID not found in arguments.")
+
+    val key: K = try {
+        val clazz = Class.forName(keyClassName)
+        val obj = clazz.kotlin.objectInstance
+        if (obj is K) obj else error("Cannot resolve RouterKey: $keyClassName is not a singleton object of type ${K::class.simpleName}")
+    } catch (e: ClassNotFoundException) {
+        error("RouterKey class not found: $keyClassName")
+    }
+
     return NavigationContext(key, correlationId)
 }
 
-/**
- * Retrieves the RouterKey from fragment arguments.
- *
- * @throws IllegalStateException if RouterKey is not found.
- */
-inline fun <reified K : RouterKey> Bundle.getRouterKey(): K {
-    return getNavigationContext<K>().key
-}
+/** Retrieves the RouterKey from fragment arguments. */
+inline fun <reified K : RouterKey> Bundle.getRouterKey(): K = getNavigationContext<K>().key

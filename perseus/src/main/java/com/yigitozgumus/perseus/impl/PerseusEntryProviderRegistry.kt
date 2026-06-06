@@ -70,15 +70,21 @@ class PerseusEntryProviderRegistry(
         val metadata = computeAndCacheMetadata(key)
 
         // 1. Compose screen provider
-        composeProviders.find { it.canProvide(key) }?.let {
+        composeProviders.find { it.canProvide(key) }?.let { foundProvider ->
+            check(foundProvider is ComposeScreenProvider<*>) {
+                "Expected ComposeScreenProvider but got ${foundProvider::class.simpleName}. " +
+                "composeProviders list: ${composeProviders.map { it::class.simpleName }}"
+            }
+            @Suppress("UNCHECKED_CAST")
+            val typed = foundProvider as ComposeScreenProvider<RouterKey>
             val isScene = key is DialogKey || key is BottomSheetKey
             return Nav3Entry(key = key, metadata = metadata) {
                 if (isScene) {
                     CompositionLocalProvider(LocalSceneActions provides createSceneActions(key)) {
-                        (it as ComposeScreenProvider<RouterKey>).Content(key)
+                        typed.Content(key)
                     }
                 } else {
-                    (it as ComposeScreenProvider<RouterKey>).Content(key)
+                    typed.Content(key)
                 }
             }
         }
