@@ -22,10 +22,12 @@ import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-class HomeScreenProvider(
-    private val navigator: PerseusNavigator
-) : ComposeScreenProvider<HomeKey> {
+class HomeScreenProvider : ComposeScreenProvider<HomeKey>, KoinComponent {
+    private val navigator: PerseusNavigator by inject()
+
     override fun canProvide(key: RouterKey) = key is HomeKey
 
     @Composable
