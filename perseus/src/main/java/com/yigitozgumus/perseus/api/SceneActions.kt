@@ -39,3 +39,11 @@ interface SceneActions {
 val LocalSceneActions = staticCompositionLocalOf<SceneActions> {
     error("No SceneActions provided. Scene content must be rendered within a SceneStrategy.")
 }
+
+/**
+ * CompositionLocal providing the current screen's [NavigationContext].
+ * Available in all Perseus-managed Compose screens for result sending.
+ */
+val LocalNavigationContext = staticCompositionLocalOf<NavigationContext<*>?> {
+    null
+}

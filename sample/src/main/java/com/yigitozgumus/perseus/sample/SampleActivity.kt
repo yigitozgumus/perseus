@@ -18,11 +18,13 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.impl.PerseusNavHost
+import com.yigitozgumus.perseus.sample.di.SampleModule
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
@@ -31,6 +33,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import org.koin.ksp.generated.com_yigitozgumus_perseus_sample_di_SampleModule
+import org.koin.ksp.generated.module
 
 class SampleApplication : Application() {
     override fun onCreate() {
@@ -38,14 +41,14 @@ class SampleApplication : Application() {
         startKoin {
             androidContext(this@SampleApplication)
             modules(
-                com_yigitozgumus_perseus_sample_di_SampleModule,
+                SampleModule().module,
                 infrastructureModule
             )
         }
     }
 }
 
-class SampleActivity : ComponentActivity(), KoinComponent {
+class SampleActivity : FragmentActivity(), KoinComponent {
 
     private val navigator: PerseusNavigator by inject()
     private val stateHolder: PerseusNavigationStateHolder by inject()

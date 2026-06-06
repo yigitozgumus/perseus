@@ -9,6 +9,7 @@ import com.yigitozgumus.perseus.api.ComposeSceneProvider
 import com.yigitozgumus.perseus.api.ComposeScreenProvider
 import com.yigitozgumus.perseus.api.DialogKey
 import com.yigitozgumus.perseus.api.GroupName
+import com.yigitozgumus.perseus.api.LocalNavigationContext
 import com.yigitozgumus.perseus.api.LocalSceneActions
 import com.yigitozgumus.perseus.api.NavigationContext
 import com.yigitozgumus.perseus.api.RouterKey
@@ -74,13 +75,17 @@ class PerseusEntryProviderRegistry(
             @Suppress("UNCHECKED_CAST")
             val typed = foundProvider as ComposeScreenProvider<RouterKey>
             val isScene = key is DialogKey || key is BottomSheetKey
+            val corrId = providedCorrelationIds[key]
+            val navCtx = corrId?.let { NavigationContext(key, it) }
             return Nav3Entry(key = key, metadata = metadata) {
-                if (isScene) {
-                    CompositionLocalProvider(LocalSceneActions provides createSceneActions(key)) {
+                CompositionLocalProvider(LocalNavigationContext provides navCtx) {
+                    if (isScene) {
+                        CompositionLocalProvider(LocalSceneActions provides createSceneActions(key)) {
+                            typed.Content(key)
+                        }
+                    } else {
                         typed.Content(key)
                     }
-                } else {
-                    typed.Content(key)
                 }
             }
         }

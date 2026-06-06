@@ -2,6 +2,8 @@ package com.yigitozgumus.perseus.sample.di
 
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
+import com.yigitozgumus.perseus.sample.compose.DetailViewModel
+import com.yigitozgumus.perseus.sample.compose.HomeViewModel
 import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.impl.PerseusNavigatorImpl
 import com.yigitozgumus.perseus.impl.PerseusViewModelStoreRegistry
@@ -28,4 +30,8 @@ val infrastructureModule = module {
             resultBus = get()
         )
     }
+
+    // ViewModels
+    factory { HomeViewModel(get()) }
+    factory { DetailViewModel(get()) }
 }

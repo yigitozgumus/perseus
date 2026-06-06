@@ -3,8 +3,10 @@ package com.yigitozgumus.perseus.sample.compose
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
@@ -12,47 +14,61 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.api.ComposeScreenProvider
+import com.yigitozgumus.perseus.api.LocalNavigationContext
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
+import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Single
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 @Single
-class HomeScreenProvider : ComposeScreenProvider<HomeKey>, KoinComponent {
-    private val navigator: PerseusNavigator by inject()
+class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
 
     override fun canProvide(key: RouterKey) = key is HomeKey
 
     @Composable
     override fun Content(key: HomeKey) {
+        val viewModel = koinViewModel<HomeViewModel>()
+        val lastResult by viewModel.lastResult.collectAsState()
+
         HomeScreen(
-            onItemClick = { navigator.navigateTo(DetailKey(it)) },
-            onProfileClick = { navigator.navigateTo(ProfileKey) }
+            lastResult = lastResult,
+            onItemClick = { viewModel.navigateToDetail(it) },
+            onProfileClick = { viewModel.navigateToProfile() }
         )
     }
 }
 
 @Single
 class DetailScreenProvider : ComposeScreenProvider<DetailKey> {
+
     override fun canProvide(key: RouterKey) = key is DetailKey
 
     @Composable
     override fun Content(key: DetailKey) {
-        DetailScreen(itemId = key.itemId)
+        val viewModel = koinViewModel<DetailViewModel>()
+        val navContext = LocalNavigationContext.current
+        DetailScreen(
+            itemId = key.itemId,
+            onSendResult = {
+                navContext?.let { viewModel.sendResult(it, key.itemId) }
+            }
+        )
     }
 }
 
 @Composable
 fun HomeScreen(
+    lastResult: String? = null,
     onItemClick: (Int) -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
@@ -69,6 +85,16 @@ fun HomeScreen(
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(16.dp)
                 )
+            }
+            if (lastResult != null) {
+                item {
+                    Text(
+                        text = "Result: $lastResult",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
             }
             item {
                 Button(
@@ -96,7 +122,10 @@ fun HomeScreen(
 }
 
 @Composable
-fun DetailScreen(itemId: Int) {
+fun DetailScreen(
+    itemId: Int,
+    onSendResult: () -> Unit = {}
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -113,5 +142,9 @@ fun DetailScreen(itemId: Int) {
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(top = 8.dp)
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(onClick = onSendResult) {
+            Text("Send Result & Go Back")
+        }
     }
 }
