@@ -17,16 +17,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.api.ComposeScreenProvider
+import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
+import com.yigitozgumus.perseus.sample.keys.ProfileKey
 
-class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
+class HomeScreenProvider(
+    private val navigator: PerseusNavigator
+) : ComposeScreenProvider<HomeKey> {
     override fun canProvide(key: RouterKey) = key is HomeKey
 
     @Composable
     override fun Content(key: HomeKey) {
-        HomeScreen()
+        HomeScreen(
+            onItemClick = { navigator.navigateTo(DetailKey(it)) },
+            onProfileClick = { navigator.navigateTo(ProfileKey) }
+        )
     }
 }
 

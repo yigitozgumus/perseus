@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import androidx.navigation3.runtime.NavEntry
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.api.RouterKey
@@ -35,7 +36,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.scope.Scope
 import org.koin.dsl.koinApplication
 
-class SampleActivity : ComponentActivity(), AndroidScopeComponent, KoinComponent {
+class SampleActivity : FragmentActivity(), AndroidScopeComponent, KoinComponent {
 
     companion object {
         private val localKoin = koinApplication {

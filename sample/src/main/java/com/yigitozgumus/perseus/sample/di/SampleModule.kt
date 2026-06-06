@@ -23,12 +23,8 @@ val sampleModule = module {
 
     single {
         PerseusEntryProviderRegistry(
-            composeProviders = listOf(
-                HomeScreenProvider(),
-                DetailScreenProvider(),
-                LoginScreenProvider()
-            ),
-            fragmentProviders = listOf(ProfileFragmentProvider()),
+            composeProviders = getAll<ComposeScreenProvider<*>>(),
+            fragmentProviders = getAll<ScreenProvider<*>>(),
             sceneProviders = emptyList(),
             resultBus = get()
         )
@@ -37,13 +33,11 @@ val sampleModule = module {
     single<PerseusNavigator> { PerseusNavigatorImpl(get(), get(), get(), get()) }
 
     // Screen providers
-    single<ComposeScreenProvider<*>> { HomeScreenProvider() }
+    single<ComposeScreenProvider<*>> { HomeScreenProvider(get()) }
     single<ComposeScreenProvider<*>> { DetailScreenProvider() }
     single<ComposeScreenProvider<*>> { LoginScreenProvider() }
     single<ScreenProvider<*>> { ProfileFragmentProvider() }
 }
 
 fun createEntryProvider(registry: PerseusEntryProviderRegistry): (RouterKey) -> androidx.navigation3.runtime.NavEntry<RouterKey> =
-    { key ->
-        registry.provide(key)
-    }
+    { key -> registry.provide(key) }
