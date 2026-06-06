@@ -21,9 +21,9 @@ import java.util.UUID
  * Group tracking is handled by [PerseusEntryProviderRegistry].
  */
 class PerseusNavigatorImpl(
-    private val stateHolder: PerseusNavigationStateHolder,
+    internal val stateHolder: PerseusNavigationStateHolder,
     private val resultBus: ResultBusAdapter,
-    private val entryRegistry: PerseusEntryProviderRegistry,
+    internal val entryRegistry: PerseusEntryProviderRegistry,
     private val viewModelStoreRegistry: PerseusViewModelStoreRegistry
 ) : PerseusNavigator {
 
@@ -95,6 +95,16 @@ class PerseusNavigatorImpl(
         viewModelStoreRegistry.retainOnly(keys.toSet())
         entryRegistry.clearAllTracking()
         stateHolder.state.resetAllWithKeys(keys)
+    }
+
+    // ── Auth State ─────────────────────────────────────────────────────────
+
+    override fun transitionToAuthenticated(tabRootKeys: List<RouterKey>) {
+        stateHolder.transitionToAuthenticated(tabRootKeys)
+    }
+
+    override fun startUnauthenticated(initialKey: RouterKey) {
+        stateHolder.startUnauthenticated(initialKey)
     }
 
     // ── Observation ─────────────────────────────────────────────────────────

@@ -82,6 +82,14 @@ interface PerseusNavigator {
     /** The currently selected tab index. */
     val currentTabIndex: Int
 
+    // ── Auth State ─────────────────────────────────────────────────────────
+
+    /** Transition to authenticated mode with the given tab root keys. */
+    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>)
+
+    /** Start in unauthenticated mode with the given initial screen. */
+    fun startUnauthenticated(initialKey: RouterKey)
+
     // ── Observation ─────────────────────────────────────────────────────────
 
     /**

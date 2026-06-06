@@ -51,22 +51,18 @@ class SampleApplication : Application() {
 class SampleActivity : FragmentActivity(), KoinComponent {
 
     private val navigator: PerseusNavigator by inject()
-    private val stateHolder: PerseusNavigationStateHolder by inject()
-    private val entryRegistry: PerseusEntryProviderRegistry by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val tabRoots = listOf<RouterKey>(HomeKey, ProfileKey)
-        stateHolder.transitionToAuthenticated(tabRoots)
+        navigator.transitionToAuthenticated(listOf(HomeKey, ProfileKey))
 
         setContent {
             var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
             PerseusNavHost(
-                stateHolder = stateHolder,
-                entryRegistry = entryRegistry,
+                navigator = navigator,
                 onPop = { navigator.pop() },
                 initialKey = HomeKey,
                 bottomBar = { currentIndex, onTabSelected ->
