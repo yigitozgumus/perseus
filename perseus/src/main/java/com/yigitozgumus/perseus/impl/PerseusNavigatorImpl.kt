@@ -2,6 +2,7 @@ package com.yigitozgumus.perseus.impl
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.api.GroupName
 import com.yigitozgumus.perseus.api.NavigationContext
 import com.yigitozgumus.perseus.api.NavigationHandle

@@ -19,7 +19,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.ui.NavDisplay
-import com.yigitozgumus.perseus.api.EntryRegistry
 import com.yigitozgumus.perseus.api.RouterKey
 
 private const val FADE_MS = 200
@@ -27,7 +26,7 @@ private const val FADE_MS = 200
 @Composable
 fun PerseusNavHost(
     stateHolder: PerseusNavigationStateHolder,
-    entryRegistry: EntryRegistry,
+    entryRegistry: PerseusEntryProviderRegistry,
     onPop: () -> Unit,
     initialKey: RouterKey,
     bottomBar: @Composable (selectedIndex: Int, onTabSelected: (Int) -> Unit) -> Unit = { _, _ -> },
@@ -82,7 +81,7 @@ fun PerseusNavHost(
 @Composable
 private fun AuthenticatedHost(
     navigationState: PerseusNavigationState,
-    entryRegistry: EntryRegistry,
+    entryRegistry: PerseusEntryProviderRegistry,
     sceneStrategies: List<SceneStrategy<RouterKey>>,
     onPop: () -> Unit,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,

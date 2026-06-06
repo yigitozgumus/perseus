@@ -1,14 +1,12 @@
 package com.yigitozgumus.perseus.sample.di
 
-import com.yigitozgumus.perseus.api.EntryRegistry
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
+import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
+import com.yigitozgumus.perseus.impl.PerseusNavigatorFactory
+import com.yigitozgumus.perseus.impl.PerseusViewModelStoreRegistry
 import com.yigitozgumus.perseus.sample.compose.DetailViewModel
 import com.yigitozgumus.perseus.sample.compose.HomeViewModel
-import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
-import com.yigitozgumus.perseus.impl.PerseusNavigatorImpl
-import com.yigitozgumus.perseus.impl.PerseusViewModelStoreRegistry
-import com.yigitozgumus.perseus.impl.ResultBusAdapter
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.dsl.module
@@ -17,22 +15,19 @@ import org.koin.dsl.module
 @ComponentScan("com.yigitozgumus.perseus.sample")
 class SampleModule
 
-/** Infrastructure dependencies not covered by @Single annotations. */
 val infrastructureModule = module {
-    single { PerseusNavigationStateHolder() }
-    single { ResultBusAdapter() }
-    single { PerseusViewModelStoreRegistry() }
-    single<PerseusNavigator> { PerseusNavigatorImpl(get(), get(), get(), get()) }
-    single<EntryRegistry> {
-        PerseusEntryProviderRegistry(
+    single {
+        PerseusNavigatorFactory.create(
             composeProviders = getAll(),
             fragmentProviders = getAll(),
-            sceneProviders = emptyList(),
-            resultBus = get()
+            sceneProviders = emptyList()
         )
     }
+    single<PerseusNavigator> { get<PerseusNavigatorFactory.Dependencies>().navigator }
+    single<PerseusNavigationStateHolder> { get<PerseusNavigatorFactory.Dependencies>().stateHolder }
+    single<PerseusViewModelStoreRegistry> { get<PerseusNavigatorFactory.Dependencies>().viewModelStoreRegistry }
+    single<PerseusEntryProviderRegistry> { get<PerseusNavigatorFactory.Dependencies>().entryRegistry }
 
-    // ViewModels
     factory { HomeViewModel(get()) }
     factory { DetailViewModel(get()) }
 }

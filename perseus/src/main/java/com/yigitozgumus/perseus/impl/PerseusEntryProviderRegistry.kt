@@ -6,7 +6,6 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.yigitozgumus.perseus.api.BottomSheetKey
 import com.yigitozgumus.perseus.api.ComposeSceneProvider
-import com.yigitozgumus.perseus.api.EntryRegistry
 import com.yigitozgumus.perseus.api.ComposeScreenProvider
 import com.yigitozgumus.perseus.api.DialogKey
 import com.yigitozgumus.perseus.api.GroupName
@@ -36,7 +35,7 @@ class PerseusEntryProviderRegistry(
     private val fragmentProviders: List<ScreenProvider<*>>,
     private val sceneProviders: List<ComposeSceneProvider<*>>,
     private val resultBus: ResultBusAdapter
-) : EntryRegistry {
+) {
     // Group tracking: key → groupName
     private val pendingGroups = ConcurrentHashMap<RouterKey, GroupName>()
     private val providedGroups = ConcurrentHashMap<RouterKey, GroupName>()
@@ -46,7 +45,7 @@ class PerseusEntryProviderRegistry(
     private val providedCorrelationIds = ConcurrentHashMap<RouterKey, String>()
 
     /** Pop callback set by the navigator for scene dismissal. */
-    override var onPopCallback: (() -> Unit)? = null
+    var onPopCallback: (() -> Unit)? = null
 
     fun setPendingGroup(key: RouterKey, groupName: GroupName) {
         pendingGroups[key] = groupName
@@ -56,7 +55,7 @@ class PerseusEntryProviderRegistry(
         pendingCorrelationIds[key] = correlationId
     }
 
-    override fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key]
+    fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key]
     fun clearTrackingForKey(key: RouterKey) {
         pendingGroups.remove(key); providedGroups.remove(key)
         pendingCorrelationIds.remove(key); providedCorrelationIds.remove(key)
@@ -68,7 +67,7 @@ class PerseusEntryProviderRegistry(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun provide(key: RouterKey): NavEntry<RouterKey> {
+    fun provide(key: RouterKey): NavEntry<RouterKey> {
         val metadata = computeAndCacheMetadata(key)
 
         // 1. Compose screen provider
@@ -100,7 +99,11 @@ class PerseusEntryProviderRegistry(
             }
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
             return NavEntry(key = key, metadata = metadata) {
-                (provider as ComposeSceneProvider<RouterKey>).Content(key, sceneCallback, dismiss)
+                (provider as ComposeSceneProvider<RouterKey>).Content(
+                    key = key,
+                    onResult = sceneCallback,
+                    onDismiss = dismiss
+                )
             }
         }
 

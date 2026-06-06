@@ -19,8 +19,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
-import com.yigitozgumus.perseus.api.EntryRegistry
 import com.yigitozgumus.perseus.api.PerseusNavigator
+import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.impl.PerseusNavHost
@@ -52,7 +52,7 @@ class SampleActivity : FragmentActivity(), KoinComponent {
 
     private val navigator: PerseusNavigator by inject()
     private val stateHolder: PerseusNavigationStateHolder by inject()
-    private val entryRegistry: EntryRegistry by inject()
+    private val entryRegistry: PerseusEntryProviderRegistry by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
