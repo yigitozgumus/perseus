@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus.sample
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -18,8 +18,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.fragment.app.FragmentActivity
-import androidx.navigation3.runtime.NavEntry
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
@@ -27,29 +25,27 @@ import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.impl.PerseusNavHost
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import org.koin.ksp.generated.com_yigitozgumus_perseus_sample_di_SampleModule
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
-import org.koin.android.ext.android.inject
-import org.koin.android.scope.AndroidScopeComponent
-import org.koin.androidx.scope.activityRetainedScope
-import org.koin.core.Koin
+import org.koin.android.ext.koin.androidContext
 import org.koin.core.component.KoinComponent
-import org.koin.core.scope.Scope
-import org.koin.dsl.koinApplication
+import org.koin.core.component.inject
+import org.koin.core.context.startKoin
+import org.koin.ksp.generated.com_yigitozgumus_perseus_sample_di_SampleModule
 
-class SampleActivity : FragmentActivity(), AndroidScopeComponent, KoinComponent {
-
-    companion object {
-        private val localKoin = koinApplication {
+class SampleApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        startKoin {
+            androidContext(this@SampleApplication)
             modules(
                 com_yigitozgumus_perseus_sample_di_SampleModule,
                 infrastructureModule
             )
-        }.koin
+        }
     }
+}
 
-    override fun getKoin(): Koin = localKoin
-    override val scope: Scope by activityRetainedScope()
+class SampleActivity : ComponentActivity(), KoinComponent {
 
     private val navigator: PerseusNavigator by inject()
     private val stateHolder: PerseusNavigationStateHolder by inject()
