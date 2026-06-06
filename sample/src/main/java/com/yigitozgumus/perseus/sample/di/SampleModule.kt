@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus.sample.di
 
+import com.yigitozgumus.perseus.api.EntryRegistry
 import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.sample.compose.DetailViewModel
@@ -22,7 +23,7 @@ val infrastructureModule = module {
     single { ResultBusAdapter() }
     single { PerseusViewModelStoreRegistry() }
     single<PerseusNavigator> { PerseusNavigatorImpl(get(), get(), get(), get()) }
-    single {
+    single<EntryRegistry> {
         PerseusEntryProviderRegistry(
             composeProviders = getAll(),
             fragmentProviders = getAll(),

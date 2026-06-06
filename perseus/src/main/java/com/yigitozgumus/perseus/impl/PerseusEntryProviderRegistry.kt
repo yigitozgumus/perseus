@@ -2,10 +2,11 @@ package com.yigitozgumus.perseus.impl
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.window.DialogProperties
-import androidx.navigation3.runtime.NavEntry as Nav3Entry
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.yigitozgumus.perseus.api.BottomSheetKey
 import com.yigitozgumus.perseus.api.ComposeSceneProvider
+import com.yigitozgumus.perseus.api.EntryRegistry
 import com.yigitozgumus.perseus.api.ComposeScreenProvider
 import com.yigitozgumus.perseus.api.DialogKey
 import com.yigitozgumus.perseus.api.GroupName
@@ -19,7 +20,7 @@ import com.yigitozgumus.perseus.api.ScreenProvider
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Registry that provides [Nav3Entry] instances for both Compose screens and Fragment screens.
+ * Registry that provides [NavEntry] instances for both Compose screens and Fragment screens.
  *
  * Resolution priority:
  * 1. Compose screen provider ([ComposeScreenProvider])
@@ -35,7 +36,7 @@ class PerseusEntryProviderRegistry(
     private val fragmentProviders: List<ScreenProvider<*>>,
     private val sceneProviders: List<ComposeSceneProvider<*>>,
     private val resultBus: ResultBusAdapter
-) {
+) : EntryRegistry {
     // Group tracking: key → groupName
     private val pendingGroups = ConcurrentHashMap<RouterKey, GroupName>()
     private val providedGroups = ConcurrentHashMap<RouterKey, GroupName>()
@@ -45,7 +46,7 @@ class PerseusEntryProviderRegistry(
     private val providedCorrelationIds = ConcurrentHashMap<RouterKey, String>()
 
     /** Pop callback set by the navigator for scene dismissal. */
-    var onPopCallback: (() -> Unit)? = null
+    override var onPopCallback: (() -> Unit)? = null
 
     fun setPendingGroup(key: RouterKey, groupName: GroupName) {
         pendingGroups[key] = groupName
@@ -55,7 +56,7 @@ class PerseusEntryProviderRegistry(
         pendingCorrelationIds[key] = correlationId
     }
 
-    fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key]
+    override fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key]
     fun clearTrackingForKey(key: RouterKey) {
         pendingGroups.remove(key); providedGroups.remove(key)
         pendingCorrelationIds.remove(key); providedCorrelationIds.remove(key)
@@ -67,7 +68,7 @@ class PerseusEntryProviderRegistry(
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun provide(key: RouterKey): Nav3Entry<RouterKey> {
+    override fun provide(key: RouterKey): NavEntry<RouterKey> {
         val metadata = computeAndCacheMetadata(key)
 
         // 1. Compose screen provider
@@ -77,7 +78,7 @@ class PerseusEntryProviderRegistry(
             val isScene = key is DialogKey || key is BottomSheetKey
             val corrId = providedCorrelationIds[key]
             val navCtx = corrId?.let { NavigationContext(key, it) }
-            return Nav3Entry(key = key, metadata = metadata) {
+            return NavEntry(key = key, metadata = metadata) {
                 CompositionLocalProvider(LocalNavigationContext provides navCtx) {
                     if (isScene) {
                         CompositionLocalProvider(LocalSceneActions provides createSceneActions(key)) {
@@ -98,7 +99,7 @@ class PerseusEntryProviderRegistry(
                 }
             }
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
-            return Nav3Entry(key = key, metadata = metadata) {
+            return NavEntry(key = key, metadata = metadata) {
                 (provider as ComposeSceneProvider<RouterKey>).Content(key, sceneCallback, dismiss)
             }
         }
@@ -107,7 +108,7 @@ class PerseusEntryProviderRegistry(
         fragmentProviders.find { it.canProvide(key) }?.let { provider ->
             val corrId = providedCorrelationIds[key]
             val ctx = corrId?.let { NavigationContext(key, it) } ?: NavigationContext(key)
-            return Nav3Entry(key = key, metadata = metadata) {
+            return NavEntry(key = key, metadata = metadata) {
                 FragmentEntry(
                     key = key,
                     provider = provider as ScreenProvider<RouterKey>,

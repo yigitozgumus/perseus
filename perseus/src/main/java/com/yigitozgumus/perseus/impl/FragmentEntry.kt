@@ -15,7 +15,7 @@ import com.yigitozgumus.perseus.api.ScreenProvider
 
 @Suppress("UNCHECKED_CAST")
 @Composable
-fun <K : RouterKey> FragmentEntry(
+internal fun <K : RouterKey> FragmentEntry(
     key: K,
     provider: ScreenProvider<K>,
     context: NavigationContext<K>,

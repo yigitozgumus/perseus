@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.rememberLifecycleOwner
-import androidx.navigation3.runtime.NavEntry as Nav3Entry
+import androidx.navigation3.runtime.NavEntry as NavEntry
 import androidx.navigation3.scene.OverlayScene
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
@@ -52,13 +52,13 @@ data class BottomSheetProperties(
 
 internal data class BottomSheetScene<T : Any>(
     override val key: T,
-    override val previousEntries: List<Nav3Entry<T>>,
-    override val overlaidEntries: List<Nav3Entry<T>>,
-    private val entry: Nav3Entry<T>,
+    override val previousEntries: List<NavEntry<T>>,
+    override val overlaidEntries: List<NavEntry<T>>,
+    private val entry: NavEntry<T>,
     private val properties: BottomSheetProperties,
     private val onBack: () -> Unit,
 ) : OverlayScene<T> {
-    override val entries: List<Nav3Entry<T>> = listOf(entry)
+    override val entries: List<NavEntry<T>> = listOf(entry)
     override val content: @Composable (() -> Unit) = {
         val lifecycleOwner = rememberLifecycleOwner()
         BackHandler(enabled = properties.dismissOnBackPress) { onBack() }
@@ -132,7 +132,7 @@ private fun BottomSheetContainer(
 }
 
 class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
-    override fun SceneStrategyScope<T>.calculateScene(entries: List<Nav3Entry<T>>): Scene<T>? {
+    override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         val last = entries.lastOrNull() ?: return null
         val props = last.metadata[BOTTOM_SHEET_KEY] as? BottomSheetProperties ?: return null
         @Suppress("UNCHECKED_CAST")
