@@ -28,6 +28,11 @@ class HomeViewModel(
     }
 
     fun navigateToProfile() {
-        navigator.navigateTo(ProfileKey)
+        val handle = navigator.navigateTo(ProfileKey)
+        viewModelScope.launch {
+            handle.observeResult<String>().collect { result ->
+                _lastResult.value = result
+            }
+        }
     }
 }
