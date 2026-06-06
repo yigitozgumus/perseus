@@ -1,4 +1,4 @@
-package com.yigitozgumus.perseus.impl
+package com.yigitozgumus.perseus.api
 
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -19,7 +19,11 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.ui.NavDisplay
-import com.yigitozgumus.perseus.api.PerseusNavigator
+import com.yigitozgumus.perseus.impl.BottomSheetSceneStrategy
+import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
+import com.yigitozgumus.perseus.impl.PerseusNavigationState
+import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
+import com.yigitozgumus.perseus.impl.PerseusNavigatorImpl
 import com.yigitozgumus.perseus.api.RouterKey
 
 private const val FADE_MS = 200

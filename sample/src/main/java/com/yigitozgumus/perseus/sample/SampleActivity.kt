@@ -23,7 +23,7 @@ import com.yigitozgumus.perseus.api.PerseusNavigator
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
-import com.yigitozgumus.perseus.impl.PerseusNavHost
+import com.yigitozgumus.perseus.api.PerseusNavHost
 import com.yigitozgumus.perseus.sample.di.SampleModule
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
