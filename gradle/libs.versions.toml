@@ -11,9 +11,8 @@ composeBom = "2026.02.01"
 navigation3 = "1.2.0-alpha02"
 fragmentCompose = "1.8.9"
 koin = "4.2.1"
-koinAnnotations = "4.2.1"
-koinKspCompiler = "2.3.1"
-ksp = "2.3.6"
+koinAnnotations = "2.3.1"
+ksp = "2.3.2"
 lifecycleViewmodelNav3 = "2.11.0-beta01"
 kotlinxSerialization = "1.11.0"
 
@@ -39,7 +38,7 @@ androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecy
 koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmodel", version.ref = "koin" }
 koin-navigation3 = { group = "io.insert-koin", name = "koin-compose-navigation3", version.ref = "koin" }
 koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koinAnnotations" }
-koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinKspCompiler" }
+koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinAnnotations" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 

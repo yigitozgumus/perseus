@@ -11,7 +11,9 @@ import androidx.fragment.app.Fragment
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.api.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
+import org.koin.core.annotation.Single
 
+@Single
 class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
     override fun canProvide(key: RouterKey) = key is ProfileKey
 

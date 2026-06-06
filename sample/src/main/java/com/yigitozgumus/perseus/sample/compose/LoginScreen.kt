@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.api.ComposeScreenProvider
 import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.sample.keys.LoginKey
+import org.koin.core.annotation.Single
 
+@Single
 class LoginScreenProvider : ComposeScreenProvider<LoginKey> {
     override fun canProvide(key: RouterKey) = key is LoginKey
 

@@ -25,8 +25,9 @@ import com.yigitozgumus.perseus.api.RouterKey
 import com.yigitozgumus.perseus.impl.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.impl.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.impl.PerseusNavHost
-import com.yigitozgumus.perseus.sample.di.sampleModule
+import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
+import org.koin.ksp.generated.com_yigitozgumus_perseus_sample_di_SampleModule
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import org.koin.android.ext.android.inject
 import org.koin.android.scope.AndroidScopeComponent
@@ -40,7 +41,10 @@ class SampleActivity : FragmentActivity(), AndroidScopeComponent, KoinComponent 
 
     companion object {
         private val localKoin = koinApplication {
-            modules(sampleModule)
+            modules(
+                com_yigitozgumus_perseus_sample_di_SampleModule,
+                infrastructureModule
+            )
         }.koin
     }
 
