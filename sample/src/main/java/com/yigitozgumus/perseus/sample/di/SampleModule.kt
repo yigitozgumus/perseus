@@ -17,6 +17,7 @@ import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.dsl.module
 
 val sampleModule = module {
+    // Infrastructure (activity-scoped, wired with explicit provider lists)
     activityRetainedScope {
         scoped { PerseusNavigationStateHolder() }
         scoped { ResultBusAdapter() }
@@ -24,8 +25,14 @@ val sampleModule = module {
 
         scoped {
             PerseusEntryProviderRegistry(
-                composeProviders = getAll<ComposeScreenProvider<*>>(),
-                fragmentProviders = getAll<ScreenProvider<*>>(),
+                composeProviders = listOf(
+                    HomeScreenProvider(),
+                    DetailScreenProvider(),
+                    LoginScreenProvider()
+                ),
+                fragmentProviders = listOf(
+                    ProfileFragmentProvider()
+                ),
                 sceneProviders = emptyList(),
                 resultBus = get()
             )
@@ -33,15 +40,8 @@ val sampleModule = module {
 
         scoped<PerseusNavigator> { PerseusNavigatorImpl(get(), get(), get(), get()) }
     }
-
-    // Screen providers
-    single<ComposeScreenProvider<*>> { HomeScreenProvider() }
-    single<ComposeScreenProvider<*>> { DetailScreenProvider() }
-    single<ComposeScreenProvider<*>> { LoginScreenProvider() }
-    single<ScreenProvider<*>> { ProfileFragmentProvider() }
 }
 
-/** Entry provider lambda for NavDisplay — resolves RouterKey → NavEntry. */
 fun createEntryProvider(registry: PerseusEntryProviderRegistry): (RouterKey) -> androidx.navigation3.runtime.NavEntry<RouterKey> = { key ->
     registry.provide(key)
 }
