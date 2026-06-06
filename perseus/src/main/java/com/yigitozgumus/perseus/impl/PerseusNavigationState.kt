@@ -9,7 +9,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import com.yigitozgumus.perseus.api.RouterKey
-import kotlinx.serialization.Serializable
 
 /**
  * Navigation state that survives process death via [Saver].
@@ -119,14 +118,13 @@ class PerseusNavigationState private constructor(
 
     // ── Process Death ──────────────────────────────────────────────────────
 
-    @Serializable
     data class Snapshot(
         val modeOrdinal: Int,
         val unauthBackStack: List<String>,
         val topLevelRoutes: List<String>,
         val tabBackStacks: Map<Int, List<String>>,
         val currentTabIndex: Int
-    )
+    ) : java.io.Serializable
 
     fun toSnapshot(): Snapshot = Snapshot(
         modeOrdinal = mode.ordinal,
