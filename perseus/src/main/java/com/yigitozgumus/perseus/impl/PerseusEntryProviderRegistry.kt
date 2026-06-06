@@ -71,10 +71,6 @@ class PerseusEntryProviderRegistry(
 
         // 1. Compose screen provider
         composeProviders.find { it.canProvide(key) }?.let { foundProvider ->
-            check(foundProvider is ComposeScreenProvider<*>) {
-                "Expected ComposeScreenProvider but got ${foundProvider::class.simpleName}. " +
-                "composeProviders list: ${composeProviders.map { it::class.simpleName }}"
-            }
             @Suppress("UNCHECKED_CAST")
             val typed = foundProvider as ComposeScreenProvider<RouterKey>
             val isScene = key is DialogKey || key is BottomSheetKey

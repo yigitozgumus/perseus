@@ -180,7 +180,7 @@ private object DefaultKeyResolver : KeyResolver {
         return try {
             val clazz = Class.forName(className)
             if (RouterKey::class.java.isAssignableFrom(clazz)) {
-                clazz.kotlin.objectInstance as? RouterKey
+                clazz.getDeclaredField("INSTANCE").get(null) as? RouterKey
             } else null
         } catch (_: Exception) {
             null

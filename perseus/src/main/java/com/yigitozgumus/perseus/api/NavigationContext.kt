@@ -34,8 +34,8 @@ inline fun <reified K : RouterKey> Bundle.getNavigationContext(): NavigationCont
 
     val key: K = try {
         val clazz = Class.forName(keyClassName)
-        val obj = clazz.kotlin.objectInstance
-        if (obj is K) obj else error("Cannot resolve RouterKey: $keyClassName is not a singleton object of type ${K::class.simpleName}")
+        val instance = clazz.getDeclaredField("INSTANCE").get(null)
+        if (instance is K) instance else error("Cannot resolve RouterKey: $keyClassName is not a singleton object of type ${K::class.simpleName}")
     } catch (e: ClassNotFoundException) {
         error("RouterKey class not found: $keyClassName")
     }
