@@ -48,14 +48,6 @@ internal class PerseusEntryProviderRegistry(
     /** Pop callback set by the navigator for scene dismissal. */
     var onPopCallback: (() -> Unit)? = null
 
-    fun setPendingGroup(key: RouterKey, groupName: GroupName) {
-        // Group membership is durable on PerseusBackStackKey. Kept for EntryRegistry compatibility.
-    }
-
-    fun setPendingCorrelationId(key: RouterKey, correlationId: String) {
-        // Correlation ID is durable on PerseusBackStackKey. Kept for EntryRegistry compatibility.
-    }
-
     fun getGroupForKey(key: RouterKey): GroupName? = key.groupName()
     fun clearTrackingForKey(key: RouterKey) {
         pendingTransitions.remove(key.backStackId())
