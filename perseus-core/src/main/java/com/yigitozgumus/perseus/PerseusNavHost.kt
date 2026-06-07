@@ -1,6 +1,8 @@
 package com.yigitozgumus.perseus
 
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
+import androidx.navigation3.scene.Scene
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -31,8 +33,7 @@ import com.yigitozgumus.perseus.key.RouterKey
 public const val DefaultTransitionDurationMs: Int = 200
 
 /** Fast fade-in / fade-out transition used by default. */
-@Composable
-public fun fastFadeTransition(
+public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
     durationMs: Int = DefaultTransitionDurationMs,
 ): ContentTransform = fadeIn(tween(durationMs)) togetherWith fadeOut(tween(durationMs))
 
@@ -65,13 +66,13 @@ public fun PerseusNavHost(
         onTabSelected: (Int) -> Unit,
     ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
-    transitionSpec: @Composable () -> ContentTransform = {
+    transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
         fastFadeTransition()
     },
-    popTransitionSpec: @Composable () -> ContentTransform = {
+    popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
         fastFadeTransition()
     },
-    predictivePopTransitionSpec: @Composable () -> ContentTransform = {
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(progress: Int) -> ContentTransform = {
         fastFadeTransition()
     },
 ) {
@@ -134,9 +135,9 @@ private fun AuthenticatedHost(
     navigator: PerseusNavigator,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
     onTabChanged: (Int) -> Unit,
-    transitionSpec: @Composable () -> ContentTransform,
-    popTransitionSpec: @Composable () -> ContentTransform,
-    predictivePopTransitionSpec: @Composable () -> ContentTransform,
+    transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
+    popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(Int) -> ContentTransform,
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(navigationState.currentTabIndex) {
