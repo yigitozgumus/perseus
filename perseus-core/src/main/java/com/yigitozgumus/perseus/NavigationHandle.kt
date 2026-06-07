@@ -17,8 +17,8 @@ import kotlinx.coroutines.flow.Flow
  *     .launchIn(viewModelScope)
  * ```
  *
- * Results are delivered via [SharedFlow][kotlinx.coroutines.flow.SharedFlow].
- * Late observers will not receive results emitted before subscription.
+ * Results are reliable one-shot events. If a result is sent before observation
+ * starts, the first observer for this handle still receives it.
  */
 public interface NavigationHandle {
     /** Unique identifier linking this handle to a navigation session. */
