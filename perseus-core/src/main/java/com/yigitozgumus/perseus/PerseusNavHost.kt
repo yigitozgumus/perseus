@@ -28,13 +28,32 @@ import com.yigitozgumus.perseus.key.RouterKey
 
 private const val FADE_MS = 200
 
+/**
+ * Main navigation host composable for Perseus.
+ *
+ * Renders a [NavDisplay] driven by [PerseusNavigationState]. Supports
+ * unauthenticated (single stack) and authenticated (tabbed) modes,
+ * dialog/bottom sheet scenes, and process death survival.
+ *
+ * @param navigator The [PerseusNavigator] instance driving navigation.
+ * @param onPop Called when the user navigates back.
+ * @param initialKey The initial screen to show before any auth transition.
+ * @param modifier Compose modifier for the host container.
+ * @param bottomBar Slot for the bottom navigation bar (authenticated mode).
+ * @param onTabChanged Notified when the selected tab changes.
+ * @param onSwitchTab Called when the user selects a different tab.
+ * @param onResetCurrentTab Called when the current tab is re-selected.
+ */
 @Composable
 public fun PerseusNavHost(
     navigator: PerseusNavigator,
     onPop: () -> Unit,
     initialKey: RouterKey,
     modifier: Modifier = Modifier,
-    bottomBar: @Composable (selectedIndex: Int, onTabSelected: (Int) -> Unit) -> Unit = { _, _ -> },
+    bottomBar: @Composable (
+        selectedIndex: Int,
+        onTabSelected: (Int) -> Unit,
+    ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
     onSwitchTab: (Int) -> Unit = {},
     onResetCurrentTab: () -> Unit = {},
@@ -57,7 +76,8 @@ public fun PerseusNavHost(
         listOf(BottomSheetSceneStrategy<RouterKey>(), DialogSceneStrategy())
     }
 
-    val isUnauthenticated = navigationState.mode == PerseusNavigationState.Mode.Unauthenticated
+    val isUnauthenticated =
+        navigationState.mode == PerseusNavigationState.Mode.Unauthenticated
 
     if (isUnauthenticated) {
         NavDisplay(
@@ -68,8 +88,10 @@ public fun PerseusNavHost(
             transitionSpec = { fastFade() },
             popTransitionSpec = { fastFade() },
             predictivePopTransitionSpec = { fastFade() },
-            entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
-            entryProvider = { key -> entryRegistry.provide(key) }
+            entryDecorators = listOf(
+                rememberSaveableStateHolderNavEntryDecorator(),
+            ),
+            entryProvider = { key -> entryRegistry.provide(key) },
         )
     } else {
         AuthenticatedHost(
@@ -81,7 +103,7 @@ public fun PerseusNavHost(
             onTabChanged = onTabChanged,
             onSwitchTab = onSwitchTab,
             onResetCurrentTab = onResetCurrentTab,
-            modifier = modifier
+            modifier = modifier,
         )
     }
 }
@@ -96,7 +118,7 @@ private fun AuthenticatedHost(
     onTabChanged: (Int) -> Unit,
     onSwitchTab: (Int) -> Unit,
     onResetCurrentTab: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(navigationState.currentTabIndex) {
         onTabChanged(navigationState.currentTabIndex)
@@ -104,7 +126,8 @@ private fun AuthenticatedHost(
 
     val showBottomBar by remember(navigationState.currentBackStack.toList()) {
         derivedStateOf {
-            navigationState.currentBackStack.lastOrNull()?.hidesBottomNavigation != true
+            navigationState.currentBackStack.lastOrNull()
+                ?.hidesBottomNavigation != true
         }
     }
 
@@ -121,8 +144,10 @@ private fun AuthenticatedHost(
                 transitionSpec = { fastFade() },
                 popTransitionSpec = { fastFade() },
                 predictivePopTransitionSpec = { fastFade() },
-                entryDecorators = listOf(rememberSaveableStateHolderNavEntryDecorator()),
-                entryProvider = { key -> entryRegistry.provide(key) }
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                ),
+                entryProvider = { key -> entryRegistry.provide(key) },
             )
         }
         if (showBottomBar) {
@@ -137,4 +162,5 @@ private fun AuthenticatedHost(
     }
 }
 
-private fun fastFade() = fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS))
+private fun fastFade() =
+    fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS))

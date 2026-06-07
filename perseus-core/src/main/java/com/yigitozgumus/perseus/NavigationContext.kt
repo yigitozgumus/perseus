@@ -1,20 +1,42 @@
 package com.yigitozgumus.perseus
-import com.yigitozgumus.perseus.key.RouterKey
-
 
 import android.os.Bundle
+import com.yigitozgumus.perseus.key.RouterKey
 import java.util.UUID
 
+/**
+ * Context passed to child screens containing navigation metadata.
+ *
+ * Wraps a [RouterKey] with a [correlationId] used for scoped result routing.
+ * The child screen uses this context to send results back to the correct
+ * parent via [PerseusNavigator.sendResult].
+ *
+ * ## Fragment transport
+ *
+ * Keys are stored by fully-qualified class name in fragment arguments.
+ * Data objects (singletons) are resolved via `Class.forName` +
+ * `getDeclaredField("INSTANCE")`.
+ *
+ * @param K The specific [RouterKey] type for type-safe access.
+ */
 public data class NavigationContext<out K : RouterKey>(
     public val key: K,
-    public val correlationId: String = UUID.randomUUID().toString()
+    public val correlationId: String = UUID.randomUUID().toString(),
 ) {
     public companion object {
+        /** Bundle key for the RouterKey class name. */
         public const val KEY_CLASS_ENTRY: String = "perseus_key_class"
+        /** Bundle key for the correlation ID. */
         public const val CORRELATION_ID_ENTRY: String = "perseus_correlation_id"
     }
 }
 
+/**
+ * Retrieves the [NavigationContext] from fragment arguments.
+ * Resolves the [RouterKey] from its stored class name.
+ *
+ * @throws IllegalStateException if the context cannot be found or resolved.
+ */
 @Suppress("UNCHECKED_CAST")
 public inline fun <reified K : RouterKey> Bundle.getNavigationContext(): NavigationContext<K> {
     val keyClassName: String = getString(NavigationContext.KEY_CLASS_ENTRY)
@@ -25,12 +47,22 @@ public inline fun <reified K : RouterKey> Bundle.getNavigationContext(): Navigat
     val key: K = try {
         val clazz: Class<*> = Class.forName(keyClassName)
         val instance: Any? = clazz.getDeclaredField("INSTANCE").get(null)
-        if (instance is K) instance else error("Cannot resolve RouterKey: $keyClassName is not a singleton of ${K::class.simpleName}")
+        if (instance !is K) {
+            error(
+                "Cannot resolve RouterKey: $keyClassName " +
+                    "is not a singleton of ${K::class.simpleName}"
+            )
+        }
+        instance
     } catch (e: ClassNotFoundException) {
-        throw IllegalStateException("RouterKey class not found: $keyClassName", e)
+        throw IllegalStateException(
+            "RouterKey class not found: $keyClassName", e
+        )
     }
 
     return NavigationContext(key, correlationId)
 }
 
-public inline fun <reified K : RouterKey> Bundle.getRouterKey(): K = getNavigationContext<K>().key
+/** Retrieves the [RouterKey] from fragment arguments. */
+public inline fun <reified K : RouterKey> Bundle.getRouterKey(): K =
+    getNavigationContext<K>().key

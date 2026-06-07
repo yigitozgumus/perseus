@@ -50,11 +50,13 @@ internal class PerseusNavigationStateHolder : NavigationStateManager {
     }
 
     override fun transitionToAuthenticated(tabRootKeys: List<RouterKey>) {
-        _state?.transitionToAuthenticated(tabRootKeys) ?: run { pending = Pending.TransitionToAuthenticated(tabRootKeys) }
+        _state?.transitionToAuthenticated(tabRootKeys)
+            ?: run { pending = Pending.TransitionToAuthenticated(tabRootKeys) }
     }
 
     override fun resetToUnauthenticated(initialKey: RouterKey) {
-        _state?.resetToUnauthenticated(initialKey) ?: run { pending = Pending.ResetToUnauthenticated(initialKey) }
+        _state?.resetToUnauthenticated(initialKey)
+            ?: run { pending = Pending.ResetToUnauthenticated(initialKey) }
     }
 
     override val isAuthenticated: Boolean get() = _state?.isAuthenticated ?: false

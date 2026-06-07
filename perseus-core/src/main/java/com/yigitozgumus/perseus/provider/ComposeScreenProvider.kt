@@ -1,10 +1,21 @@
 package com.yigitozgumus.perseus.provider
-import com.yigitozgumus.perseus.key.RouterKey
-
 
 import androidx.compose.runtime.Composable
+import com.yigitozgumus.perseus.key.RouterKey
 
+/**
+ * Provider for Compose-based screens.
+ *
+ * Implement one per [RouterKey] type and register with your DI framework.
+ * The entry provider registry collects all implementations and dispatches
+ * to the matching one for each navigation key.
+ *
+ * @param K The specific [RouterKey] type this provider handles.
+ */
 public interface ComposeScreenProvider<K : RouterKey> {
+    /** Returns `true` if this provider can render the given [key]. */
     public fun canProvide(key: RouterKey): Boolean
+
+    /** Renders the composable content for the given [key]. */
     @Composable public fun Content(key: K)
 }

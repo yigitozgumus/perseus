@@ -1,7 +1,6 @@
 package com.yigitozgumus.perseus.interop
 
 import android.os.Bundle
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
@@ -12,6 +11,18 @@ import androidx.fragment.compose.rememberFragmentState
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.key.RouterKey
 
+/**
+ * Composable that wraps an existing Fragment for use in Navigation3.
+ *
+ * Enables incremental migration: existing [ScreenProvider] implementations
+ * continue to work while new screens can be pure Compose.
+ *
+ * The [RouterKey] is stored in fragment arguments as:
+ * - `perseus_key_class`: fully-qualified class name
+ * - `perseus_correlation_id`: correlation ID for result routing
+ *
+ * Use [getNavigationContext] in the fragment to retrieve the key.
+ */
 @Suppress("UNCHECKED_CAST")
 @Composable
 public fun <K : RouterKey> FragmentEntry(
@@ -23,13 +34,21 @@ public fun <K : RouterKey> FragmentEntry(
     val fragmentTemplate = remember(key) { provider.provide(key) }
     val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
 
-    val keyClassName = remember(key) { key::class.qualifiedName ?: key::class.java.name }
+    val keyClassName = remember(key) {
+        key::class.qualifiedName ?: key::class.java.name
+    }
 
     val arguments = remember(keyClassName, context) {
         Bundle().apply {
             fragmentTemplate.arguments?.let { putAll(it) }
-            putString(NavigationContext.KEY_CLASS_ENTRY, keyClassName)
-            putString(NavigationContext.CORRELATION_ID_ENTRY, context.correlationId)
+            putString(
+                NavigationContext.KEY_CLASS_ENTRY,
+                keyClassName,
+            )
+            putString(
+                NavigationContext.CORRELATION_ID_ENTRY,
+                context.correlationId,
+            )
         }
     }
 
@@ -38,7 +57,7 @@ public fun <K : RouterKey> FragmentEntry(
             clazz = fragmentClass,
             modifier = modifier,
             fragmentState = rememberFragmentState(),
-            arguments = arguments
+            arguments = arguments,
         )
     }
 }

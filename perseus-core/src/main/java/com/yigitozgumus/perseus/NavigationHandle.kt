@@ -3,35 +3,32 @@ package com.yigitozgumus.perseus
 import kotlinx.coroutines.flow.Flow
 
 /**
- * Handle representing a specific navigation session, returned by [PerseusNavigator.navigateTo].
+ * Handle returned by [PerseusNavigator.navigateTo] for scoped result observation.
  *
- * Enables scoped result observation: even if multiple screens open the same child key type,
- * each parent only receives results from the navigation it initiated.
+ * Each navigation session gets a unique correlation ID. Results sent by the
+ * child screen are routed to the matching handle, so even if multiple parents
+ * open the same child key type, each parent only receives its own results.
  *
- * Usage in ViewModel:
+ * Usage in a ViewModel:
  * ```kotlin
- * val handle = navigator.navigateTo(DetailKey(id), groupName = null)
- *
+ * val handle = navigator.navigateTo(DetailKey(id))
  * handle.observeResult<DetailResult>()
  *     .onEach { result -> handleResult(result) }
  *     .launchIn(viewModelScope)
  * ```
  *
- * Note: Results are delivered via SharedFlow. Late observers won't receive
- * results emitted before subscription.
+ * Results are delivered via [SharedFlow][kotlinx.coroutines.flow.SharedFlow].
+ * Late observers will not receive results emitted before subscription.
  */
 public interface NavigationHandle {
-    /** Unique identifier linking this handle to a specific navigation session. */
+    /** Unique identifier linking this handle to a navigation session. */
     public val correlationId: String
 
     /**
-     * Observes results sent by the child screen for this navigation session.
-     *
-     * Results are filtered by correlation ID — only results from the navigation
-     * this handle represents will be emitted.
+     * Observes results from this navigation session, filtered to type [R].
      *
      * @param R The expected result type.
-     * @return A Flow emitting results of type R.
+     * @return A [Flow] emitting results of type [R] from this session only.
      */
     public fun <R : Any> observeResult(): Flow<R>
 }
