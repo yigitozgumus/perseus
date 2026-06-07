@@ -8,6 +8,8 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
+import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
+import com.yigitozgumus.perseus.key.EncodedRouterKey
 import com.yigitozgumus.perseus.key.RouterKey
 import java.util.UUID
 
@@ -19,10 +21,9 @@ import java.util.UUID
  *
  * ## Process Death
  *
- * Keys are stored by their fully-qualified class name. For data objects (singletons),
- * this is sufficient to resolve the key on restore. For data classes with constructor
- * arguments, process death persistence requires a custom [KeyResolver]
- * to be provided (see [companion.resolver]).
+ * Keys are stored with their fully-qualified class name and serialized payload.
+ * RouterKey implementations must be annotated with `@Serializable` so the
+ * default key codec can restore data object and data class keys.
  */
 @Stable
 internal class PerseusNavigationState private constructor(
@@ -125,32 +126,30 @@ internal class PerseusNavigationState private constructor(
     data class Snapshot(
         val modeOrdinal: Int,
         val unauthBackStack: List<EntrySnapshot>,
-        val topLevelRoutes: List<String>,
+        val topLevelRoutes: List<RouteSnapshot>,
         val tabBackStacks: Map<Int, List<EntrySnapshot>>,
         val currentTabIndex: Int
     ) : java.io.Serializable
 
+    data class RouteSnapshot(
+        val keyClassName: String,
+        val keyPayload: String,
+    ) : java.io.Serializable
+
     data class EntrySnapshot(
         val id: String,
-        val keyClassName: String
+        val route: RouteSnapshot,
     ) : java.io.Serializable
 
     fun toSnapshot(): Snapshot = Snapshot(
         modeOrdinal = mode.ordinal,
         unauthBackStack = _unauthBackStack.map { entrySnapshot(it) },
-        topLevelRoutes = _topLevelRoutes.map { keyClassName(it) },
+        topLevelRoutes = _topLevelRoutes.map { routeSnapshot(it) },
         tabBackStacks = _tabBackStacks.mapValues { (_, v) -> v.map { entrySnapshot(it) } },
         currentTabIndex = currentTabIndex
     )
 
     companion object {
-        /**
-         * Resolver for restoring RouterKey instances from class names.
-         * By default, resolves data objects (singletons) via Class.forName + objectInstance.
-         * Register a custom resolver for data class keys that need constructor arguments.
-         */
-        var resolver: KeyResolver = DefaultKeyResolver
-
         fun unauthenticated(rootKey: RouterKey) = PerseusNavigationState(
             initialMode = Mode.Unauthenticated,
             initialBackStack = listOf(PerseusBackStackKey(UUID.randomUUID().toString(), rootKey)),
@@ -162,19 +161,25 @@ internal class PerseusNavigationState private constructor(
         fun fromSnapshot(snapshot: Snapshot): PerseusNavigationState {
             return PerseusNavigationState(
                 initialMode = Mode.entries[snapshot.modeOrdinal],
-                initialBackStack = snapshot.unauthBackStack.mapNotNull { restoreEntry(it) },
-                initialTopLevelRoutes = snapshot.topLevelRoutes.mapNotNull { resolver.resolve(it) },
+                initialBackStack = snapshot.unauthBackStack.map { restoreEntry(it) },
+                initialTopLevelRoutes = snapshot.topLevelRoutes.map { restoreRoute(it) },
                 initialTabBackStacks = snapshot.tabBackStacks.mapValues { (_, v) ->
-                    v.mapNotNull { restoreEntry(it) }
+                    v.map { restoreEntry(it) }
                 },
                 initialTabIndex = snapshot.currentTabIndex
             )
         }
 
-        private fun restoreEntry(snapshot: EntrySnapshot): RouterKey? =
-            resolver.resolve(snapshot.keyClassName)?.let { key ->
-                PerseusBackStackKey(snapshot.id, key)
-            }
+        private fun restoreEntry(snapshot: EntrySnapshot): RouterKey =
+            PerseusBackStackKey(snapshot.id, restoreRoute(snapshot.route))
+
+        private fun restoreRoute(snapshot: RouteSnapshot): RouterKey =
+            DefaultRouterKeyCodec.decode(
+                EncodedRouterKey(
+                    className = snapshot.keyClassName,
+                    payload = snapshot.keyPayload,
+                )
+            )
 
         val Saver: Saver<PerseusNavigationState, Snapshot> = Saver(
             save = { it.toSnapshot() },
@@ -184,23 +189,6 @@ internal class PerseusNavigationState private constructor(
 }
 
 // ── Key serialization ──────────────────────────────────────────────────────
-
-internal interface KeyResolver {
-    fun resolve(className: String): RouterKey?
-}
-
-private object DefaultKeyResolver : KeyResolver {
-    override fun resolve(className: String): RouterKey? {
-        return try {
-            val clazz = Class.forName(className)
-            if (RouterKey::class.java.isAssignableFrom(clazz)) {
-                clazz.getDeclaredField("INSTANCE").get(null) as? RouterKey
-            } else null
-        } catch (_: Exception) {
-            null
-        }
-    }
-}
 
 internal fun keyClassName(key: RouterKey): String = key::class.qualifiedName ?: key::class.java.name
 
@@ -220,10 +208,16 @@ internal fun RouterKey.routeKey(): RouterKey =
 private fun asBackStackKey(key: RouterKey): RouterKey =
     if (key is PerseusBackStackKey) key else PerseusBackStackKey(UUID.randomUUID().toString(), key)
 
-private fun entrySnapshot(key: RouterKey): PerseusNavigationState.EntrySnapshot {
-    val routeKey = key.routeKey()
-    return PerseusNavigationState.EntrySnapshot(
-        id = key.backStackId(),
-        keyClassName = keyClassName(routeKey)
+private fun routeSnapshot(key: RouterKey): PerseusNavigationState.RouteSnapshot {
+    val encoded = DefaultRouterKeyCodec.encode(key.routeKey())
+    return PerseusNavigationState.RouteSnapshot(
+        keyClassName = encoded.className,
+        keyPayload = encoded.payload,
     )
 }
+
+private fun entrySnapshot(key: RouterKey): PerseusNavigationState.EntrySnapshot =
+    PerseusNavigationState.EntrySnapshot(
+        id = key.backStackId(),
+        route = routeSnapshot(key),
+    )

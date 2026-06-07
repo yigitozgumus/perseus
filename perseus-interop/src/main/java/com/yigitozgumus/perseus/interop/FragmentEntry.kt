@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import com.yigitozgumus.perseus.NavigationContext
+import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
 import com.yigitozgumus.perseus.key.RouterKey
 
 /**
@@ -19,6 +20,7 @@ import com.yigitozgumus.perseus.key.RouterKey
  *
  * The [NavigationContext] is stored in fragment arguments as:
  * - `perseus_key_class`: fully-qualified class name
+ * - `perseus_key_payload`: serialized key payload
  * - `perseus_entry_id`: unique back-stack entry ID
  * - `perseus_correlation_id`: correlation ID for result routing
  *
@@ -35,16 +37,18 @@ public fun <K : RouterKey> FragmentEntry(
     val fragmentTemplate = remember(key) { provider.provide(key) }
     val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
 
-    val keyClassName = remember(key) {
-        key::class.qualifiedName ?: key::class.java.name
-    }
+    val encodedKey = remember(key) { DefaultRouterKeyCodec.encode(key) }
 
-    val arguments = remember(keyClassName, context) {
+    val arguments = remember(encodedKey, context) {
         Bundle().apply {
             fragmentTemplate.arguments?.let { putAll(it) }
             putString(
                 NavigationContext.KEY_CLASS_ENTRY,
-                keyClassName,
+                encodedKey.className,
+            )
+            putString(
+                NavigationContext.KEY_PAYLOAD_ENTRY,
+                encodedKey.payload,
             )
             putString(
                 NavigationContext.ENTRY_ID_ENTRY,

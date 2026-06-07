@@ -1,6 +1,8 @@
 package com.yigitozgumus.perseus
 
 import android.os.Bundle
+import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
+import com.yigitozgumus.perseus.key.EncodedRouterKey
 import com.yigitozgumus.perseus.key.RouterKey
 import java.util.UUID
 
@@ -14,9 +16,8 @@ import java.util.UUID
  *
  * ## Fragment transport
  *
- * The entry ID, correlation ID, and key class name are stored in fragment
- * arguments. Data object keys are resolved via `Class.forName` +
- * `getDeclaredField("INSTANCE")` until full key serialization is added.
+ * The entry ID, correlation ID, key class name, and serialized key payload
+ * are stored in fragment arguments.
  *
  * @param K The specific [RouterKey] type for type-safe access.
  */
@@ -28,6 +29,8 @@ public data class NavigationContext<out K : RouterKey>(
     public companion object {
         /** Bundle key for the RouterKey class name. */
         public const val KEY_CLASS_ENTRY: String = "perseus_key_class"
+        /** Bundle key for the serialized RouterKey payload. */
+        public const val KEY_PAYLOAD_ENTRY: String = "perseus_key_payload"
         /** Bundle key for the unique back-stack entry ID. */
         public const val ENTRY_ID_ENTRY: String = "perseus_entry_id"
         /** Bundle key for the correlation ID. */
@@ -37,7 +40,7 @@ public data class NavigationContext<out K : RouterKey>(
 
 /**
  * Retrieves the [NavigationContext] from fragment arguments.
- * Resolves the [RouterKey] from its stored class name.
+ * Resolves the [RouterKey] from its stored class name and serialized payload.
  *
  * @throws IllegalStateException if the context cannot be found or resolved.
  */
@@ -45,26 +48,21 @@ public data class NavigationContext<out K : RouterKey>(
 public inline fun <reified K : RouterKey> Bundle.getNavigationContext(): NavigationContext<K> {
     val keyClassName: String = getString(NavigationContext.KEY_CLASS_ENTRY)
         ?: error("RouterKey class name not found in arguments.")
+    val keyPayload: String = getString(NavigationContext.KEY_PAYLOAD_ENTRY)
+        ?: error("RouterKey payload not found in arguments.")
     val entryId: String = getString(NavigationContext.ENTRY_ID_ENTRY)
         ?: error("Entry ID not found in arguments.")
     val correlationId: String = getString(NavigationContext.CORRELATION_ID_ENTRY)
         ?: error("Correlation ID not found in arguments.")
 
-    val key: K = try {
-        val clazz: Class<*> = Class.forName(keyClassName)
-        val instance: Any? = clazz.getDeclaredField("INSTANCE").get(null)
-        if (instance !is K) {
-            error(
-                "Cannot resolve RouterKey: $keyClassName " +
-                    "is not a singleton of ${K::class.simpleName}"
-            )
-        }
-        instance
-    } catch (e: ClassNotFoundException) {
-        throw IllegalStateException(
-            "RouterKey class not found: $keyClassName", e
+    val key: K = DefaultRouterKeyCodec.decode(
+        EncodedRouterKey(
+            className = keyClassName,
+            payload = keyPayload,
         )
-    }
+    ) as? K ?: error(
+        "Decoded RouterKey $keyClassName is not a ${K::class.simpleName}"
+    )
 
     return NavigationContext(
         key = key,
