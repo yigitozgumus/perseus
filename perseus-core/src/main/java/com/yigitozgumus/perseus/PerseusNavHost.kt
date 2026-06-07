@@ -67,7 +67,10 @@ public fun PerseusNavHost(
     ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
     transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
-        fastFadeTransition()
+        targetState?.entries?.firstOrNull()
+            ?.metadata?.get(PerseusEntryProviderRegistry.TRANSITION_KEY)
+            ?.let { it as? ContentTransform }
+            ?: fastFadeTransition()
     },
     popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
         fastFadeTransition()
