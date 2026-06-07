@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.fragment.app.FragmentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -36,7 +37,7 @@ import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
-class InteropActivity : ComponentActivity() {
+class InteropActivity : FragmentActivity() {
 
     private val navigator: PerseusNavigator = createNavigator(
         composeProviders = listOf(InteropHomeProvider()),
