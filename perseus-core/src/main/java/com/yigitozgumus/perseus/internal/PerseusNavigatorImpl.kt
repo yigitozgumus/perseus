@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
+import androidx.compose.animation.ContentTransform
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
@@ -35,11 +36,16 @@ internal class PerseusNavigatorImpl(
 
     // ── Navigation ──────────────────────────────────────────────────────────
 
-    override fun navigateTo(key: RouterKey, groupName: GroupName?): NavigationHandle {
+    override fun navigateTo(
+        key: RouterKey,
+        groupName: GroupName?,
+        transition: ContentTransform?,
+    ): NavigationHandle {
         val correlationId = UUID.randomUUID().toString()
 
         if (groupName != null) entryRegistry.setPendingGroup(key, groupName)
         entryRegistry.setPendingCorrelationId(key, correlationId)
+        if (transition != null) entryRegistry.setPendingTransition(key, transition)
 
         stateHolder.state.navigateTo(key)
         return resultBus.createHandle(correlationId)

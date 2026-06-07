@@ -4,6 +4,7 @@ import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.key.GroupName
 
 
+import androidx.compose.animation.ContentTransform
 import androidx.lifecycle.LifecycleOwner
 
 /**
@@ -35,9 +36,14 @@ public interface PerseusNavigator {
      *
      * @param key The RouterKey identifying the target screen.
      * @param groupName Optional navigation group for [popUntil] clearing.
+     * @param transition Optional [ContentTransform] for this navigation only.
      * @return A [NavigationHandle] for observing results from this navigation.
      */
-    public fun navigateTo(key: RouterKey, groupName: GroupName? = null): NavigationHandle
+    public fun navigateTo(
+        key: RouterKey,
+        groupName: GroupName? = null,
+        transition: ContentTransform? = null,
+    ): NavigationHandle
 
     /** Pops the current screen from the back stack. */
     public fun pop()

@@ -5,6 +5,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
@@ -91,12 +95,21 @@ class AnimationActivity : ComponentActivity() {
                         )
                     }
                     items(10) { index ->
+                        val id = index + 1
+                        val scaleAnim = scaleIn(tween(300)) + fadeIn(tween(300)) togetherWith
+                            scaleOut(tween(300)) + fadeOut(tween(300))
                         Text(
-                            "Open Detail ${index + 1}",
+                            "Open Detail $id${if (id == 5) " (scale anim)" else if (id == 10) " (fade)" else ""}",
                             style = MaterialTheme.typography.bodyLarge,
                             modifier = Modifier
                                 .clickable(onClick = dropUnlessResumed {
-                                    navigator.navigateTo(DetailKey(index + 1))
+                                    navigator.navigateTo(
+                                        DetailKey(id),
+                                        transition = when (id) {
+                                            5 -> scaleAnim
+                                            else -> null
+                                        },
+                                    )
                                 })
                                 .padding(12.dp),
                         )

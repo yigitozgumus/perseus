@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation3.runtime.NavEntry
+import androidx.compose.animation.ContentTransform
 import androidx.navigation3.scene.DialogSceneStrategy
 import com.yigitozgumus.perseus.key.BottomSheetKey
 import com.yigitozgumus.perseus.provider.ComposeSceneProvider
@@ -47,6 +48,9 @@ internal class PerseusEntryProviderRegistry(
     private val pendingCorrelationIds = ConcurrentHashMap<RouterKey, String>()
     private val providedCorrelationIds = ConcurrentHashMap<RouterKey, String>()
 
+    // Per-navigate transition storage
+    private val pendingTransitions = ConcurrentHashMap<RouterKey, ContentTransform>()
+
     /** Pop callback set by the navigator for scene dismissal. */
     var onPopCallback: (() -> Unit)? = null
 
@@ -62,6 +66,11 @@ internal class PerseusEntryProviderRegistry(
     fun clearTrackingForKey(key: RouterKey) {
         pendingGroups.remove(key); providedGroups.remove(key)
         pendingCorrelationIds.remove(key); providedCorrelationIds.remove(key)
+        pendingTransitions.remove(key)
+    }
+
+    fun setPendingTransition(key: RouterKey, transition: ContentTransform) {
+        pendingTransitions[key] = transition
     }
 
     fun clearAllTracking() {
@@ -153,7 +162,10 @@ internal class PerseusEntryProviderRegistry(
         val groupMeta = pendingGroups.remove(key)?.let { mapOf(GROUP_KEY to it) } ?: emptyMap()
         if (groupMeta.isNotEmpty()) providedGroups[key] = groupMeta[GROUP_KEY] as GroupName
         pendingCorrelationIds.remove(key)?.let { providedCorrelationIds[key] = it }
-        return sceneMeta + groupMeta
+        val transMeta = pendingTransitions.remove(key)?.let {
+            mapOf(TRANSITION_KEY to it)
+        } ?: emptyMap()
+        return sceneMeta + groupMeta + transMeta
     }
 
     private fun createSceneActions(key: RouterKey): SceneActions = object : SceneActions {
@@ -166,7 +178,8 @@ internal class PerseusEntryProviderRegistry(
         }
     }
 
-    companion object {
+    internal companion object {
         const val GROUP_KEY = "perseus_group"
+        internal const val TRANSITION_KEY = "perseus_transition"
     }
 }
