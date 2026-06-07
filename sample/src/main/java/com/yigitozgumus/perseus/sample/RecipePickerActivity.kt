@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
+import com.yigitozgumus.perseus.sample.recipe.animation.AnimationActivity
 import com.yigitozgumus.perseus.sample.recipe.bottomsheet.BottomSheetActivity
 import com.yigitozgumus.perseus.sample.recipe.compose.ComposeOnlyActivity
 import com.yigitozgumus.perseus.sample.recipe.customsheet.CustomSheetActivity
@@ -79,6 +80,11 @@ private val recipes = listOf(
         "Custom Sheet",
         "Custom bottom sheet implementation",
         CustomSheetActivity::class.java,
+    ),
+    Recipe(
+        "Animations",
+        "Custom enter/exit transitions via PerseusNavHost",
+        AnimationActivity::class.java,
     ),
     Recipe(
         "Full Demo",

@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus
 
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -15,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.SceneStrategy
@@ -25,7 +27,14 @@ import com.yigitozgumus.perseus.internal.PerseusNavigationState
 import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
 import com.yigitozgumus.perseus.key.RouterKey
 
-private const val FADE_MS = 200
+/** Default fade duration in milliseconds. */
+public const val DefaultTransitionDurationMs: Int = 200
+
+/** Fast fade-in / fade-out transition used by default. */
+@Composable
+public fun fastFadeTransition(
+    durationMs: Int = DefaultTransitionDurationMs,
+): ContentTransform = fadeIn(tween(durationMs)) togetherWith fadeOut(tween(durationMs))
 
 /**
  * Main navigation host composable for Perseus.
@@ -42,6 +51,9 @@ private const val FADE_MS = 200
  * @param bottomBar Slot for the bottom navigation bar (authenticated mode).
  *   Receives the current tab index and a callback for tab selection.
  * @param onTabChanged Notified when the selected tab changes (for UI state).
+ * @param transitionSpec Forward navigation transition animation.
+ * @param popTransitionSpec Back navigation transition animation.
+ * @param predictivePopTransitionSpec Predictive back gesture animation.
  */
 @Composable
 public fun PerseusNavHost(
@@ -53,6 +65,15 @@ public fun PerseusNavHost(
         onTabSelected: (Int) -> Unit,
     ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
+    transitionSpec: @Composable () -> ContentTransform = {
+        fastFadeTransition()
+    },
+    popTransitionSpec: @Composable () -> ContentTransform = {
+        fastFadeTransition()
+    },
+    predictivePopTransitionSpec: @Composable () -> ContentTransform = {
+        fastFadeTransition()
+    },
 ) {
     val impl = navigator as PerseusNavigatorImpl
     val stateHolder = impl.stateHolder
@@ -81,9 +102,9 @@ public fun PerseusNavHost(
             onBack = { navigator.pop() },
             modifier = modifier.fillMaxSize(),
             sceneStrategies = sceneStrategies,
-            transitionSpec = { fastFade() },
-            popTransitionSpec = { fastFade() },
-            predictivePopTransitionSpec = { fastFade() },
+            transitionSpec = transitionSpec,
+            popTransitionSpec = popTransitionSpec,
+            predictivePopTransitionSpec = predictivePopTransitionSpec,
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
             ),
@@ -97,6 +118,9 @@ public fun PerseusNavHost(
             navigator = navigator,
             bottomBar = bottomBar,
             onTabChanged = onTabChanged,
+            transitionSpec = transitionSpec,
+            popTransitionSpec = popTransitionSpec,
+            predictivePopTransitionSpec = predictivePopTransitionSpec,
             modifier = modifier,
         )
     }
@@ -110,6 +134,9 @@ private fun AuthenticatedHost(
     navigator: PerseusNavigator,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
     onTabChanged: (Int) -> Unit,
+    transitionSpec: @Composable () -> ContentTransform,
+    popTransitionSpec: @Composable () -> ContentTransform,
+    predictivePopTransitionSpec: @Composable () -> ContentTransform,
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(navigationState.currentTabIndex) {
@@ -133,9 +160,9 @@ private fun AuthenticatedHost(
                 modifier = Modifier.fillMaxSize(),
                 onBack = { navigator.pop() },
                 sceneStrategies = sceneStrategies,
-                transitionSpec = { fastFade() },
-                popTransitionSpec = { fastFade() },
-                predictivePopTransitionSpec = { fastFade() },
+                transitionSpec = transitionSpec,
+                popTransitionSpec = popTransitionSpec,
+                predictivePopTransitionSpec = predictivePopTransitionSpec,
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
                 ),
@@ -153,6 +180,3 @@ private fun AuthenticatedHost(
         }
     }
 }
-
-private fun fastFade() =
-    fadeIn(tween(FADE_MS)) togetherWith fadeOut(tween(FADE_MS))
