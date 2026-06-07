@@ -54,11 +54,7 @@ internal class PerseusNavigatorImpl(
 
     override fun pop() {
         if (!stateHolder.isAttached) return
-        val removed = stateHolder.state.goBack()
-        if (removed != null) {
-            entryRegistry.clearTrackingForKey(removed)
-            viewModelStoreRegistry.clear(removed.backStackId())
-        }
+        cleanupRemoved(listOfNotNull(stateHolder.state.goBack()))
     }
 
     override fun canGoBack(): Boolean = stateHolder.currentBackStack.size > 1
@@ -68,10 +64,7 @@ internal class PerseusNavigatorImpl(
         val removed = stateHolder.state.removeWhere { key ->
             entryRegistry.getGroupForKey(key) == groupName
         }
-        removed.forEach { key ->
-            entryRegistry.clearTrackingForKey(key)
-            viewModelStoreRegistry.clear(key.backStackId())
-        }
+        cleanupRemoved(removed)
     }
 
     // ── Result ──────────────────────────────────────────────────────────────
@@ -86,32 +79,45 @@ internal class PerseusNavigatorImpl(
 
     override fun resetTab(tabIndex: Int, resetRoot: Boolean) {
         if (!stateHolder.isAttached) return
-        stateHolder.state.resetTab(tabIndex, resetRoot)
+        cleanupRemoved(stateHolder.state.resetTab(tabIndex, resetRoot))
     }
 
     override fun resetCurrentTab(resetRoot: Boolean) {
-        val removed = stateHolder.state.currentBackStack.toList().drop(1)
-        stateHolder.state.resetCurrentTab(resetRoot)
-        removed.forEach {
-            entryRegistry.clearTrackingForKey(it)
-            viewModelStoreRegistry.clear(it.backStackId())
-        }
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.resetCurrentTab(resetRoot))
     }
 
     override fun resetAllWithKeys(keys: List<RouterKey>) {
-        viewModelStoreRegistry.retainOnly(emptySet())
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.resetAllWithKeys(keys))
         entryRegistry.clearAllTracking()
-        stateHolder.state.resetAllWithKeys(keys)
     }
 
     // ── Auth State ─────────────────────────────────────────────────────────
 
     override fun transitionToAuthenticated(tabRootKeys: List<RouterKey>) {
-        stateHolder.transitionToAuthenticated(tabRootKeys)
+        if (stateHolder.isAttached) {
+            cleanupRemoved(stateHolder.state.transitionToAuthenticated(tabRootKeys))
+            entryRegistry.clearAllTracking()
+        } else {
+            stateHolder.transitionToAuthenticated(tabRootKeys)
+        }
     }
 
     override fun startUnauthenticated(initialKey: RouterKey) {
-        stateHolder.startUnauthenticated(initialKey)
+        if (stateHolder.isAttached) {
+            cleanupRemoved(stateHolder.state.startUnauthenticated(initialKey))
+            entryRegistry.clearAllTracking()
+        } else {
+            stateHolder.startUnauthenticated(initialKey)
+        }
+    }
+
+    private fun cleanupRemoved(removed: List<RouterKey>) {
+        removed.forEach { key ->
+            entryRegistry.clearTrackingForKey(key)
+            viewModelStoreRegistry.clear(key.backStackId())
+        }
     }
 
     // ── Observation ─────────────────────────────────────────────────────────

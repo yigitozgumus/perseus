@@ -86,35 +86,48 @@ internal class PerseusNavigationState private constructor(
         currentTabIndex = index
     }
 
-    fun resetTab(tabIndex: Int, resetRoot: Boolean = false) {
-        if (mode != Mode.Authenticated || tabIndex !in _topLevelRoutes.indices) return
+    fun resetTab(tabIndex: Int, resetRoot: Boolean = false): List<RouterKey> {
+        if (mode != Mode.Authenticated || tabIndex !in _topLevelRoutes.indices) return emptyList()
         val bs = getOrCreateTabBackStack(tabIndex)
-        if (resetRoot) { bs.clear(); bs.add(createBackStackKey(_topLevelRoutes[tabIndex])) }
-        else while (bs.size > 1) bs.removeAt(bs.lastIndex)
+        val removed = if (resetRoot) bs.toList() else bs.drop(1)
+        if (resetRoot) {
+            bs.clear(); bs.add(createBackStackKey(_topLevelRoutes[tabIndex]))
+        } else {
+            while (bs.size > 1) bs.removeAt(bs.lastIndex)
+        }
+        return removed
     }
 
-    fun resetCurrentTab(resetRoot: Boolean = false) { resetTab(currentTabIndex, resetRoot) }
+    fun resetCurrentTab(resetRoot: Boolean = false): List<RouterKey> =
+        resetTab(currentTabIndex, resetRoot)
 
-    fun startUnauthenticated(rootKey: RouterKey) {
+    fun startUnauthenticated(rootKey: RouterKey): List<RouterKey> {
+        val removed = allBackStackEntries()
         mode = Mode.Unauthenticated
         _unauthBackStack.clear(); _unauthBackStack.add(createBackStackKey(rootKey))
         _topLevelRoutes = emptyList(); _tabBackStacks.clear(); currentTabIndex = 0
+        return removed
     }
 
-    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>) {
+    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>): List<RouterKey> {
         require(tabRootKeys.isNotEmpty())
+        val removed = allBackStackEntries()
         mode = Mode.Authenticated
         _unauthBackStack.clear(); _topLevelRoutes = tabRootKeys
         _tabBackStacks.clear(); currentTabIndex = 0
         getOrCreateTabBackStack(0)
+        return removed
     }
 
-    fun resetToUnauthenticated(rootKey: RouterKey) { startUnauthenticated(rootKey) }
+    fun resetToUnauthenticated(rootKey: RouterKey): List<RouterKey> =
+        startUnauthenticated(rootKey)
 
-    fun resetAllWithKeys(keys: List<RouterKey>) {
+    fun resetAllWithKeys(keys: List<RouterKey>): List<RouterKey> =
         if (keys.size == 1) startUnauthenticated(keys.first())
         else transitionToAuthenticated(keys)
-    }
+
+    private fun allBackStackEntries(): List<RouterKey> =
+        _unauthBackStack.toList() + _tabBackStacks.values.flatMap { it.toList() }
 
     private fun getOrCreateTabBackStack(index: Int): SnapshotStateList<RouterKey> =
         _tabBackStacks.getOrPut(index) {
