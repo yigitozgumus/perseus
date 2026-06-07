@@ -1,7 +1,5 @@
 package com.yigitozgumus.perseus.key
 
-import com.yigitozgumus.perseus.key.RouterKey
-
 /**
  * Marker interface for [RouterKey] types that render as dialogs.
  *
