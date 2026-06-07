@@ -14,12 +14,10 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -89,8 +87,10 @@ class PerTransitionActivity : ComponentActivity() {
         @Composable
         override fun Content(key: ScreenA) = ColoredScreen(
             "Screen A", "Slide from right →", Color(0xFFE3F2FD),
-            onGoB = { navigator.navigateTo(ScreenB, transition = slideRight) },
-            onGoC = { navigator.navigateTo(ScreenC, transition = scaleUp) },
+            primaryButtonText = "Go to Screen B - slide right",
+            secondaryButtonText = "Go to Screen C - scale up",
+            onPrimaryClick = { navigator.navigateTo(ScreenB, transition = slideRight) },
+            onSecondaryClick = { navigator.navigateTo(ScreenC, transition = scaleUp) },
         )
     }
 
@@ -99,8 +99,10 @@ class PerTransitionActivity : ComponentActivity() {
         @Composable
         override fun Content(key: ScreenB) = ColoredScreen(
             "Screen B", "Scale up →", Color(0xFFFCE4EC),
-            onGoB = { navigator.navigateTo(ScreenC, transition = scaleUp) },
-            onGoC = { navigator.navigateTo(ScreenD, transition = fadeOnly) },
+            primaryButtonText = "Go to Screen C - scale up",
+            secondaryButtonText = "Go to Screen D - fade",
+            onPrimaryClick = { navigator.navigateTo(ScreenC, transition = scaleUp) },
+            onSecondaryClick = { navigator.navigateTo(ScreenD, transition = fadeOnly) },
         )
     }
 
@@ -109,8 +111,10 @@ class PerTransitionActivity : ComponentActivity() {
         @Composable
         override fun Content(key: ScreenC) = ColoredScreen(
             "Screen C", "Fade only →", Color(0xFFE8F5E9),
-            onGoB = { navigator.navigateTo(ScreenD, transition = fadeOnly) },
-            onGoC = { navigator.navigateTo(ScreenA, transition = slideUp) },
+            primaryButtonText = "Go to Screen D - fade",
+            secondaryButtonText = "Go to Screen A - slide left",
+            onPrimaryClick = { navigator.navigateTo(ScreenD, transition = fadeOnly) },
+            onSecondaryClick = { navigator.navigateTo(ScreenA, transition = slideUp) },
         )
     }
 
@@ -119,8 +123,8 @@ class PerTransitionActivity : ComponentActivity() {
         @Composable
         override fun Content(key: ScreenD) = ColoredScreen(
             "Screen D", "Last screen", Color(0xFFFFF3E0),
-            onGoB = { navigator.navigateTo(ScreenA, transition = slideRight) },
-            onGoC = { },
+            primaryButtonText = "Go to Screen A - slide right",
+            onPrimaryClick = { navigator.navigateTo(ScreenA, transition = slideRight) },
         )
     }
 }
@@ -130,8 +134,10 @@ private fun ColoredScreen(
     title: String,
     subtitle: String,
     bgColor: Color,
-    onGoB: () -> Unit,
-    onGoC: () -> Unit,
+    primaryButtonText: String,
+    onPrimaryClick: () -> Unit,
+    secondaryButtonText: String? = null,
+    onSecondaryClick: (() -> Unit)? = null,
 ) {
     Box(
         modifier = Modifier.fillMaxSize().background(bgColor),
@@ -148,8 +154,10 @@ private fun ColoredScreen(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Button(onClick = onGoB) { Text("Next with transition A") }
-            Button(onClick = onGoC) { Text("Next with transition B") }
+            Button(onClick = onPrimaryClick) { Text(primaryButtonText) }
+            if (secondaryButtonText != null && onSecondaryClick != null) {
+                Button(onClick = onSecondaryClick) { Text(secondaryButtonText) }
+            }
         }
     }
 }

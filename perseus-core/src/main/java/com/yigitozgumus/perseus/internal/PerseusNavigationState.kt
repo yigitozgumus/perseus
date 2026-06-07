@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import com.yigitozgumus.perseus.key.RouterKey
+import java.util.UUID
 
 /**
  * Navigation state that survives process death via [Saver].
@@ -56,7 +57,10 @@ internal class PerseusNavigationState private constructor(
     val isAuthenticated: Boolean get() = mode == Mode.Authenticated
     val topLevelRoutes: List<RouterKey> get() = _topLevelRoutes
 
-    fun navigateTo(key: RouterKey) { currentBackStack.add(key) }
+    fun createBackStackKey(key: RouterKey): RouterKey =
+        PerseusBackStackKey(UUID.randomUUID().toString(), key)
+
+    fun navigateTo(key: RouterKey) { currentBackStack.add(asBackStackKey(key)) }
 
     fun goBack(): RouterKey? {
         val bs = currentBackStack
@@ -84,7 +88,7 @@ internal class PerseusNavigationState private constructor(
     fun resetTab(tabIndex: Int, resetRoot: Boolean = false) {
         if (mode != Mode.Authenticated || tabIndex !in _topLevelRoutes.indices) return
         val bs = getOrCreateTabBackStack(tabIndex)
-        if (resetRoot) { bs.clear(); bs.add(_topLevelRoutes[tabIndex]) }
+        if (resetRoot) { bs.clear(); bs.add(createBackStackKey(_topLevelRoutes[tabIndex])) }
         else while (bs.size > 1) bs.removeAt(bs.lastIndex)
     }
 
@@ -92,7 +96,7 @@ internal class PerseusNavigationState private constructor(
 
     fun startUnauthenticated(rootKey: RouterKey) {
         mode = Mode.Unauthenticated
-        _unauthBackStack.clear(); _unauthBackStack.add(rootKey)
+        _unauthBackStack.clear(); _unauthBackStack.add(createBackStackKey(rootKey))
         _topLevelRoutes = emptyList(); _tabBackStacks.clear(); currentTabIndex = 0
     }
 
@@ -113,24 +117,29 @@ internal class PerseusNavigationState private constructor(
 
     private fun getOrCreateTabBackStack(index: Int): SnapshotStateList<RouterKey> =
         _tabBackStacks.getOrPut(index) {
-            mutableListOf(_topLevelRoutes[index]).toMutableStateList()
+            mutableListOf(createBackStackKey(_topLevelRoutes[index])).toMutableStateList()
         }
 
     // ── Process Death ──────────────────────────────────────────────────────
 
     data class Snapshot(
         val modeOrdinal: Int,
-        val unauthBackStack: List<String>,
+        val unauthBackStack: List<EntrySnapshot>,
         val topLevelRoutes: List<String>,
-        val tabBackStacks: Map<Int, List<String>>,
+        val tabBackStacks: Map<Int, List<EntrySnapshot>>,
         val currentTabIndex: Int
+    ) : java.io.Serializable
+
+    data class EntrySnapshot(
+        val id: String,
+        val keyClassName: String
     ) : java.io.Serializable
 
     fun toSnapshot(): Snapshot = Snapshot(
         modeOrdinal = mode.ordinal,
-        unauthBackStack = _unauthBackStack.map { keyClassName(it) },
+        unauthBackStack = _unauthBackStack.map { entrySnapshot(it) },
         topLevelRoutes = _topLevelRoutes.map { keyClassName(it) },
-        tabBackStacks = _tabBackStacks.mapValues { (_, v) -> v.map { keyClassName(it) } },
+        tabBackStacks = _tabBackStacks.mapValues { (_, v) -> v.map { entrySnapshot(it) } },
         currentTabIndex = currentTabIndex
     )
 
@@ -144,7 +153,7 @@ internal class PerseusNavigationState private constructor(
 
         fun unauthenticated(rootKey: RouterKey) = PerseusNavigationState(
             initialMode = Mode.Unauthenticated,
-            initialBackStack = listOf(rootKey),
+            initialBackStack = listOf(PerseusBackStackKey(UUID.randomUUID().toString(), rootKey)),
             initialTopLevelRoutes = emptyList(),
             initialTabBackStacks = emptyMap(),
             initialTabIndex = 0
@@ -153,14 +162,19 @@ internal class PerseusNavigationState private constructor(
         fun fromSnapshot(snapshot: Snapshot): PerseusNavigationState {
             return PerseusNavigationState(
                 initialMode = Mode.entries[snapshot.modeOrdinal],
-                initialBackStack = snapshot.unauthBackStack.mapNotNull { resolver.resolve(it) },
+                initialBackStack = snapshot.unauthBackStack.mapNotNull { restoreEntry(it) },
                 initialTopLevelRoutes = snapshot.topLevelRoutes.mapNotNull { resolver.resolve(it) },
                 initialTabBackStacks = snapshot.tabBackStacks.mapValues { (_, v) ->
-                    v.mapNotNull { resolver.resolve(it) }
+                    v.mapNotNull { restoreEntry(it) }
                 },
                 initialTabIndex = snapshot.currentTabIndex
             )
         }
+
+        private fun restoreEntry(snapshot: EntrySnapshot): RouterKey? =
+            resolver.resolve(snapshot.keyClassName)?.let { key ->
+                PerseusBackStackKey(snapshot.id, key)
+            }
 
         val Saver: Saver<PerseusNavigationState, Snapshot> = Saver(
             save = { it.toSnapshot() },
@@ -189,3 +203,27 @@ private object DefaultKeyResolver : KeyResolver {
 }
 
 internal fun keyClassName(key: RouterKey): String = key::class.qualifiedName ?: key::class.java.name
+
+internal data class PerseusBackStackKey(
+    val id: String,
+    val routeKey: RouterKey,
+) : RouterKey {
+    override val hidesBottomNavigation: Boolean get() = routeKey.hidesBottomNavigation
+}
+
+internal fun RouterKey.backStackId(): String =
+    (this as? PerseusBackStackKey)?.id ?: keyClassName(this)
+
+internal fun RouterKey.routeKey(): RouterKey =
+    (this as? PerseusBackStackKey)?.routeKey ?: this
+
+private fun asBackStackKey(key: RouterKey): RouterKey =
+    if (key is PerseusBackStackKey) key else PerseusBackStackKey(UUID.randomUUID().toString(), key)
+
+private fun entrySnapshot(key: RouterKey): PerseusNavigationState.EntrySnapshot {
+    val routeKey = key.routeKey()
+    return PerseusNavigationState.EntrySnapshot(
+        id = key.backStackId(),
+        keyClassName = keyClassName(routeKey)
+    )
+}

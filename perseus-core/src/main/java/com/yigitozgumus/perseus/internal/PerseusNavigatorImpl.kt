@@ -42,12 +42,13 @@ internal class PerseusNavigatorImpl(
         transition: ContentTransform?,
     ): NavigationHandle {
         val correlationId = UUID.randomUUID().toString()
+        val backStackKey = stateHolder.state.createBackStackKey(key)
 
-        if (groupName != null) entryRegistry.setPendingGroup(key, groupName)
-        entryRegistry.setPendingCorrelationId(key, correlationId)
-        if (transition != null) entryRegistry.setPendingTransition(key, transition)
+        if (groupName != null) entryRegistry.setPendingGroup(backStackKey, groupName)
+        entryRegistry.setPendingCorrelationId(backStackKey, correlationId)
+        if (transition != null) entryRegistry.setPendingTransition(backStackKey, transition)
 
-        stateHolder.state.navigateTo(key)
+        stateHolder.state.navigateTo(backStackKey)
         return resultBus.createHandle(correlationId)
     }
 
@@ -98,7 +99,7 @@ internal class PerseusNavigatorImpl(
     }
 
     override fun resetAllWithKeys(keys: List<RouterKey>) {
-        viewModelStoreRegistry.retainOnly(keys.toSet())
+        viewModelStoreRegistry.retainOnly(emptySet())
         entryRegistry.clearAllTracking()
         stateHolder.state.resetAllWithKeys(keys)
     }

@@ -40,59 +40,62 @@ internal class PerseusEntryProviderRegistry(
     private val resultBus: ResultBusAdapter,
     private val fragmentEntryFactory: FragmentEntryFactory? = null
 ) {
-    // Group tracking: key → groupName
-    private val pendingGroups = ConcurrentHashMap<RouterKey, GroupName>()
-    private val providedGroups = ConcurrentHashMap<RouterKey, GroupName>()
+    // Group tracking: back-stack id → groupName
+    private val pendingGroups = ConcurrentHashMap<String, GroupName>()
+    private val providedGroups = ConcurrentHashMap<String, GroupName>()
 
-    // Correlation ID tracking: key → correlationId
-    private val pendingCorrelationIds = ConcurrentHashMap<RouterKey, String>()
-    private val providedCorrelationIds = ConcurrentHashMap<RouterKey, String>()
+    // Correlation ID tracking: back-stack id → correlationId
+    private val pendingCorrelationIds = ConcurrentHashMap<String, String>()
+    private val providedCorrelationIds = ConcurrentHashMap<String, String>()
 
     // Per-navigate transition storage
-    private val pendingTransitions = ConcurrentHashMap<RouterKey, ContentTransform>()
+    private val pendingTransitions = ConcurrentHashMap<String, ContentTransform>()
 
     /** Pop callback set by the navigator for scene dismissal. */
     var onPopCallback: (() -> Unit)? = null
 
     fun setPendingGroup(key: RouterKey, groupName: GroupName) {
-        pendingGroups[key] = groupName
+        pendingGroups[key.backStackId()] = groupName
     }
 
     fun setPendingCorrelationId(key: RouterKey, correlationId: String) {
-        pendingCorrelationIds[key] = correlationId
+        pendingCorrelationIds[key.backStackId()] = correlationId
     }
 
-    fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key]
+    fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key.backStackId()]
     fun clearTrackingForKey(key: RouterKey) {
-        pendingGroups.remove(key); providedGroups.remove(key)
-        pendingCorrelationIds.remove(key); providedCorrelationIds.remove(key)
-        pendingTransitions.remove(key)
+        val id = key.backStackId()
+        pendingGroups.remove(id); providedGroups.remove(id)
+        pendingCorrelationIds.remove(id); providedCorrelationIds.remove(id)
+        pendingTransitions.remove(id)
     }
 
     fun setPendingTransition(key: RouterKey, transition: ContentTransform) {
-        pendingTransitions[key] = transition
+        pendingTransitions[key.backStackId()] = transition
     }
 
     fun clearAllTracking() {
         pendingGroups.clear(); providedGroups.clear()
         pendingCorrelationIds.clear(); providedCorrelationIds.clear()
+        pendingTransitions.clear()
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun provide(key: RouterKey): NavEntry<RouterKey> {
-        val metadata = computeAndCacheMetadata(key)
+    fun provide(backStackKey: RouterKey): NavEntry<RouterKey> {
+        val key = backStackKey.routeKey()
+        val metadata = computeAndCacheMetadata(backStackKey)
 
         // 1. Compose screen provider
         composeProviders.find { it.canProvide(key) }?.let { foundProvider ->
             @Suppress("UNCHECKED_CAST")
             val typed = foundProvider as ComposeScreenProvider<RouterKey>
             val isScene = key is DialogKey || key is BottomSheetKey
-            val corrId = providedCorrelationIds[key]
+            val corrId = providedCorrelationIds[backStackKey.backStackId()]
             val navCtx = corrId?.let { NavigationContext(key, it) }
-            return NavEntry(key = key, metadata = metadata) {
+            return NavEntry(key = backStackKey, contentKey = backStackKey.backStackId(), metadata = metadata) {
                 CompositionLocalProvider(LocalNavigationContext provides navCtx) {
                     if (isScene) {
-                        CompositionLocalProvider(LocalSceneActions provides createSceneActions(key)) {
+                        CompositionLocalProvider(LocalSceneActions provides createSceneActions(backStackKey)) {
                             typed.Content(key)
                         }
                     } else {
@@ -106,11 +109,11 @@ internal class PerseusEntryProviderRegistry(
         sceneProviders.find { it.canProvide(key) }?.let { provider ->
             val sceneCallback = object : SceneResultCallback {
                 override fun <R : Any> sendResult(result: R) {
-                    providedCorrelationIds[key]?.let { resultBus.send(it, result) }
+                    providedCorrelationIds[backStackKey.backStackId()]?.let { resultBus.send(it, result) }
                 }
             }
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
-            return NavEntry(key = key, metadata = metadata) {
+            return NavEntry(key = backStackKey, contentKey = backStackKey.backStackId(), metadata = metadata) {
                 (provider as ComposeSceneProvider<RouterKey>).Content(
                     key = key,
                     onResult = sceneCallback,
@@ -121,14 +124,14 @@ internal class PerseusEntryProviderRegistry(
 
         // 3. Fragment provider
         fragmentProviders.find { it.canProvide(key) }?.let { provider ->
-            val corrId = providedCorrelationIds[key]
+            val corrId = providedCorrelationIds[backStackKey.backStackId()]
             val ctx = corrId?.let { NavigationContext(key, it) } ?: NavigationContext(key)
             val factory = fragmentEntryFactory
                 ?: throw IllegalArgumentException(
                     "Fragment provider found for ${key::class.simpleName} but no fragmentEntryFactory set. " +
                     "Add perseus-interop dependency and pass a FragmentEntryFactory to PerseusNavigatorFactory."
                 )
-            return NavEntry(key = key, metadata = metadata) {
+            return NavEntry(key = backStackKey, contentKey = backStackKey.backStackId(), metadata = metadata) {
                 factory.Create(provider, key, ctx)
             }
         }
@@ -139,7 +142,9 @@ internal class PerseusEntryProviderRegistry(
         )
     }
 
-    private fun computeAndCacheMetadata(key: RouterKey): Map<String, Any> {
+    private fun computeAndCacheMetadata(backStackKey: RouterKey): Map<String, Any> {
+        val key = backStackKey.routeKey()
+        val id = backStackKey.backStackId()
         val sceneMeta = when (key) {
             is DialogKey -> DialogSceneStrategy.dialog(
                 DialogProperties(
@@ -159,18 +164,18 @@ internal class PerseusEntryProviderRegistry(
 
             else -> emptyMap()
         }
-        val groupMeta = pendingGroups.remove(key)?.let { mapOf(GROUP_KEY to it) } ?: emptyMap()
-        if (groupMeta.isNotEmpty()) providedGroups[key] = groupMeta[GROUP_KEY] as GroupName
-        pendingCorrelationIds.remove(key)?.let { providedCorrelationIds[key] = it }
-        val transMeta = pendingTransitions.remove(key)?.let {
+        val groupMeta = pendingGroups.remove(id)?.let { mapOf(GROUP_KEY to it) } ?: emptyMap()
+        if (groupMeta.isNotEmpty()) providedGroups[id] = groupMeta[GROUP_KEY] as GroupName
+        pendingCorrelationIds.remove(id)?.let { providedCorrelationIds[id] = it }
+        val transMeta = pendingTransitions.remove(id)?.let {
             mapOf(TRANSITION_KEY to it)
         } ?: emptyMap()
         return sceneMeta + groupMeta + transMeta
     }
 
-    private fun createSceneActions(key: RouterKey): SceneActions = object : SceneActions {
+    private fun createSceneActions(backStackKey: RouterKey): SceneActions = object : SceneActions {
         override fun <R : Any> sendResult(result: R) {
-            providedCorrelationIds[key]?.let { resultBus.send(it, result) }
+            providedCorrelationIds[backStackKey.backStackId()]?.let { resultBus.send(it, result) }
         }
 
         override fun dismiss() {
