@@ -1,4 +1,6 @@
 package com.yigitozgumus.perseus
+import com.yigitozgumus.perseus.key.RouterKey
+
 
 /**
  * Interface for managing navigation state transitions between auth modes.

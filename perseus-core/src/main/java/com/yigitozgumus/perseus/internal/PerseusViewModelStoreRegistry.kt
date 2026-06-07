@@ -3,7 +3,7 @@ package com.yigitozgumus.perseus.internal
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 import java.util.concurrent.ConcurrentHashMap
 
 /**

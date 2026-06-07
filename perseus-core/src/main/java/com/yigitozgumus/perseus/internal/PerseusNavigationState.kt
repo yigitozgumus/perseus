@@ -8,7 +8,7 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 
 /**
  * Navigation state that survives process death via [Saver].

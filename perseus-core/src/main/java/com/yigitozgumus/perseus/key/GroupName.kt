@@ -1,4 +1,4 @@
-package com.yigitozgumus.perseus
+package com.yigitozgumus.perseus.key
 
 /**
  * Type-safe navigation group identifier.

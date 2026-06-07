@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavHost
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.sample.di.SampleModule
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey

@@ -3,11 +3,11 @@ package com.yigitozgumus.perseus.internal
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
-import com.yigitozgumus.perseus.GroupName
+import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.NavigationHandle
 import com.yigitozgumus.perseus.PerseusNavigator
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 import java.util.UUID
 
 /**

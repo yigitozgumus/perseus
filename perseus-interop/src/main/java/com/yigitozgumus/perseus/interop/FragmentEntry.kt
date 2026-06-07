@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import com.yigitozgumus.perseus.NavigationContext
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 
 @Suppress("UNCHECKED_CAST")
 @Composable

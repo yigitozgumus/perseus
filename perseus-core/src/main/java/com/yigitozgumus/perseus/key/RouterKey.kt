@@ -1,4 +1,4 @@
-package com.yigitozgumus.perseus
+package com.yigitozgumus.perseus.key
 
 import androidx.navigation3.runtime.NavKey
 

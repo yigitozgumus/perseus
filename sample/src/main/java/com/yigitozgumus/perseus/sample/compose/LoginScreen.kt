@@ -14,8 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.yigitozgumus.perseus.ComposeScreenProvider
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.sample.keys.LoginKey
 import org.koin.core.annotation.Single
 

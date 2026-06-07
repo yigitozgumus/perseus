@@ -2,7 +2,7 @@ package com.yigitozgumus.perseus.internal
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.yigitozgumus.perseus.NavigationStateManager
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 
 /**
  * Bridge between DI-injected code and Composition-owned [PerseusNavigationState].

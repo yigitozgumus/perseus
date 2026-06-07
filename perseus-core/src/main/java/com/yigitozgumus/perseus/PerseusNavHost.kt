@@ -24,7 +24,7 @@ import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationState
 import com.yigitozgumus.perseus.internal.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 
 private const val FADE_MS = 200
 

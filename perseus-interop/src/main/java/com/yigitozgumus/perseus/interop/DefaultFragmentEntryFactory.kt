@@ -1,10 +1,10 @@
 package com.yigitozgumus.perseus.interop
 
 import androidx.compose.runtime.Composable
-import com.yigitozgumus.perseus.FragmentEntryFactory
-import com.yigitozgumus.perseus.FragmentProviderMarker
+import com.yigitozgumus.perseus.provider.FragmentEntryFactory
+import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.NavigationContext
-import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.key.RouterKey
 
 public object DefaultFragmentEntryFactory : FragmentEntryFactory {
     @Composable
