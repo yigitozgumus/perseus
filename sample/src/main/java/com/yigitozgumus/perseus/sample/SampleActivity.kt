@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -26,6 +27,7 @@ import com.yigitozgumus.perseus.sample.di.SampleModule
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
+import com.yigitozgumus.perseus.sample.keys.SearchKey
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -54,7 +56,7 @@ class SampleActivity : FragmentActivity(), KoinComponent {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        navigator.transitionToAuthenticated(listOf(HomeKey, ProfileKey))
+        navigator.transitionToAuthenticated(listOf(HomeKey, SearchKey, ProfileKey))
 
         setContent {
             var selectedTab by rememberSaveable { mutableIntStateOf(0) }
@@ -74,6 +76,12 @@ class SampleActivity : FragmentActivity(), KoinComponent {
                         NavigationBarItem(
                             selected = currentIndex == 1,
                             onClick = { onTabSelected(1) },
+                            icon = { Icon(Icons.Default.Search, "Search") },
+                            label = { Text("Search") }
+                        )
+                        NavigationBarItem(
+                            selected = currentIndex == 2,
+                            onClick = { onTabSelected(2) },
                             icon = { Icon(Icons.Default.Person, "Profile") },
                             label = { Text("Profile") }
                         )

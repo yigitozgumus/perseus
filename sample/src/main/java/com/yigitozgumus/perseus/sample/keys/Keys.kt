@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 // Shared keys
 @Serializable data object HomeKey : RouterKey { override val hidesBottomNavigation: Boolean = false }
 @Serializable data class DetailKey(val itemId: Int) : RouterKey
+@Serializable data object SearchKey : RouterKey { override val hidesBottomNavigation: Boolean = false }
 @Serializable data object ProfileKey : RouterKey { override val hidesBottomNavigation: Boolean = false }
 @Serializable data object LoginKey : RouterKey
 
