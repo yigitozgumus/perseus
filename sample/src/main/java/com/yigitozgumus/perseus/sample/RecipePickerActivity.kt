@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.sample.recipe.animation.AnimationActivity
+import com.yigitozgumus.perseus.sample.recipe.animation.PerTransitionActivity
 import com.yigitozgumus.perseus.sample.recipe.bottomsheet.BottomSheetActivity
 import com.yigitozgumus.perseus.sample.recipe.compose.ComposeOnlyActivity
 import com.yigitozgumus.perseus.sample.recipe.customsheet.CustomSheetActivity
@@ -85,6 +86,11 @@ private val recipes = listOf(
         "Animations",
         "Custom enter/exit transitions via PerseusNavHost",
         AnimationActivity::class.java,
+    ),
+    Recipe(
+        "Per-Transition",
+        "Each screen opens/closes with a different animation",
+        PerTransitionActivity::class.java,
     ),
     Recipe(
         "Full Demo",

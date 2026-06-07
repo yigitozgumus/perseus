@@ -27,6 +27,7 @@
         <activity android:name=".recipe.bottomsheet.BottomSheetActivity" android:theme="@style/Theme.Perseus" />
         <activity android:name=".recipe.customsheet.CustomSheetActivity" android:theme="@style/Theme.Perseus" />
         <activity android:name=".recipe.animation.AnimationActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.animation.PerTransitionActivity" android:theme="@style/Theme.Perseus" />
 
     </application>
 </manifest>
