@@ -27,7 +27,6 @@ import com.yigitozgumus.perseus.internal.BottomSheetSceneStrategy
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationState
-import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
 import com.yigitozgumus.perseus.internal.rememberPerseusViewModelStoreNavEntryDecorator
 import com.yigitozgumus.perseus.key.RouterKey
 
@@ -48,7 +47,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  *
  * Tab switching and reset are handled directly via [navigator].
  *
- * @param navigator The [PerseusNavigator] driving all navigation.
+ * @param controller The [PerseusController] driving all navigation.
  * @param initialKey The initial screen to show before any auth transition.
  * @param modifier Compose modifier for the host container.
  * @param bottomBar Slot for the bottom navigation bar (authenticated mode).
@@ -60,7 +59,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  */
 @Composable
 public fun PerseusNavHost(
-    navigator: PerseusNavigator,
+    controller: PerseusController,
     initialKey: RouterKey,
     modifier: Modifier = Modifier,
     bottomBar: @Composable (
@@ -81,7 +80,8 @@ public fun PerseusNavHost(
         fastFadeTransition()
     },
 ) {
-    val impl = navigator as PerseusNavigatorImpl
+    val impl = controller.impl
+    val navigator = controller.navigator
     val stateHolder = impl.stateHolder
     val entryRegistry = impl.entryRegistry
     val viewModelStoreRegistry = impl.viewModelStoreRegistry

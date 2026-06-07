@@ -27,21 +27,22 @@ import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import com.yigitozgumus.perseus.sample.recipe.createNavigator
+import com.yigitozgumus.perseus.sample.recipe.createController
 
 @OptIn(ExperimentalMaterial3Api::class)
 class ComposeOnlyActivity : ComponentActivity() {
 
-    private val navigator: PerseusNavigator = createNavigator(
+    private val controller = createController(
         composeProviders = listOf(HomeProvider(), DetailProvider()),
     )
+    private val navigator: PerseusNavigator = controller.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                navigator = navigator,
+                controller = controller,
                 initialKey = HomeKey,
                 modifier = Modifier.fillMaxSize(),
             )

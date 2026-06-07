@@ -28,7 +28,7 @@ import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ReceiverKey
 import com.yigitozgumus.perseus.sample.keys.SenderKey
-import com.yigitozgumus.perseus.sample.recipe.createNavigator
+import com.yigitozgumus.perseus.sample.recipe.createController
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,18 +44,19 @@ class ResultActivity : ComponentActivity() {
     // Survives navigation because it lives on the Activity, not the composable
     private val state = ResultState()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val navigator: PerseusNavigator by lazy {
-        createNavigator(
+    private val controller by lazy {
+        createController(
             composeProviders = listOf(SenderProvider(), ReceiverProvider()),
         )
     }
+    private val navigator: PerseusNavigator get() = controller.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                navigator = navigator,
+                controller = controller,
                 initialKey = SenderKey,
                 modifier = Modifier.fillMaxSize(),
             )
