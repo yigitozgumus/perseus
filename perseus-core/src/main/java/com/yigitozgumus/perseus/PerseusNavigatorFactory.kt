@@ -53,6 +53,7 @@ public object PerseusNavigatorFactory {
             fragmentProviders,
             sceneProviders,
             resultBus,
+            viewModelStore,
             fragmentEntryFactory,
         )
         return PerseusNavigatorImpl(

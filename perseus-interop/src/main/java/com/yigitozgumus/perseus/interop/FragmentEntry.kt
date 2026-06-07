@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.compose.AndroidFragment
 import androidx.fragment.compose.rememberFragmentState
 import com.yigitozgumus.perseus.NavigationContext
+import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
 import com.yigitozgumus.perseus.key.RouterKey
 
@@ -32,12 +33,14 @@ public fun <K : RouterKey> FragmentEntry(
     key: K,
     provider: ScreenProvider<K>,
     context: NavigationContext<K>,
+    viewModelStoreProvider: PerseusViewModelStoreProvider,
     modifier: Modifier = Modifier,
 ) {
     val fragmentTemplate = remember(key) { provider.provide(key) }
     val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
 
     val encodedKey = remember(key) { DefaultRouterKeyCodec.encode(key) }
+    remember(context.entryId) { viewModelStoreProvider.getOwner(context.entryId) }
 
     val arguments = remember(encodedKey, context) {
         Bundle().apply {

@@ -2,31 +2,34 @@ package com.yigitozgumus.perseus.internal
 
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
-import com.yigitozgumus.perseus.key.RouterKey
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Registry holding ViewModelStores per RouterKey.
+ * Registry holding ViewModelStores per navigation entry ID.
  *
  * Implements [PerseusViewModelStoreProvider] — the single source of truth
  * for NavEntry-scoped ViewModels used by both Compose screens and Fragment screens.
  */
 internal class PerseusViewModelStoreRegistry : PerseusViewModelStoreProvider {
 
-    private val stores = ConcurrentHashMap<RouterKey, ViewModelStore>()
+    private val stores = ConcurrentHashMap<String, ViewModelStore>()
 
-    override fun getOwner(key: RouterKey): ViewModelStoreOwner {
-        stores.getOrPut(key) { ViewModelStore() }
-        return StoreOwner(key, stores)
+    override fun getOwner(entryId: String): ViewModelStoreOwner {
+        stores.getOrPut(entryId) { ViewModelStore() }
+        return StoreOwner(entryId, stores).also { owner ->
+            PerseusViewModelStoreOwners.register(entryId, owner)
+        }
     }
 
-    override fun clear(key: RouterKey) {
-        stores.remove(key)?.clear()
+    override fun clear(entryId: String) {
+        stores.remove(entryId)?.clear()
+        PerseusViewModelStoreOwners.unregister(entryId)
     }
 
-    override fun retainOnly(keys: Set<RouterKey>) {
-        val toRemove = stores.keys - keys
+    override fun retainOnly(entryIds: Set<String>) {
+        val toRemove = stores.keys - entryIds
         toRemove.forEach { clear(it) }
     }
 
@@ -35,10 +38,10 @@ internal class PerseusViewModelStoreRegistry : PerseusViewModelStoreProvider {
      * Each call to [viewModelStore] returns the same store for the given key.
      */
     private class StoreOwner(
-        private val key: RouterKey,
-        private val stores: ConcurrentHashMap<RouterKey, ViewModelStore>
+        private val entryId: String,
+        private val stores: ConcurrentHashMap<String, ViewModelStore>
     ) : ViewModelStoreOwner {
         override val viewModelStore: ViewModelStore
-            get() = stores[key] ?: ViewModelStore().also { stores[key] = it }
+            get() = stores[entryId] ?: ViewModelStore().also { stores[entryId] = it }
     }
 }

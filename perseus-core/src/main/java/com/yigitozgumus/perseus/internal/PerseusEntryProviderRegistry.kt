@@ -17,6 +17,7 @@ import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.LocalSceneActions
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.SceneActions
 import com.yigitozgumus.perseus.SceneResultCallback
 import java.util.UUID
@@ -39,6 +40,7 @@ internal class PerseusEntryProviderRegistry(
     private val fragmentProviders: List<FragmentProviderMarker>,
     private val sceneProviders: List<ComposeSceneProvider<*>>,
     private val resultBus: ResultBusAdapter,
+    private val viewModelStoreProvider: PerseusViewModelStoreProvider,
     private val fragmentEntryFactory: FragmentEntryFactory? = null
 ) {
     // Group tracking: back-stack id → groupName
@@ -140,7 +142,7 @@ internal class PerseusEntryProviderRegistry(
                     "Add perseus-interop dependency and pass a FragmentEntryFactory to PerseusNavigatorFactory."
                 )
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
-                factory.Create(provider, key, ctx)
+                factory.Create(provider, key, ctx, viewModelStoreProvider)
             }
         }
 

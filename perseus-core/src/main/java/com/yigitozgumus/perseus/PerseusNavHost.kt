@@ -24,9 +24,11 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.SceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import com.yigitozgumus.perseus.internal.BottomSheetSceneStrategy
+import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationState
 import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
+import com.yigitozgumus.perseus.internal.rememberPerseusViewModelStoreNavEntryDecorator
 import com.yigitozgumus.perseus.key.RouterKey
 
 /** Default fade duration in milliseconds. */
@@ -82,6 +84,7 @@ public fun PerseusNavHost(
     val impl = navigator as PerseusNavigatorImpl
     val stateHolder = impl.stateHolder
     val entryRegistry = impl.entryRegistry
+    val viewModelStoreRegistry = impl.viewModelStoreRegistry
 
     val navigationState = rememberSaveable(saver = PerseusNavigationState.Saver) {
         PerseusNavigationState.unauthenticated(initialKey)
@@ -111,6 +114,7 @@ public fun PerseusNavHost(
             predictivePopTransitionSpec = predictivePopTransitionSpec,
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
+                rememberPerseusViewModelStoreNavEntryDecorator(viewModelStoreRegistry),
             ),
             entryProvider = { key -> entryRegistry.provide(key) },
         )
@@ -118,6 +122,7 @@ public fun PerseusNavHost(
         AuthenticatedHost(
             navigationState = navigationState,
             entryRegistry = entryRegistry,
+            viewModelStoreRegistry = viewModelStoreRegistry,
             sceneStrategies = sceneStrategies,
             navigator = navigator,
             bottomBar = bottomBar,
@@ -134,6 +139,7 @@ public fun PerseusNavHost(
 private fun AuthenticatedHost(
     navigationState: PerseusNavigationState,
     entryRegistry: PerseusEntryProviderRegistry,
+    viewModelStoreRegistry: PerseusViewModelStoreProvider,
     sceneStrategies: List<SceneStrategy<RouterKey>>,
     navigator: PerseusNavigator,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
@@ -169,6 +175,7 @@ private fun AuthenticatedHost(
                 predictivePopTransitionSpec = predictivePopTransitionSpec,
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberPerseusViewModelStoreNavEntryDecorator(viewModelStoreRegistry),
                 ),
                 entryProvider = { key -> entryRegistry.provide(key) },
             )

@@ -2,6 +2,7 @@ package com.yigitozgumus.perseus.interop
 
 import androidx.compose.runtime.Composable
 import com.yigitozgumus.perseus.NavigationContext
+import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.FragmentEntryFactory
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
@@ -19,11 +20,13 @@ public object DefaultFragmentEntryFactory : FragmentEntryFactory {
         provider: FragmentProviderMarker,
         key: RouterKey,
         context: NavigationContext<RouterKey>,
+        viewModelStoreProvider: PerseusViewModelStoreProvider,
     ) {
         FragmentEntry(
             key = key,
             provider = provider as ScreenProvider<RouterKey>,
             context = context,
+            viewModelStoreProvider = viewModelStoreProvider,
         )
     }
 }

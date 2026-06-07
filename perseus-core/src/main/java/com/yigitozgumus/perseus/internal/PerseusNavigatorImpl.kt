@@ -25,7 +25,7 @@ internal class PerseusNavigatorImpl(
     internal val stateHolder: PerseusNavigationStateHolder,
     private val resultBus: ResultBusAdapter,
     internal val entryRegistry: PerseusEntryProviderRegistry,
-    private val viewModelStoreRegistry: PerseusViewModelStoreRegistry
+    internal val viewModelStoreRegistry: PerseusViewModelStoreRegistry
 ) : PerseusNavigator {
 
     init {
@@ -57,7 +57,7 @@ internal class PerseusNavigatorImpl(
         val removed = stateHolder.state.goBack()
         if (removed != null) {
             entryRegistry.clearTrackingForKey(removed)
-            viewModelStoreRegistry.clear(removed)
+            viewModelStoreRegistry.clear(removed.backStackId())
         }
     }
 
@@ -70,7 +70,7 @@ internal class PerseusNavigatorImpl(
         }
         removed.forEach { key ->
             entryRegistry.clearTrackingForKey(key)
-            viewModelStoreRegistry.clear(key)
+            viewModelStoreRegistry.clear(key.backStackId())
         }
     }
 
@@ -94,7 +94,7 @@ internal class PerseusNavigatorImpl(
         stateHolder.state.resetCurrentTab(resetRoot)
         removed.forEach {
             entryRegistry.clearTrackingForKey(it)
-            viewModelStoreRegistry.clear(it)
+            viewModelStoreRegistry.clear(it.backStackId())
         }
     }
 

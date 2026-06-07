@@ -2,6 +2,7 @@ package com.yigitozgumus.perseus.provider
 
 import androidx.compose.runtime.Composable
 import com.yigitozgumus.perseus.NavigationContext
+import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.key.RouterKey
 
 /**
@@ -20,12 +21,14 @@ public interface FragmentEntryFactory {
      *
      * @param provider The fragment provider that matched the key.
      * @param key The router key identifying the screen.
-     * @param context The navigation context with correlation ID for results.
+     * @param context The navigation context with entry ID and correlation ID.
+     * @param viewModelStoreProvider Provides the entry-scoped ViewModelStoreOwner.
      */
     @Composable
     public fun Create(
         provider: FragmentProviderMarker,
         key: RouterKey,
-        context: NavigationContext<RouterKey>
+        context: NavigationContext<RouterKey>,
+        viewModelStoreProvider: PerseusViewModelStoreProvider,
     )
 }
