@@ -22,7 +22,6 @@ import androidx.navigation3.ui.NavDisplay
 import com.yigitozgumus.perseus.internal.BottomSheetSceneStrategy
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationState
-import com.yigitozgumus.perseus.internal.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
 import com.yigitozgumus.perseus.key.RouterKey
 
@@ -35,19 +34,18 @@ private const val FADE_MS = 200
  * unauthenticated (single stack) and authenticated (tabbed) modes,
  * dialog/bottom sheet scenes, and process death survival.
  *
- * @param navigator The [PerseusNavigator] instance driving navigation.
- * @param onPop Called when the user navigates back.
+ * Tab switching and reset are handled directly via [navigator].
+ *
+ * @param navigator The [PerseusNavigator] driving all navigation.
  * @param initialKey The initial screen to show before any auth transition.
  * @param modifier Compose modifier for the host container.
  * @param bottomBar Slot for the bottom navigation bar (authenticated mode).
- * @param onTabChanged Notified when the selected tab changes.
- * @param onSwitchTab Called when the user selects a different tab.
- * @param onResetCurrentTab Called when the current tab is re-selected.
+ *   Receives the current tab index and a callback for tab selection.
+ * @param onTabChanged Notified when the selected tab changes (for UI state).
  */
 @Composable
 public fun PerseusNavHost(
     navigator: PerseusNavigator,
-    onPop: () -> Unit,
     initialKey: RouterKey,
     modifier: Modifier = Modifier,
     bottomBar: @Composable (
@@ -55,8 +53,6 @@ public fun PerseusNavHost(
         onTabSelected: (Int) -> Unit,
     ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
-    onSwitchTab: (Int) -> Unit = {},
-    onResetCurrentTab: () -> Unit = {},
 ) {
     val impl = navigator as PerseusNavigatorImpl
     val stateHolder = impl.stateHolder
@@ -68,7 +64,7 @@ public fun PerseusNavHost(
 
     DisposableEffect(navigationState) {
         stateHolder.attach(navigationState)
-        entryRegistry.onPopCallback = onPop
+        entryRegistry.onPopCallback = { navigator.pop() }
         onDispose { stateHolder.detach() }
     }
 
@@ -82,7 +78,7 @@ public fun PerseusNavHost(
     if (isUnauthenticated) {
         NavDisplay(
             backStack = navigationState.currentBackStack,
-            onBack = onPop,
+            onBack = { navigator.pop() },
             modifier = modifier.fillMaxSize(),
             sceneStrategies = sceneStrategies,
             transitionSpec = { fastFade() },
@@ -98,11 +94,9 @@ public fun PerseusNavHost(
             navigationState = navigationState,
             entryRegistry = entryRegistry,
             sceneStrategies = sceneStrategies,
-            onPop = onPop,
+            navigator = navigator,
             bottomBar = bottomBar,
             onTabChanged = onTabChanged,
-            onSwitchTab = onSwitchTab,
-            onResetCurrentTab = onResetCurrentTab,
             modifier = modifier,
         )
     }
@@ -113,11 +107,9 @@ private fun AuthenticatedHost(
     navigationState: PerseusNavigationState,
     entryRegistry: PerseusEntryProviderRegistry,
     sceneStrategies: List<SceneStrategy<RouterKey>>,
-    onPop: () -> Unit,
+    navigator: PerseusNavigator,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
     onTabChanged: (Int) -> Unit,
-    onSwitchTab: (Int) -> Unit,
-    onResetCurrentTab: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(navigationState.currentTabIndex) {
@@ -139,7 +131,7 @@ private fun AuthenticatedHost(
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier.fillMaxSize(),
-                onBack = onPop,
+                onBack = { navigator.pop() },
                 sceneStrategies = sceneStrategies,
                 transitionSpec = { fastFade() },
                 popTransitionSpec = { fastFade() },
@@ -153,9 +145,9 @@ private fun AuthenticatedHost(
         if (showBottomBar) {
             bottomBar(navigationState.currentTabIndex) { index ->
                 if (index == navigationState.currentTabIndex) {
-                    onResetCurrentTab()
+                    navigator.resetCurrentTab(resetRoot = false)
                 } else {
-                    onSwitchTab(index)
+                    navigator.switchTab(index)
                 }
             }
         }

@@ -61,8 +61,8 @@ class SampleActivity : FragmentActivity(), KoinComponent {
 
             PerseusNavHost(
                 navigator = navigator,
-                onPop = { navigator.pop() },
                 initialKey = HomeKey,
+                modifier = Modifier.fillMaxSize(),
                 bottomBar = { currentIndex, onTabSelected ->
                     NavigationBar {
                         NavigationBarItem(
@@ -80,9 +80,6 @@ class SampleActivity : FragmentActivity(), KoinComponent {
                     }
                 },
                 onTabChanged = { selectedTab = it },
-                onSwitchTab = { navigator.switchTab(it) },
-                onResetCurrentTab = { navigator.resetCurrentTab(resetRoot = false) },
-                modifier = Modifier.fillMaxSize()
             )
         }
     }
