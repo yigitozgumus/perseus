@@ -2,8 +2,8 @@ package com.yigitozgumus.perseus.sample.compose
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yigitozgumus.perseus.api.NavigationHandle
-import com.yigitozgumus.perseus.api.PerseusNavigator
+import com.yigitozgumus.perseus.NavigationHandle
+import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import kotlinx.coroutines.flow.MutableStateFlow

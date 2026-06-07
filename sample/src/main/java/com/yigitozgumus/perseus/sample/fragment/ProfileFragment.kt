@@ -8,11 +8,11 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.yigitozgumus.perseus.api.NavigationContext
-import com.yigitozgumus.perseus.api.PerseusNavigator
-import com.yigitozgumus.perseus.api.RouterKey
-import com.yigitozgumus.perseus.api.ScreenProvider
-import com.yigitozgumus.perseus.api.getNavigationContext
+import com.yigitozgumus.perseus.NavigationContext
+import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.interop.ScreenProvider
+import com.yigitozgumus.perseus.getNavigationContext
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent

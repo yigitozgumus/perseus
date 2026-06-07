@@ -51,7 +51,8 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
 
     // Perseus
-    implementation(project(":perseus"))
+    implementation(project(":perseus-core"))
+    implementation(project(":perseus-interop"))
 
     // Navigation3 (for sample usage)
     implementation(libs.androidx.navigation3.runtime)

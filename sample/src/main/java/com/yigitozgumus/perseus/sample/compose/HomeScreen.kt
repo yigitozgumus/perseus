@@ -20,10 +20,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.yigitozgumus.perseus.api.ComposeScreenProvider
-import com.yigitozgumus.perseus.api.LocalNavigationContext
-import com.yigitozgumus.perseus.api.PerseusNavigator
-import com.yigitozgumus.perseus.api.RouterKey
+import com.yigitozgumus.perseus.ComposeScreenProvider
+import com.yigitozgumus.perseus.LocalNavigationContext
+import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.RouterKey
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey

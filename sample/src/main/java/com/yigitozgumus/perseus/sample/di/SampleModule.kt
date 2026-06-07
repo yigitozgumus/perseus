@@ -1,7 +1,10 @@
 package com.yigitozgumus.perseus.sample.di
 
-import com.yigitozgumus.perseus.api.PerseusNavigator
-import com.yigitozgumus.perseus.api.PerseusNavigatorFactory
+import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusNavigatorFactory
+import com.yigitozgumus.perseus.RouterKey
+import com.yigitozgumus.perseus.interop.FragmentEntry
+import com.yigitozgumus.perseus.interop.ScreenProvider
 import com.yigitozgumus.perseus.sample.compose.DetailViewModel
 import com.yigitozgumus.perseus.sample.compose.HomeViewModel
 import org.koin.core.annotation.ComponentScan
@@ -17,7 +20,11 @@ val infrastructureModule = module {
         PerseusNavigatorFactory.create(
             composeProviders = getAll(),
             fragmentProviders = getAll(),
-            sceneProviders = emptyList()
+            sceneProviders = emptyList(),
+            fragmentEntryFactory = { provider, key, ctx ->
+                @Suppress("UNCHECKED_CAST")
+                FragmentEntry(key, provider as ScreenProvider<RouterKey>, ctx)
+            }
         )
     }
 

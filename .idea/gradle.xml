@@ -8,7 +8,8 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/perseus" />
+            <option value="$PROJECT_DIR$/perseus-core" />
+            <option value="$PROJECT_DIR$/perseus-interop" />
             <option value="$PROJECT_DIR$/sample" />
           </set>
         </option>

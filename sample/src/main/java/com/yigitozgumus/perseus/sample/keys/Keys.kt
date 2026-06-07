@@ -1,6 +1,6 @@
 package com.yigitozgumus.perseus.sample.keys
 
-import com.yigitozgumus.perseus.api.RouterKey
+import com.yigitozgumus.perseus.RouterKey
 import kotlinx.serialization.Serializable
 
 @Serializable

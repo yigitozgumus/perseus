@@ -24,5 +24,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Perseus"
 include(":sample")
-include(":perseus")
+include(":perseus-core")
+include(":perseus-interop")
  
