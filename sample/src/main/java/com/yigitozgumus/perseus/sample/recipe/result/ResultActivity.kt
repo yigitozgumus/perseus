@@ -29,17 +29,20 @@ import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ReceiverKey
 import com.yigitozgumus.perseus.sample.keys.SenderKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigator
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 class ResultActivity : ComponentActivity() {
 
-    private val resultState = MutableStateFlow<String?>(null)
+    // Survives navigation because it lives on the Activity, not the composable
+    private val state = ResultState()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val navigator: PerseusNavigator by lazy {
         createNavigator(
@@ -64,12 +67,29 @@ class ResultActivity : ComponentActivity() {
         scope.cancel()
     }
 
+    // -- State holder (ViewModel equivalent) --
+
+    class ResultState {
+        private val _lastResult = MutableStateFlow<String?>(null)
+        val lastResult: StateFlow<String?> = _lastResult.asStateFlow()
+
+        fun observe(handle: com.yigitozgumus.perseus.NavigationHandle, scope: CoroutineScope) {
+            scope.launch {
+                handle.observeResult<String>().collect { result ->
+                    _lastResult.value = result
+                }
+            }
+        }
+    }
+
+    // -- Providers (inner classes → access navigator and state) --
+
     inner class SenderProvider : ComposeScreenProvider<SenderKey> {
         override fun canProvide(key: RouterKey) = key is SenderKey
 
         @Composable
         override fun Content(key: SenderKey) {
-            val lastResult by resultState.collectAsState()
+            val lastResult by state.lastResult.collectAsState()
 
             Scaffold(
                 topBar = {
@@ -88,12 +108,7 @@ class ResultActivity : ComponentActivity() {
                 ) {
                     Text("Open receiver, pick a value and come back.")
                     Button(onClick = {
-                        val handle = navigator.navigateTo(ReceiverKey)
-                        scope.launch {
-                            handle.observeResult<String>().collect { r ->
-                                resultState.value = r
-                            }
-                        }
+                        state.observe(navigator.navigateTo(ReceiverKey), scope)
                     }) {
                         Text("Open Receiver")
                     }

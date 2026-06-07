@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.LocalSceneActions
+import com.yigitozgumus.perseus.NavigationHandle
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.key.RouterKey
@@ -35,12 +36,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 class DialogActivity : ComponentActivity() {
 
-    private val resultState = MutableStateFlow<String?>(null)
+    private val state = DialogState()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val navigator: PerseusNavigator by lazy {
         createNavigator(
@@ -65,12 +68,23 @@ class DialogActivity : ComponentActivity() {
         scope.cancel()
     }
 
+    class DialogState {
+        private val _lastResult = MutableStateFlow<String?>(null)
+        val lastResult: StateFlow<String?> = _lastResult.asStateFlow()
+
+        fun observe(handle: NavigationHandle, scope: CoroutineScope) {
+            scope.launch {
+                handle.observeResult<String>().collect { _lastResult.value = it }
+            }
+        }
+    }
+
     inner class DialogHomeProvider : ComposeScreenProvider<HomeKey> {
         override fun canProvide(key: RouterKey) = key is HomeKey
 
         @Composable
         override fun Content(key: HomeKey) {
-            val lastResult by resultState.collectAsState()
+            val lastResult by state.lastResult.collectAsState()
 
             Scaffold(
                 topBar = {
@@ -89,22 +103,14 @@ class DialogActivity : ComponentActivity() {
                 ) {
                     Button(
                         onClick = {
-                            val handle = navigator.navigateTo(ConfirmDialogKey)
-                            scope.launch {
-                                handle.observeResult<String>().collect { r ->
-                                    resultState.value = r
-                                }
-                            }
+                            state.observe(navigator.navigateTo(ConfirmDialogKey), scope)
                         },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text("Show Confirm Dialog")
                     }
                     if (lastResult != null) {
-                        Text(
-                            "Result: $lastResult",
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+                        Text("Result: $lastResult", color = MaterialTheme.colorScheme.primary)
                     }
                 }
             }
@@ -123,14 +129,10 @@ class DialogActivity : ComponentActivity() {
             ) {
                 Text("Confirm Action", style = MaterialTheme.typography.titleLarge)
                 Text("Are you sure you want to proceed?")
-                Button(onClick = {
-                    actions.sendResultAndDismiss("confirmed")
-                }) {
+                Button(onClick = { actions.sendResultAndDismiss("confirmed") }) {
                     Text("Yes")
                 }
-                Button(onClick = { actions.dismiss() }) {
-                    Text("No")
-                }
+                Button(onClick = { actions.dismiss() }) { Text("No") }
             }
         }
     }
