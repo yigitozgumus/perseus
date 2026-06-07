@@ -2,7 +2,6 @@ package com.yigitozgumus.perseus
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
-import androidx.navigation3.scene.Scene
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -18,13 +17,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
+import androidx.navigation3.scene.Scene
 import androidx.navigation3.scene.SceneStrategy
+import androidx.navigation3.scene.SinglePaneSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import com.yigitozgumus.perseus.internal.BottomSheetSceneStrategy
-import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationState
 import com.yigitozgumus.perseus.internal.rememberPerseusViewModelStoreNavEntryDecorator
@@ -68,7 +67,7 @@ public fun PerseusNavHost(
     ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
     transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
-        targetState?.entries?.lastOrNull()
+        targetState.entries.lastOrNull()
             ?.metadata?.get(PerseusEntryProviderRegistry.TRANSITION_KEY)
             ?.let { it as? ContentTransform }
             ?: fastFadeTransition()
@@ -97,7 +96,11 @@ public fun PerseusNavHost(
     }
 
     val sceneStrategies = remember {
-        listOf(BottomSheetSceneStrategy<RouterKey>(), DialogSceneStrategy())
+        listOf(
+            BottomSheetSceneStrategy<RouterKey>(),
+            DialogSceneStrategy(),
+            SinglePaneSceneStrategy()
+        )
     }
 
     val isUnauthenticated =
