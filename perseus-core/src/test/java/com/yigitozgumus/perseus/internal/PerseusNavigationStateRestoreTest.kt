@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
+import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
@@ -27,6 +28,41 @@ class PerseusNavigationStateRestoreTest {
     }
 
     @Test
+    fun snapshotRestoresDurableEntryMetadata() {
+        val root = RestoreKey(id = 1, label = "root")
+        val child = RestoreKey(id = 2, label = "child")
+        val state = PerseusNavigationState.unauthenticated(root)
+        state.navigateTo(
+            state.createBackStackKey(
+                key = child,
+                groupName = RestoreGroup,
+                correlationId = "correlation-123",
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
+        val restoredChild = restored.currentBackStack.last()
+
+        assertEquals(child, restoredChild.routeKey())
+        assertEquals(RestoreGroup, restoredChild.groupName())
+        assertEquals("correlation-123", restoredChild.correlationId())
+    }
+
+    @Test
+    fun popUntilWorksAfterRestoringGroupMetadata() {
+        val root = RestoreKey(id = 1, label = "root")
+        val child = RestoreKey(id = 2, label = "child")
+        val state = PerseusNavigationState.unauthenticated(root)
+        state.navigateTo(state.createBackStackKey(child, RestoreGroup, "correlation-123"))
+        val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
+        val navigator = navigatorFor(restored)
+
+        navigator.popUntil(RestoreGroup)
+
+        assertEquals(listOf(root), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
     fun snapshotRestoresAuthenticatedTopLevelDataClassKeys() {
         val tab0 = RestoreKey(id = 10, label = "home")
         val tab1 = RestoreKey(id = 20, label = "profile")
@@ -41,7 +77,28 @@ class PerseusNavigationStateRestoreTest {
         restored.switchTab(1)
         assertEquals(tab1, restored.currentBackStack.first().routeKey())
     }
+
+    private fun navigatorFor(state: PerseusNavigationState): PerseusNavigatorImpl {
+        val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
+        val resultBus = ResultBusAdapter()
+        val viewModelStoreRegistry = PerseusViewModelStoreRegistry()
+        val entryRegistry = PerseusEntryProviderRegistry(
+            composeProviders = emptyList(),
+            fragmentProviders = emptyList(),
+            sceneProviders = emptyList(),
+            resultBus = resultBus,
+            viewModelStoreProvider = viewModelStoreRegistry,
+        )
+        return PerseusNavigatorImpl(
+            stateHolder = stateHolder,
+            resultBus = resultBus,
+            entryRegistry = entryRegistry,
+            viewModelStoreRegistry = viewModelStoreRegistry,
+        )
+    }
 }
+
+private object RestoreGroup : GroupName("restore-group")
 
 @Serializable
 private data class RestoreKey(

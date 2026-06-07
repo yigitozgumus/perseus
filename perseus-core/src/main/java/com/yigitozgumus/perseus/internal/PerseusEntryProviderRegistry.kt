@@ -20,7 +20,6 @@ import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.SceneActions
 import com.yigitozgumus.perseus.SceneResultCallback
-import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -43,14 +42,6 @@ internal class PerseusEntryProviderRegistry(
     private val viewModelStoreProvider: PerseusViewModelStoreProvider,
     private val fragmentEntryFactory: FragmentEntryFactory? = null
 ) {
-    // Group tracking: back-stack id → groupName
-    private val pendingGroups = ConcurrentHashMap<String, GroupName>()
-    private val providedGroups = ConcurrentHashMap<String, GroupName>()
-
-    // Correlation ID tracking: back-stack id → correlationId
-    private val pendingCorrelationIds = ConcurrentHashMap<String, String>()
-    private val providedCorrelationIds = ConcurrentHashMap<String, String>()
-
     // Per-navigate transition storage
     private val pendingTransitions = ConcurrentHashMap<String, ContentTransform>()
 
@@ -58,19 +49,16 @@ internal class PerseusEntryProviderRegistry(
     var onPopCallback: (() -> Unit)? = null
 
     fun setPendingGroup(key: RouterKey, groupName: GroupName) {
-        pendingGroups[key.backStackId()] = groupName
+        // Group membership is durable on PerseusBackStackKey. Kept for EntryRegistry compatibility.
     }
 
     fun setPendingCorrelationId(key: RouterKey, correlationId: String) {
-        pendingCorrelationIds[key.backStackId()] = correlationId
+        // Correlation ID is durable on PerseusBackStackKey. Kept for EntryRegistry compatibility.
     }
 
-    fun getGroupForKey(key: RouterKey): GroupName? = providedGroups[key.backStackId()]
+    fun getGroupForKey(key: RouterKey): GroupName? = key.groupName()
     fun clearTrackingForKey(key: RouterKey) {
-        val id = key.backStackId()
-        pendingGroups.remove(id); providedGroups.remove(id)
-        pendingCorrelationIds.remove(id); providedCorrelationIds.remove(id)
-        pendingTransitions.remove(id)
+        pendingTransitions.remove(key.backStackId())
     }
 
     fun setPendingTransition(key: RouterKey, transition: ContentTransform) {
@@ -78,8 +66,6 @@ internal class PerseusEntryProviderRegistry(
     }
 
     fun clearAllTracking() {
-        pendingGroups.clear(); providedGroups.clear()
-        pendingCorrelationIds.clear(); providedCorrelationIds.clear()
         pendingTransitions.clear()
     }
 
@@ -97,7 +83,7 @@ internal class PerseusEntryProviderRegistry(
             val navCtx = NavigationContext(
                 key = key,
                 entryId = entryId,
-                correlationId = providedCorrelationIds[entryId] ?: newCorrelationId(),
+                correlationId = backStackKey.correlationId() ?: error("Missing correlationId for $entryId"),
             )
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 CompositionLocalProvider(LocalNavigationContext provides navCtx) {
@@ -116,7 +102,7 @@ internal class PerseusEntryProviderRegistry(
         sceneProviders.find { it.canProvide(key) }?.let { provider ->
             val sceneCallback = object : SceneResultCallback {
                 override fun <R : Any> sendResult(result: R) {
-                    providedCorrelationIds[entryId]?.let { resultBus.send(it, result) }
+                    backStackKey.correlationId()?.let { resultBus.send(it, result) }
                 }
             }
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
@@ -134,7 +120,7 @@ internal class PerseusEntryProviderRegistry(
             val ctx = NavigationContext(
                 key = key,
                 entryId = entryId,
-                correlationId = providedCorrelationIds[entryId] ?: newCorrelationId(),
+                correlationId = backStackKey.correlationId() ?: error("Missing correlationId for $entryId"),
             )
             val factory = fragmentEntryFactory
                 ?: throw IllegalArgumentException(
@@ -174,20 +160,16 @@ internal class PerseusEntryProviderRegistry(
 
             else -> emptyMap()
         }
-        val groupMeta = pendingGroups.remove(id)?.let { mapOf(GROUP_KEY to it) } ?: emptyMap()
-        if (groupMeta.isNotEmpty()) providedGroups[id] = groupMeta[GROUP_KEY] as GroupName
-        pendingCorrelationIds.remove(id)?.let { providedCorrelationIds[id] = it }
+        val groupMeta = backStackKey.groupName()?.let { mapOf(GROUP_KEY to it) } ?: emptyMap()
         val transMeta = pendingTransitions.remove(id)?.let {
             mapOf(TRANSITION_KEY to it)
         } ?: emptyMap()
         return sceneMeta + groupMeta + transMeta
     }
 
-    private fun newCorrelationId(): String = UUID.randomUUID().toString()
-
     private fun createSceneActions(backStackKey: RouterKey): SceneActions = object : SceneActions {
         override fun <R : Any> sendResult(result: R) {
-            providedCorrelationIds[backStackKey.backStackId()]?.let { resultBus.send(it, result) }
+            backStackKey.correlationId()?.let { resultBus.send(it, result) }
         }
 
         override fun dismiss() {

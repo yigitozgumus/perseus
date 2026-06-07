@@ -42,10 +42,12 @@ internal class PerseusNavigatorImpl(
         transition: ContentTransform?,
     ): NavigationHandle {
         val correlationId = UUID.randomUUID().toString()
-        val backStackKey = stateHolder.state.createBackStackKey(key)
+        val backStackKey = stateHolder.state.createBackStackKey(
+            key = key,
+            groupName = groupName,
+            correlationId = correlationId,
+        )
 
-        if (groupName != null) entryRegistry.setPendingGroup(backStackKey, groupName)
-        entryRegistry.setPendingCorrelationId(backStackKey, correlationId)
         if (transition != null) entryRegistry.setPendingTransition(backStackKey, transition)
 
         stateHolder.state.navigateTo(backStackKey)

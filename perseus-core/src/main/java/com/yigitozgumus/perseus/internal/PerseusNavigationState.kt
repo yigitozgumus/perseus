@@ -10,6 +10,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
 import com.yigitozgumus.perseus.key.EncodedRouterKey
+import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import java.util.UUID
 
@@ -58,8 +59,16 @@ internal class PerseusNavigationState private constructor(
     val isAuthenticated: Boolean get() = mode == Mode.Authenticated
     val topLevelRoutes: List<RouterKey> get() = _topLevelRoutes
 
-    fun createBackStackKey(key: RouterKey): RouterKey =
-        PerseusBackStackKey(UUID.randomUUID().toString(), key)
+    fun createBackStackKey(
+        key: RouterKey,
+        groupName: GroupName? = null,
+        correlationId: String = UUID.randomUUID().toString(),
+    ): RouterKey = PerseusBackStackKey(
+        id = UUID.randomUUID().toString(),
+        routeKey = key,
+        groupName = groupName,
+        correlationId = correlationId,
+    )
 
     fun navigateTo(key: RouterKey) { currentBackStack.add(asBackStackKey(key)) }
 
@@ -91,7 +100,7 @@ internal class PerseusNavigationState private constructor(
         val bs = getOrCreateTabBackStack(tabIndex)
         val removed = if (resetRoot) bs.toList() else bs.drop(1)
         if (resetRoot) {
-            bs.clear(); bs.add(createBackStackKey(_topLevelRoutes[tabIndex]))
+            bs.clear(); bs.add(createBackStackKey(_topLevelRoutes[tabIndex].routeKey()))
         } else {
             while (bs.size > 1) bs.removeAt(bs.lastIndex)
         }
@@ -152,6 +161,8 @@ internal class PerseusNavigationState private constructor(
     data class EntrySnapshot(
         val id: String,
         val route: RouteSnapshot,
+        val groupName: String?,
+        val correlationId: String,
     ) : java.io.Serializable
 
     fun toSnapshot(): Snapshot = Snapshot(
@@ -165,7 +176,7 @@ internal class PerseusNavigationState private constructor(
     companion object {
         fun unauthenticated(rootKey: RouterKey) = PerseusNavigationState(
             initialMode = Mode.Unauthenticated,
-            initialBackStack = listOf(PerseusBackStackKey(UUID.randomUUID().toString(), rootKey)),
+            initialBackStack = listOf(createInitialBackStackKey(rootKey)),
             initialTopLevelRoutes = emptyList(),
             initialTabBackStacks = emptyMap(),
             initialTabIndex = 0
@@ -184,7 +195,12 @@ internal class PerseusNavigationState private constructor(
         }
 
         private fun restoreEntry(snapshot: EntrySnapshot): RouterKey =
-            PerseusBackStackKey(snapshot.id, restoreRoute(snapshot.route))
+            PerseusBackStackKey(
+                id = snapshot.id,
+                routeKey = restoreRoute(snapshot.route),
+                groupName = snapshot.groupName?.let { GroupName(it) },
+                correlationId = snapshot.correlationId,
+            )
 
         private fun restoreRoute(snapshot: RouteSnapshot): RouterKey =
             DefaultRouterKeyCodec.decode(
@@ -192,6 +208,14 @@ internal class PerseusNavigationState private constructor(
                     className = snapshot.keyClassName,
                     payload = snapshot.keyPayload,
                 )
+            )
+
+        private fun createInitialBackStackKey(key: RouterKey): RouterKey =
+            PerseusBackStackKey(
+                id = UUID.randomUUID().toString(),
+                routeKey = key,
+                groupName = null,
+                correlationId = UUID.randomUUID().toString(),
             )
 
         val Saver: Saver<PerseusNavigationState, Snapshot> = Saver(
@@ -208,6 +232,8 @@ internal fun keyClassName(key: RouterKey): String = key::class.qualifiedName ?: 
 internal data class PerseusBackStackKey(
     val id: String,
     val routeKey: RouterKey,
+    val groupName: GroupName?,
+    val correlationId: String,
 ) : RouterKey {
     override val hidesBottomNavigation: Boolean get() = routeKey.hidesBottomNavigation
 }
@@ -218,8 +244,19 @@ internal fun RouterKey.backStackId(): String =
 internal fun RouterKey.routeKey(): RouterKey =
     (this as? PerseusBackStackKey)?.routeKey ?: this
 
+internal fun RouterKey.groupName(): GroupName? =
+    (this as? PerseusBackStackKey)?.groupName
+
+internal fun RouterKey.correlationId(): String? =
+    (this as? PerseusBackStackKey)?.correlationId
+
 private fun asBackStackKey(key: RouterKey): RouterKey =
-    if (key is PerseusBackStackKey) key else PerseusBackStackKey(UUID.randomUUID().toString(), key)
+    if (key is PerseusBackStackKey) key else PerseusBackStackKey(
+        id = UUID.randomUUID().toString(),
+        routeKey = key,
+        groupName = null,
+        correlationId = UUID.randomUUID().toString(),
+    )
 
 private fun routeSnapshot(key: RouterKey): PerseusNavigationState.RouteSnapshot {
     val encoded = DefaultRouterKeyCodec.encode(key.routeKey())
@@ -233,4 +270,6 @@ private fun entrySnapshot(key: RouterKey): PerseusNavigationState.EntrySnapshot 
     PerseusNavigationState.EntrySnapshot(
         id = key.backStackId(),
         route = routeSnapshot(key),
+        groupName = key.groupName()?.name,
+        correlationId = key.correlationId() ?: UUID.randomUUID().toString(),
     )
