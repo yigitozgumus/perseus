@@ -17,8 +17,9 @@ import com.yigitozgumus.perseus.key.RouterKey
  * Enables incremental migration: existing [ScreenProvider] implementations
  * continue to work while new screens can be pure Compose.
  *
- * The [RouterKey] is stored in fragment arguments as:
+ * The [NavigationContext] is stored in fragment arguments as:
  * - `perseus_key_class`: fully-qualified class name
+ * - `perseus_entry_id`: unique back-stack entry ID
  * - `perseus_correlation_id`: correlation ID for result routing
  *
  * Use [getNavigationContext] in the fragment to retrieve the key.
@@ -44,6 +45,10 @@ public fun <K : RouterKey> FragmentEntry(
             putString(
                 NavigationContext.KEY_CLASS_ENTRY,
                 keyClassName,
+            )
+            putString(
+                NavigationContext.ENTRY_ID_ENTRY,
+                context.entryId,
             )
             putString(
                 NavigationContext.CORRELATION_ID_ENTRY,

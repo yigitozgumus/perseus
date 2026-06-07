@@ -19,6 +19,7 @@ import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.SceneActions
 import com.yigitozgumus.perseus.SceneResultCallback
+import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -83,6 +84,7 @@ internal class PerseusEntryProviderRegistry(
     @Suppress("UNCHECKED_CAST")
     fun provide(backStackKey: RouterKey): NavEntry<RouterKey> {
         val key = backStackKey.routeKey()
+        val entryId = backStackKey.backStackId()
         val metadata = computeAndCacheMetadata(backStackKey)
 
         // 1. Compose screen provider
@@ -90,9 +92,12 @@ internal class PerseusEntryProviderRegistry(
             @Suppress("UNCHECKED_CAST")
             val typed = foundProvider as ComposeScreenProvider<RouterKey>
             val isScene = key is DialogKey || key is BottomSheetKey
-            val corrId = providedCorrelationIds[backStackKey.backStackId()]
-            val navCtx = corrId?.let { NavigationContext(key, it) }
-            return NavEntry(key = backStackKey, contentKey = backStackKey.backStackId(), metadata = metadata) {
+            val navCtx = NavigationContext(
+                key = key,
+                entryId = entryId,
+                correlationId = providedCorrelationIds[entryId] ?: newCorrelationId(),
+            )
+            return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 CompositionLocalProvider(LocalNavigationContext provides navCtx) {
                     if (isScene) {
                         CompositionLocalProvider(LocalSceneActions provides createSceneActions(backStackKey)) {
@@ -109,11 +114,11 @@ internal class PerseusEntryProviderRegistry(
         sceneProviders.find { it.canProvide(key) }?.let { provider ->
             val sceneCallback = object : SceneResultCallback {
                 override fun <R : Any> sendResult(result: R) {
-                    providedCorrelationIds[backStackKey.backStackId()]?.let { resultBus.send(it, result) }
+                    providedCorrelationIds[entryId]?.let { resultBus.send(it, result) }
                 }
             }
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
-            return NavEntry(key = backStackKey, contentKey = backStackKey.backStackId(), metadata = metadata) {
+            return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 (provider as ComposeSceneProvider<RouterKey>).Content(
                     key = key,
                     onResult = sceneCallback,
@@ -124,14 +129,17 @@ internal class PerseusEntryProviderRegistry(
 
         // 3. Fragment provider
         fragmentProviders.find { it.canProvide(key) }?.let { provider ->
-            val corrId = providedCorrelationIds[backStackKey.backStackId()]
-            val ctx = corrId?.let { NavigationContext(key, it) } ?: NavigationContext(key)
+            val ctx = NavigationContext(
+                key = key,
+                entryId = entryId,
+                correlationId = providedCorrelationIds[entryId] ?: newCorrelationId(),
+            )
             val factory = fragmentEntryFactory
                 ?: throw IllegalArgumentException(
                     "Fragment provider found for ${key::class.simpleName} but no fragmentEntryFactory set. " +
                     "Add perseus-interop dependency and pass a FragmentEntryFactory to PerseusNavigatorFactory."
                 )
-            return NavEntry(key = backStackKey, contentKey = backStackKey.backStackId(), metadata = metadata) {
+            return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 factory.Create(provider, key, ctx)
             }
         }
@@ -172,6 +180,8 @@ internal class PerseusEntryProviderRegistry(
         } ?: emptyMap()
         return sceneMeta + groupMeta + transMeta
     }
+
+    private fun newCorrelationId(): String = UUID.randomUUID().toString()
 
     private fun createSceneActions(backStackKey: RouterKey): SceneActions = object : SceneActions {
         override fun <R : Any> sendResult(result: R) {
