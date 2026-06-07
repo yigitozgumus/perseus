@@ -1,6 +1,5 @@
 package com.yigitozgumus.perseus
 
-import androidx.compose.runtime.Composable
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
@@ -13,7 +12,7 @@ object PerseusNavigatorFactory {
         composeProviders: List<ComposeScreenProvider<*>>,
         fragmentProviders: List<FragmentProviderMarker>,
         sceneProviders: List<ComposeSceneProvider<*>>,
-        fragmentEntryFactory: (@Composable (FragmentProviderMarker, RouterKey, NavigationContext<RouterKey>) -> Unit)? = null
+        fragmentEntryFactory: FragmentEntryFactory? = null
     ): PerseusNavigator {
         val stateHolder = PerseusNavigationStateHolder()
         val resultBus = ResultBusAdapter()

@@ -8,6 +8,7 @@ import androidx.navigation3.scene.DialogSceneStrategy
 import com.yigitozgumus.perseus.BottomSheetKey
 import com.yigitozgumus.perseus.ComposeSceneProvider
 import com.yigitozgumus.perseus.ComposeScreenProvider
+import com.yigitozgumus.perseus.FragmentEntryFactory
 import com.yigitozgumus.perseus.FragmentProviderMarker
 import com.yigitozgumus.perseus.DialogKey
 import com.yigitozgumus.perseus.GroupName
@@ -36,7 +37,7 @@ class PerseusEntryProviderRegistry(
     private val fragmentProviders: List<FragmentProviderMarker>,
     private val sceneProviders: List<ComposeSceneProvider<*>>,
     private val resultBus: ResultBusAdapter,
-    private val fragmentEntryFactory: (@Composable (FragmentProviderMarker, RouterKey, NavigationContext<RouterKey>) -> Unit)? = null
+    private val fragmentEntryFactory: FragmentEntryFactory? = null
 ) {
     // Group tracking: key → groupName
     private val pendingGroups = ConcurrentHashMap<RouterKey, GroupName>()
@@ -116,10 +117,10 @@ class PerseusEntryProviderRegistry(
             val factory = fragmentEntryFactory
                 ?: throw IllegalArgumentException(
                     "Fragment provider found for ${key::class.simpleName} but no fragmentEntryFactory set. " +
-                    "Add perseus-interop dependency and pass FragmentEntry to PerseusEntryProviderRegistry."
+                    "Add perseus-interop dependency and pass a FragmentEntryFactory to PerseusNavigatorFactory."
                 )
             return NavEntry(key = key, metadata = metadata) {
-                factory(provider, key, ctx)
+                factory.Create(provider, key, ctx)
             }
         }
 

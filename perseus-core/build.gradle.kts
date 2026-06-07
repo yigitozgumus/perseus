@@ -1,8 +1,10 @@
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
+
 
 android {
     namespace = "com.yigitozgumus.perseus.core"
@@ -25,6 +27,10 @@ android {
     buildFeatures {
         compose = true
     }
+}
+
+kotlin {
+    explicitApiWarning()
 }
 
 dependencies {

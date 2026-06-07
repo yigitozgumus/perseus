@@ -18,7 +18,7 @@ public fun <K : RouterKey> FragmentEntry(
     key: K,
     provider: ScreenProvider<K>,
     context: NavigationContext<K>,
-    modifier: Modifier = Modifier.fillMaxSize()
+    modifier: Modifier = Modifier,
 ) {
     val fragmentTemplate = remember(key) { provider.provide(key) }
     val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
