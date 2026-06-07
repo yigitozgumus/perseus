@@ -44,7 +44,7 @@ private const val ANIM_DURATION = 300
 private const val SCRIM_FRACTION = 0.5f
 private const val DISMISS_FRACTION = 0.3f
 
-data class BottomSheetProperties(
+internal data class BottomSheetProperties(
     val dismissOnBackPress: Boolean = true,
     val dismissOnSwipeDown: Boolean = true,
     val dismissOnClickOutside: Boolean = true
@@ -131,7 +131,7 @@ private fun BottomSheetContainer(
     }
 }
 
-class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
+internal class BottomSheetSceneStrategy<T : Any> : SceneStrategy<T> {
     override fun SceneStrategyScope<T>.calculateScene(entries: List<NavEntry<T>>): Scene<T>? {
         val last = entries.lastOrNull() ?: return null
         val props = last.metadata[BOTTOM_SHEET_KEY] as? BottomSheetProperties ?: return null

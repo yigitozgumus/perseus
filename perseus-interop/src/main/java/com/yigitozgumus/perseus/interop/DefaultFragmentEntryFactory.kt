@@ -6,7 +6,7 @@ import com.yigitozgumus.perseus.FragmentProviderMarker
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.RouterKey
 
-object DefaultFragmentEntryFactory : FragmentEntryFactory {
+public object DefaultFragmentEntryFactory : FragmentEntryFactory {
     @Composable
     @Suppress("UNCHECKED_CAST")
     override fun Create(

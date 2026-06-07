@@ -13,7 +13,7 @@ import com.yigitozgumus.perseus.RouterKey
  * Calls to auth transition methods before [attach] are buffered and
  * replayed when the state becomes available.
  */
-class PerseusNavigationStateHolder : NavigationStateManager {
+internal class PerseusNavigationStateHolder : NavigationStateManager {
 
     private sealed interface Pending {
         data class StartUnauthenticated(val key: RouterKey) : Pending

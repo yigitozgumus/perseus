@@ -2,7 +2,7 @@ package com.yigitozgumus.perseus
 
 import androidx.compose.runtime.Composable
 
-interface ComposeSceneProvider<K : RouterKey> {
-    fun canProvide(key: RouterKey): Boolean
-    @Composable fun Content(key: K, onResult: SceneResultCallback, onDismiss: () -> Unit)
+public interface ComposeSceneProvider<K : RouterKey> {
+    public fun canProvide(key: RouterKey): Boolean
+    @Composable public fun Content(key: K, onResult: SceneResultCallback, onDismiss: () -> Unit)
 }

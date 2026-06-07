@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Implements [PerseusViewModelStoreProvider] — the single source of truth
  * for NavEntry-scoped ViewModels used by both Compose screens and Fragment screens.
  */
-class PerseusViewModelStoreRegistry : PerseusViewModelStoreProvider {
+internal class PerseusViewModelStoreRegistry : PerseusViewModelStoreProvider {
 
     private val stores = ConcurrentHashMap<RouterKey, ViewModelStore>()
 

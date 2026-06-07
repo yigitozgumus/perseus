@@ -20,7 +20,7 @@ import java.util.UUID
  * Result passing goes through [ResultBusAdapter] — a SharedFlow-based event bus.
  * Group tracking is handled by [PerseusEntryProviderRegistry].
  */
-class PerseusNavigatorImpl(
+internal class PerseusNavigatorImpl(
     internal val stateHolder: PerseusNavigationStateHolder,
     private val resultBus: ResultBusAdapter,
     internal val entryRegistry: PerseusEntryProviderRegistry,

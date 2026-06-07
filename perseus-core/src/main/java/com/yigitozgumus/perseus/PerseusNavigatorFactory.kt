@@ -6,9 +6,9 @@ import com.yigitozgumus.perseus.internal.PerseusNavigatorImpl
 import com.yigitozgumus.perseus.internal.PerseusViewModelStoreRegistry
 import com.yigitozgumus.perseus.internal.ResultBusAdapter
 
-object PerseusNavigatorFactory {
+public object PerseusNavigatorFactory {
 
-    fun create(
+    public fun create(
         composeProviders: List<ComposeScreenProvider<*>>,
         fragmentProviders: List<FragmentProviderMarker>,
         sceneProviders: List<ComposeSceneProvider<*>>,

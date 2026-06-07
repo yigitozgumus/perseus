@@ -15,8 +15,8 @@ package com.yigitozgumus.perseus
  * navigator.popUntil(LoginFlowGroup) // clears both steps
  * ```
  */
-open class GroupName(val name: String) {
-    override fun equals(other: Any?): Boolean = other is GroupName && name == other.name
-    override fun hashCode(): Int = name.hashCode()
-    override fun toString(): String = "GroupName($name)"
+public open class GroupName(public val name: String) {
+    public override fun equals(other: Any?): Boolean = other is GroupName && name == other.name
+    public override fun hashCode(): Int = name.hashCode()
+    public override fun toString(): String = "GroupName($name)"
 }

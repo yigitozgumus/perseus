@@ -24,7 +24,7 @@ import com.yigitozgumus.perseus.RouterKey
  * to be provided (see [companion.resolver]).
  */
 @Stable
-class PerseusNavigationState private constructor(
+internal class PerseusNavigationState private constructor(
     initialMode: Mode,
     initialBackStack: List<RouterKey>,
     initialTopLevelRoutes: List<RouterKey>,
@@ -171,7 +171,7 @@ class PerseusNavigationState private constructor(
 
 // ── Key serialization ──────────────────────────────────────────────────────
 
-interface KeyResolver {
+internal interface KeyResolver {
     fun resolve(className: String): RouterKey?
 }
 

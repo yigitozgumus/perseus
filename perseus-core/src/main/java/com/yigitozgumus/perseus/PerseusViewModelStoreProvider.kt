@@ -21,23 +21,23 @@ import androidx.lifecycle.ViewModelStoreOwner
  * This provider decouples ViewModel lifetime from Fragment view lifetime.
  * The store lives as long as the RouterKey is in the back stack.
  */
-interface PerseusViewModelStoreProvider {
+public interface PerseusViewModelStoreProvider {
 
     /**
      * Returns a ViewModelStoreOwner scoped to the given RouterKey.
      * Creates the store on first access (lazy).
      */
-    fun getOwner(key: RouterKey): ViewModelStoreOwner
+    public fun getOwner(key: RouterKey): ViewModelStoreOwner
 
     /**
      * Clears and removes the ViewModelStore for the given key.
      * Called ONLY when the key is popped from the back stack.
      */
-    fun clear(key: RouterKey)
+    public fun clear(key: RouterKey)
 
     /**
      * Keeps only the specified keys, clearing all others.
      * Used on full navigation resets (e.g., logout).
      */
-    fun retainOnly(keys: Set<RouterKey>)
+    public fun retainOnly(keys: Set<RouterKey>)
 }

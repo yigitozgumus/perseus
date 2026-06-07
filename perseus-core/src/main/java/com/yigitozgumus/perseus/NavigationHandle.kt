@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.Flow
  * Note: Results are delivered via SharedFlow. Late observers won't receive
  * results emitted before subscription.
  */
-interface NavigationHandle {
+public interface NavigationHandle {
     /** Unique identifier linking this handle to a specific navigation session. */
-    val correlationId: String
+    public val correlationId: String
 
     /**
      * Observes results sent by the child screen for this navigation session.
@@ -33,5 +33,5 @@ interface NavigationHandle {
      * @param R The expected result type.
      * @return A Flow emitting results of type R.
      */
-    fun <R : Any> observeResult(): Flow<R>
+    public fun <R : Any> observeResult(): Flow<R>
 }

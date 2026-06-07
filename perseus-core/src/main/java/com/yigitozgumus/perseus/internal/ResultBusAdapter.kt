@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.map
  * - Child calls [send] to emit a result
  * - Only the handle with the matching correlation ID receives the result
  */
-class ResultBusAdapter {
+internal class ResultBusAdapter {
 
     private val results = MutableSharedFlow<Pair<String, Any>>(
         extraBufferCapacity = 64

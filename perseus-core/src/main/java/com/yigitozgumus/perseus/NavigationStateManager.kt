@@ -15,16 +15,16 @@ package com.yigitozgumus.perseus
  * stateManager.resetToUnauthenticated(LoginKey)
  * ```
  */
-interface NavigationStateManager {
+public interface NavigationStateManager {
     /** Start in unauthenticated mode with the given initial screen. */
-    fun startUnauthenticated(initialKey: RouterKey)
+    public fun startUnauthenticated(initialKey: RouterKey)
 
     /** Transition to authenticated mode with tab root keys. */
-    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>)
+    public fun transitionToAuthenticated(tabRootKeys: List<RouterKey>)
 
     /** Reset to unauthenticated mode (e.g., logout). */
-    fun resetToUnauthenticated(initialKey: RouterKey)
+    public fun resetToUnauthenticated(initialKey: RouterKey)
 
     /** Whether the navigator is currently in authenticated (tabbed) mode. */
-    val isAuthenticated: Boolean
+    public val isAuthenticated: Boolean
 }

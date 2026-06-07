@@ -9,7 +9,7 @@ import androidx.compose.runtime.Composable
  * for a given [RouterKey]. The perseus-interop module provides
  * [DefaultFragmentEntryFactory] which wraps fragments via [FragmentEntry].
  */
-interface FragmentEntryFactory {
+public interface FragmentEntryFactory {
     @Composable
-    fun Create(provider: FragmentProviderMarker, key: RouterKey, context: NavigationContext<RouterKey>)
+    public fun Create(provider: FragmentProviderMarker, key: RouterKey, context: NavigationContext<RouterKey>)
 }

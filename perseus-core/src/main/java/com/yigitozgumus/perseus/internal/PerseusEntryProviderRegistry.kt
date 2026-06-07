@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
  * - Group membership for [PerseusNavigatorImpl.clearGroup] operations
  * - Correlation IDs for result routing
  */
-class PerseusEntryProviderRegistry(
+internal class PerseusEntryProviderRegistry(
     private val composeProviders: List<ComposeScreenProvider<*>>,
     private val fragmentProviders: List<FragmentProviderMarker>,
     private val sceneProviders: List<ComposeSceneProvider<*>>,

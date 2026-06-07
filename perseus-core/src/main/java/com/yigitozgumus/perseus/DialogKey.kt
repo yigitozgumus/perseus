@@ -1,3 +1,3 @@
 package com.yigitozgumus.perseus
 
-interface DialogKey : RouterKey
+public interface DialogKey : RouterKey

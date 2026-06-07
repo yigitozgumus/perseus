@@ -1,6 +1,6 @@
 package com.yigitozgumus.perseus
 
-interface BottomSheetKey : RouterKey {
-    val isCancellable: Boolean get() = true
-    val isDraggable: Boolean get() = true
+public interface BottomSheetKey : RouterKey {
+    public val isCancellable: Boolean get() = true
+    public val isDraggable: Boolean get() = true
 }

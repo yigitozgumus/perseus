@@ -22,7 +22,7 @@ import androidx.lifecycle.LifecycleOwner
  * | `clearGroup(name)` | `popUntil(groupName)` |
  * | `observeDestinationChanges(...)` | `observeDestinationChanges(...)` |
  */
-interface PerseusNavigator {
+public interface PerseusNavigator {
 
     // ── Navigation ──────────────────────────────────────────────────────────
 
@@ -33,19 +33,19 @@ interface PerseusNavigator {
      * @param groupName Optional navigation group for [popUntil] clearing.
      * @return A [NavigationHandle] for observing results from this navigation.
      */
-    fun navigateTo(key: RouterKey, groupName: GroupName? = null): NavigationHandle
+    public fun navigateTo(key: RouterKey, groupName: GroupName? = null): NavigationHandle
 
     /** Pops the current screen from the back stack. */
-    fun pop()
+    public fun pop()
 
     /** Returns true if the back stack has more than one entry. */
-    fun canGoBack(): Boolean
+    public fun canGoBack(): Boolean
 
     /**
      * Pops all screens in the specified navigation group from the current back stack.
      * The root entry is never removed.
      */
-    fun popUntil(groupName: GroupName)
+    public fun popUntil(groupName: GroupName)
 
     // ── Result Passing ──────────────────────────────────────────────────────
 
@@ -55,12 +55,12 @@ interface PerseusNavigator {
      * The result is routed to the [NavigationHandle] that matches the
      * correlation ID in the provided [context].
      */
-    fun <R : Any> sendResult(context: NavigationContext<*>, result: R)
+    public fun <R : Any> sendResult(context: NavigationContext<*>, result: R)
 
     // ── Tab Management (authenticated state) ─────────────────────────────────
 
     /** Switches to the given tab index. Preserves per-tab back stack state. */
-    fun switchTab(tabIndex: Int)
+    public fun switchTab(tabIndex: Int)
 
     /**
      * Resets the specified tab to its root.
@@ -68,27 +68,27 @@ interface PerseusNavigator {
      * @param tabIndex The tab to reset.
      * @param resetRoot If true, recreates the root entry. If false, keeps existing root.
      */
-    fun resetTab(tabIndex: Int, resetRoot: Boolean = false)
+    public fun resetTab(tabIndex: Int, resetRoot: Boolean = false)
 
     /** Resets the current tab to its root. */
-    fun resetCurrentTab(resetRoot: Boolean = false)
+    public fun resetCurrentTab(resetRoot: Boolean = false)
 
     /**
      * Resets all tabs and navigation state with the given root keys.
      * Replaces Medusa's `resetWithFragmentProvider()`.
      */
-    fun resetAllWithKeys(keys: List<RouterKey>)
+    public fun resetAllWithKeys(keys: List<RouterKey>)
 
     /** The currently selected tab index. */
-    val currentTabIndex: Int
+    public val currentTabIndex: Int
 
     // ── Auth State ─────────────────────────────────────────────────────────
 
     /** Transition to authenticated mode with the given tab root keys. */
-    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>)
+    public fun transitionToAuthenticated(tabRootKeys: List<RouterKey>)
 
     /** Start in unauthenticated mode with the given initial screen. */
-    fun startUnauthenticated(initialKey: RouterKey)
+    public fun startUnauthenticated(initialKey: RouterKey)
 
     // ── Observation ─────────────────────────────────────────────────────────
 
@@ -99,7 +99,7 @@ interface PerseusNavigator {
      * @param lifecycleOwner Controls the observer's lifecycle (auto-removed on destroy).
      * @param listener Called with the RouterKey that became visible.
      */
-    fun observeDestinationChanges(
+    public fun observeDestinationChanges(
         lifecycleOwner: LifecycleOwner,
         listener: (RouterKey) -> Unit
     )
@@ -111,7 +111,7 @@ interface PerseusNavigator {
      * @param lifecycleOwner Controls the observer's lifecycle.
      * @param listener Called with the previous and next RouterKey on each transition.
      */
-    fun observeTransaction(
+    public fun observeTransaction(
         lifecycleOwner: LifecycleOwner,
         listener: (previousKey: RouterKey?, nextKey: RouterKey?) -> Unit
     )

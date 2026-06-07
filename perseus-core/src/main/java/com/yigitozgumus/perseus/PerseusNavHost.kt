@@ -29,7 +29,7 @@ import com.yigitozgumus.perseus.RouterKey
 private const val FADE_MS = 200
 
 @Composable
-fun PerseusNavHost(
+public fun PerseusNavHost(
     navigator: PerseusNavigator,
     onPop: () -> Unit,
     initialKey: RouterKey,
