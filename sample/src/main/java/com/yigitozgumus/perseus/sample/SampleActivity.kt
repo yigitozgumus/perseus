@@ -56,35 +56,35 @@ class SampleActivity : FragmentActivity(), KoinComponent {
         enableEdgeToEdge()
 
         setContent {
-            var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+            var selectedStack by rememberSaveable { mutableIntStateOf(0) }
 
             PerseusNavHost(
                 navigator = navigator,
                 initialScope = MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey)),
                 modifier = Modifier.fillMaxSize(),
-                bottomBar = { currentIndex, onTabSelected ->
+                bottomBar = { currentIndex, onStackSelected ->
                     NavigationBar {
                         NavigationBarItem(
                             selected = currentIndex == 0,
-                            onClick = { onTabSelected(0) },
+                            onClick = { onStackSelected(0) },
                             icon = { Icon(Icons.Default.Home, "Home") },
                             label = { Text("Home") }
                         )
                         NavigationBarItem(
                             selected = currentIndex == 1,
-                            onClick = { onTabSelected(1) },
+                            onClick = { onStackSelected(1) },
                             icon = { Icon(Icons.Default.Search, "Search") },
                             label = { Text("Search") }
                         )
                         NavigationBarItem(
                             selected = currentIndex == 2,
-                            onClick = { onTabSelected(2) },
+                            onClick = { onStackSelected(2) },
                             icon = { Icon(Icons.Default.Person, "Profile") },
                             label = { Text("Profile") }
                         )
                     }
                 },
-                onTabChanged = { selectedTab = it },
+                onStackChanged = { selectedStack = it },
             )
         }
     }

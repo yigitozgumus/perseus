@@ -69,12 +69,12 @@ class PerseusNavigationStateRestoreTest {
         val tab1 = RestoreKey(id = 20, label = "profile")
         val state = PerseusNavigationState.singleStack(tab0)
         state.setRootScope(MultiStackSpec(listOf(tab0, tab1)))
-        state.switchTab(1)
+        state.switchStack(1)
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
 
         assertEquals(listOf(tab0, tab1), restored.topLevelRoutes)
-        restored.switchTab(1)
+        restored.switchStack(1)
         assertEquals(tab1, restored.currentBackStack.first().routeKey())
     }
 

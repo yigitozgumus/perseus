@@ -46,6 +46,7 @@ internal class PerseusNavigationStateHolder {
         }
 
     val currentBackStack: SnapshotStateList<RouterKey> get() = state.currentBackStack
-    val currentTabIndex: Int get() = _state?.currentTabIndex ?: 0
+    val currentStackIndex: Int get() = _state?.currentStackIndex ?: 0
+    val currentTabIndex: Int get() = currentStackIndex
     val topLevelRoutes: List<RouterKey> get() = _state?.topLevelRoutes ?: emptyList()
 }

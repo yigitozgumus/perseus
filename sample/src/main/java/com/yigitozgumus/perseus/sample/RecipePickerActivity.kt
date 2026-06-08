@@ -100,7 +100,7 @@ private val recipes = listOf(
     ),
     Recipe(
         "Full Demo",
-        "Tabbed interface with all features (original sample)",
+        "Multi-stack interface with all features (original sample)",
         SampleActivity::class.java,
     ),
 )

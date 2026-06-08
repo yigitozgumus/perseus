@@ -7,11 +7,11 @@ package com.yigitozgumus.perseus
  * for a Compose-based navigation system.
  */
 public data class PerseusNavigatorConfiguration(
-    /** The initial tab to display (0-based). Default is `0`. */
-    public val initialTabIndex: Int = 0,
+    /** The initial stack to display in a multi-stack scope (0-based). Default is `0`. */
+    public val initialStackIndex: Int = 0,
     /**
-     * If `true`, pressing back on the initial tab exits the app.
-     * If `false`, pressing back on any tab at root is blocked.
+     * If `true`, pressing back on the initial stack exits the app.
+     * If `false`, pressing back on any stack at root is blocked.
      */
     public val alwaysExitFromInitial: Boolean = false,
 )

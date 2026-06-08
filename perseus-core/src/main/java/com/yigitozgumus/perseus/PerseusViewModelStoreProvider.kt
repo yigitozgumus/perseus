@@ -16,7 +16,7 @@ import androidx.lifecycle.ViewModelStoreOwner
  * screens wrapped via `AndroidFragment`, the Fragment's default store
  * is tied to the Fragment view lifecycle — it is cleared when the
  * view is destroyed (another screen is pushed on top, or the user
- * switches tabs). This provider decouples ViewModel lifetime from
+ * switches stacks). This provider decouples ViewModel lifetime from
  * Fragment view lifetime: the store lives as long as the entry is
  * in the back stack.
  */

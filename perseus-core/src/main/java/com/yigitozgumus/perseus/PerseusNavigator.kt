@@ -23,9 +23,9 @@ import java.util.UUID
  * |--------|---------|
  * | `start(fragment, groupName)` | `navigateTo(key, groupName)` |
  * | `goBack()` | `pop()` |
- * | `switchTab(index)` | `switchTab(index)` |
- * | `reset(index, resetRoot)` | `resetTab(index, resetRoot)` |
- * | `resetCurrentTab(resetRoot)` | `resetCurrentTab(resetRoot)` |
+ * | `switchTab(index)` | `switchStack(index)` |
+ * | `reset(index, resetRoot)` | `resetStack(index, resetRoot)` |
+ * | `resetCurrentTab(resetRoot)` | `resetCurrentStack(resetRoot)` |
  * | `reset()` / `resetWithFragmentProvider()` | `resetAllWithKeys(keys)` |
  * | `clearGroup(name)` | `popUntil(groupName)` |
  */
@@ -43,7 +43,14 @@ public class PerseusNavigator internal constructor(
     /** Snapshot of the active stack scope. */
     public val currentScope: StackScopeSnapshot get() = stateHolder.state.currentScope
 
+    /** The currently selected stack index, or null when the current scope is single-stack. */
+    public val currentStackIndex: Int? get() = currentScope.currentStackIndex
+
     /** The currently selected tab index. */
+    @Deprecated(
+        message = "Use currentStackIndex instead.",
+        replaceWith = ReplaceWith("currentStackIndex"),
+    )
     public val currentTabIndex: Int get() = stateHolder.currentTabIndex
 
     /**
@@ -103,30 +110,53 @@ public class PerseusNavigator internal constructor(
         resultBus.send(context.correlationId, result)
     }
 
-    /** Switches to the given tab index. Preserves per-tab back stack state. */
-    public fun switchTab(tabIndex: Int): Unit {
-        stateHolder.state.switchTab(tabIndex)
+    /** Switches to the given stack index in the current multi-stack scope. */
+    public fun switchStack(stackIndex: Int): Unit {
+        stateHolder.state.switchStack(stackIndex)
     }
 
     /**
-     * Resets the specified tab to its root.
+     * Resets the specified stack to its root.
      *
-     * @param tabIndex The tab to reset.
+     * @param stackIndex The stack to reset.
      * @param resetRoot If true, recreates the root entry. If false, keeps existing root.
      */
-    public fun resetTab(tabIndex: Int, resetRoot: Boolean = false): Unit {
+    public fun resetStack(stackIndex: Int, resetRoot: Boolean = false): Unit {
         if (!stateHolder.isAttached) return
-        cleanupRemoved(stateHolder.state.resetTab(tabIndex, resetRoot))
+        cleanupRemoved(stateHolder.state.resetStack(stackIndex, resetRoot))
     }
+
+    /** Resets the current stack to its root. */
+    public fun resetCurrentStack(resetRoot: Boolean = false): Unit {
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.resetCurrentStack(resetRoot))
+    }
+
+    /** Switches to the given tab index. Preserves per-tab back stack state. */
+    @Deprecated(
+        message = "Use switchStack instead.",
+        replaceWith = ReplaceWith("switchStack(tabIndex)"),
+    )
+    public fun switchTab(tabIndex: Int): Unit = switchStack(tabIndex)
+
+    /** Resets the specified tab to its root. */
+    @Deprecated(
+        message = "Use resetStack instead.",
+        replaceWith = ReplaceWith("resetStack(tabIndex, resetRoot)"),
+    )
+    public fun resetTab(tabIndex: Int, resetRoot: Boolean = false): Unit =
+        resetStack(tabIndex, resetRoot)
 
     /** Resets the current tab to its root. */
-    public fun resetCurrentTab(resetRoot: Boolean = false): Unit {
-        if (!stateHolder.isAttached) return
-        cleanupRemoved(stateHolder.state.resetCurrentTab(resetRoot))
-    }
+    @Deprecated(
+        message = "Use resetCurrentStack instead.",
+        replaceWith = ReplaceWith("resetCurrentStack(resetRoot)"),
+    )
+    public fun resetCurrentTab(resetRoot: Boolean = false): Unit =
+        resetCurrentStack(resetRoot)
 
     /**
-     * Resets all tabs and navigation state with the given root keys.
+     * Resets all stacks and navigation state with the given root keys.
      * Replaces Medusa's `resetWithFragmentProvider()`.
      */
     public fun resetAllWithKeys(keys: List<RouterKey>): Unit {

@@ -60,12 +60,12 @@ class ScopeActivity : ComponentActivity() {
                 navigator = navigator,
                 initialScope = SingleStackSpec(LoginKey),
                 modifier = Modifier.fillMaxSize(),
-                bottomBar = { selectedIndex, onTabSelected ->
+                bottomBar = { selectedIndex, onStackSelected ->
                     NavigationBar {
                         listOf("Home", "Search").forEachIndexed { index, label ->
                             NavigationBarItem(
                                 selected = selectedIndex == index,
-                                onClick = { onTabSelected(index) },
+                                onClick = { onStackSelected(index) },
                                 icon = {},
                                 label = { Text(label) },
                             )
