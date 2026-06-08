@@ -58,7 +58,7 @@ class ScopeActivity : ComponentActivity() {
         setContent {
             PerseusNavHost(
                 navigator = navigator,
-                initialKey = LoginKey,
+                initialScope = SingleStackSpec(LoginKey),
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = { selectedIndex, onTabSelected ->
                     NavigationBar {

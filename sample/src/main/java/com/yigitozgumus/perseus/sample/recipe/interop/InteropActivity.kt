@@ -27,6 +27,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
 import com.yigitozgumus.perseus.interop.ScreenProvider
 import com.yigitozgumus.perseus.key.RouterKey
@@ -51,7 +52,7 @@ class InteropActivity : FragmentActivity() {
         setContent {
             PerseusNavHost(
                 navigator = navigator,
-                initialKey = HomeKey,
+                initialScope = SingleStackSpec(HomeKey),
                 modifier = Modifier.fillMaxSize(),
             )
         }

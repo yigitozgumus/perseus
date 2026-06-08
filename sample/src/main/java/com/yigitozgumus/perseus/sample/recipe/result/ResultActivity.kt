@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ReceiverKey
@@ -56,7 +57,7 @@ class ResultActivity : ComponentActivity() {
         setContent {
             PerseusNavHost(
                 navigator = navigator,
-                initialKey = SenderKey,
+                initialScope = SingleStackSpec(SenderKey),
                 modifier = Modifier.fillMaxSize(),
             )
         }

@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.CustomSheetKey
@@ -57,7 +58,7 @@ class CustomSheetActivity : ComponentActivity() {
         setContent {
             PerseusNavHost(
                 navigator = navigator,
-                initialKey = HomeKey,
+                initialScope = SingleStackSpec(HomeKey),
                 modifier = Modifier.fillMaxSize(),
             )
         }

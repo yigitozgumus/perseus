@@ -2,7 +2,6 @@ package com.yigitozgumus.perseus.sample
 
 import android.app.Application
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,7 +22,6 @@ import androidx.fragment.app.FragmentActivity
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavHost
-import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.sample.di.SampleModule
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
 import com.yigitozgumus.perseus.sample.keys.HomeKey
@@ -57,14 +55,12 @@ class SampleActivity : FragmentActivity(), KoinComponent {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        navigator.setRootScope(MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey)))
-
         setContent {
             var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
             PerseusNavHost(
                 navigator = navigator,
-                initialKey = HomeKey,
+                initialScope = MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey)),
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = { currentIndex, onTabSelected ->
                     NavigationBar {

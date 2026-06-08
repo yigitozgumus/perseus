@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
@@ -42,7 +43,7 @@ class ComposeOnlyActivity : ComponentActivity() {
         setContent {
             PerseusNavHost(
                 navigator = navigator,
-                initialKey = HomeKey,
+                initialScope = SingleStackSpec(HomeKey),
                 modifier = Modifier.fillMaxSize(),
             )
         }

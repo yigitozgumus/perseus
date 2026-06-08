@@ -47,7 +47,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * Stack switching and reset are handled directly via [navigator].
  *
  * @param navigator The [PerseusNavigator] driving all navigation.
- * @param initialKey The initial screen to show before any root scope replacement.
+ * @param initialScope The initial stack scope to show before any root scope replacement.
  * @param modifier Compose modifier for the host container.
  * @param bottomBar Slot for the bottom navigation bar (multi-stack mode).
  *   Receives the current tab index and a callback for tab selection.
@@ -59,7 +59,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
 @Composable
 public fun PerseusNavHost(
     navigator: PerseusNavigator,
-    initialKey: RouterKey,
+    initialScope: StackScopeSpec,
     modifier: Modifier = Modifier,
     bottomBar: @Composable (
         selectedIndex: Int,
@@ -81,7 +81,7 @@ public fun PerseusNavHost(
     val viewModelStoreRegistry = navigator.viewModelStoreRegistry
 
     val navigationState = rememberSaveable(saver = PerseusNavigationState.Saver) {
-        PerseusNavigationState.singleStack(initialKey)
+        PerseusNavigationState.fromSpec(initialScope)
     }
 
     DisposableEffect(navigationState) {

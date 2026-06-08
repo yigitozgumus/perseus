@@ -145,26 +145,8 @@ internal class PerseusNavigationState private constructor(
         if (keys.size == 1) setRootScope(SingleStackSpec(keys.first()))
         else setRootScope(MultiStackSpec(keys))
 
-    private fun createScopeState(spec: StackScopeSpec): StackScopeState {
-        val id = spec.id ?: StackScopeId.create()
-        return StackScopeState(
-            id = id.value,
-            container = when (spec) {
-                is SingleStackSpec -> SingleStackState(
-                    listOf(createBackStackKey(spec.initialKey)).toMutableStateList()
-                )
-                is MultiStackSpec -> MultiStackState(
-                    rootKeys = spec.rootKeys,
-                    backStacks = mutableMapOf(
-                        spec.initialStackIndex to listOf(
-                            createBackStackKey(spec.rootKeys[spec.initialStackIndex])
-                        ).toMutableStateList()
-                    ),
-                    initialStackIndex = spec.initialStackIndex,
-                )
-            },
-        )
-    }
+    private fun createScopeState(spec: StackScopeSpec): StackScopeState =
+        createInitialScopeState(spec)
 
     private fun allBackStackEntries(): List<RouterKey> =
         scopeStack.flatMap { it.container.allBackStackEntries() }
@@ -213,16 +195,11 @@ internal class PerseusNavigationState private constructor(
         private const val SINGLE_STACK_TYPE = 0
         private const val MULTI_STACK_TYPE = 1
 
-        fun singleStack(rootKey: RouterKey) = PerseusNavigationState(
-            initialScopes = listOf(
-                StackScopeState(
-                    id = UUID.randomUUID().toString(),
-                    container = SingleStackState(
-                        listOf(createInitialBackStackKey(rootKey)).toMutableStateList()
-                    ),
-                )
-            )
+        fun fromSpec(spec: StackScopeSpec) = PerseusNavigationState(
+            initialScopes = listOf(createInitialScopeState(spec))
         )
+
+        fun singleStack(rootKey: RouterKey) = fromSpec(SingleStackSpec(rootKey))
 
         fun fromSnapshot(snapshot: Snapshot): PerseusNavigationState {
             require(snapshot.scopes.isNotEmpty()) { "PerseusNavigationState snapshot requires at least one scope." }
@@ -233,6 +210,27 @@ internal class PerseusNavigationState private constructor(
                         container = restoreContainer(scope.container),
                     )
                 }
+            )
+        }
+
+        private fun createInitialScopeState(spec: StackScopeSpec): StackScopeState {
+            val id = spec.id ?: StackScopeId.create()
+            return StackScopeState(
+                id = id.value,
+                container = when (spec) {
+                    is SingleStackSpec -> SingleStackState(
+                        listOf(createInitialBackStackKey(spec.initialKey)).toMutableStateList()
+                    )
+                    is MultiStackSpec -> MultiStackState(
+                        rootKeys = spec.rootKeys,
+                        backStacks = mutableMapOf(
+                            spec.initialStackIndex to listOf(
+                                createInitialBackStackKey(spec.rootKeys[spec.initialStackIndex])
+                            ).toMutableStateList()
+                        ),
+                        initialStackIndex = spec.initialStackIndex,
+                    )
+                },
             )
         }
 
