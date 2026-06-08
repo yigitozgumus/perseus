@@ -50,8 +50,8 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * @param initialScope The initial stack scope to show before any root scope replacement.
  * @param modifier Compose modifier for the host container.
  * @param bottomBar Slot for the bottom navigation bar (multi-stack mode).
- *   Receives the current stack index and a callback for stack selection.
- * @param onStackChanged Notified when the selected stack changes (for UI state).
+ *   Receives the current tab index and a callback for tab selection.
+ * @param onTabChanged Notified when the selected tab changes (for UI state).
  * @param transitionSpec Forward navigation transition animation.
  * @param popTransitionSpec Back navigation transition animation.
  * @param predictivePopTransitionSpec Predictive back gesture animation.
@@ -63,9 +63,9 @@ public fun PerseusNavHost(
     modifier: Modifier = Modifier,
     bottomBar: @Composable (
         selectedIndex: Int,
-        onStackSelected: (Int) -> Unit,
+        onTabSelected: (Int) -> Unit,
     ) -> Unit = { _, _ -> },
-    onStackChanged: (Int) -> Unit = {},
+    onTabChanged: (Int) -> Unit = {},
     transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
         fastFadeTransition()
     },
@@ -121,7 +121,7 @@ public fun PerseusNavHost(
             sceneStrategies = sceneStrategies,
             navigator = navigator,
             bottomBar = bottomBar,
-            onStackChanged = onStackChanged,
+            onTabChanged = onTabChanged,
             transitionSpec = transitionSpec,
             popTransitionSpec = popTransitionSpec,
             predictivePopTransitionSpec = predictivePopTransitionSpec,
@@ -138,14 +138,14 @@ private fun MultiStackHost(
     sceneStrategies: List<SceneStrategy<RouterKey>>,
     navigator: PerseusNavigator,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
-    onStackChanged: (Int) -> Unit,
+    onTabChanged: (Int) -> Unit,
     transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
     popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
     predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(Int) -> ContentTransform,
     modifier: Modifier = Modifier,
 ) {
-    LaunchedEffect(navigationState.currentStackIndex) {
-        onStackChanged(navigationState.currentStackIndex)
+    LaunchedEffect(navigationState.currentTabIndex) {
+        onTabChanged(navigationState.currentTabIndex)
     }
 
     val showBottomBar by remember(navigationState.currentBackStack.toList()) {
@@ -176,11 +176,11 @@ private fun MultiStackHost(
             )
         }
         if (showBottomBar) {
-            bottomBar(navigationState.currentStackIndex) { index ->
-                if (index == navigationState.currentStackIndex) {
-                    navigator.resetCurrentStack(resetRoot = false)
+            bottomBar(navigationState.currentTabIndex) { index ->
+                if (index == navigationState.currentTabIndex) {
+                    navigator.resetCurrentTab(resetRoot = false)
                 } else {
-                    navigator.switchStack(index)
+                    navigator.switchTab(index)
                 }
             }
         }

@@ -55,10 +55,8 @@ internal class PerseusNavigationState private constructor(
     val topLevelRoutes: List<RouterKey>
         get() = (currentContainer as? MultiStackState)?.rootKeys ?: emptyList()
 
-    val currentStackIndex: Int
+    val currentTabIndex: Int
         get() = (currentContainer as? MultiStackState)?.currentStackIndex ?: 0
-
-    val currentTabIndex: Int get() = currentStackIndex
 
     val currentScope: StackScopeSnapshot
         get() = currentScopeState.toSnapshot()
@@ -94,35 +92,27 @@ internal class PerseusNavigationState private constructor(
         return removed
     }
 
-    fun switchStack(index: Int) {
+    fun switchTab(index: Int) {
         val container = currentContainer as? MultiStackState ?: return
         if (index !in container.rootKeys.indices) return
         container.currentStackIndex = index
     }
 
-    fun resetStack(stackIndex: Int, resetRoot: Boolean = false): List<RouterKey> {
+    fun resetTab(tabIndex: Int, resetRoot: Boolean = false): List<RouterKey> {
         val container = currentContainer as? MultiStackState ?: return emptyList()
-        if (stackIndex !in container.rootKeys.indices) return emptyList()
-        val bs = container.getOrCreateStack(stackIndex)
+        if (tabIndex !in container.rootKeys.indices) return emptyList()
+        val bs = container.getOrCreateStack(tabIndex)
         val removed = if (resetRoot) bs.toList() else bs.drop(1)
         if (resetRoot) {
-            bs.clear(); bs.add(createBackStackKey(container.rootKeys[stackIndex].routeKey()))
+            bs.clear(); bs.add(createBackStackKey(container.rootKeys[tabIndex].routeKey()))
         } else {
             while (bs.size > 1) bs.removeAt(bs.lastIndex)
         }
         return removed
     }
 
-    fun resetCurrentStack(resetRoot: Boolean = false): List<RouterKey> =
-        resetStack(currentStackIndex, resetRoot)
-
-    fun switchTab(index: Int) = switchStack(index)
-
-    fun resetTab(tabIndex: Int, resetRoot: Boolean = false): List<RouterKey> =
-        resetStack(tabIndex, resetRoot)
-
     fun resetCurrentTab(resetRoot: Boolean = false): List<RouterKey> =
-        resetCurrentStack(resetRoot)
+        resetTab(currentTabIndex, resetRoot)
 
     fun setRootScope(spec: StackScopeSpec): List<RouterKey> {
         val removed = allBackStackEntries()

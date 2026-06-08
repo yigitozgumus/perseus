@@ -13,19 +13,19 @@ import org.junit.Test
 class PerseusNavigatorCleanupTest {
 
     @Test
-    fun resetStackCleansViewModelStoresForRemovedEntriesOnNonCurrentStack() {
+    fun resetTabCleansViewModelStoresForRemovedEntriesOnNonCurrentTab() {
         val fixture = navigatorFixture(CleanupTab0)
         fixture.navigator.setRootScope(MultiStackSpec(listOf(CleanupTab0, CleanupTab1)))
-        fixture.navigator.switchStack(1)
+        fixture.navigator.switchTab(1)
         fixture.navigator.navigateTo(CleanupChild)
         val childEntryId = fixture.state.currentBackStack.last().backStackId()
         fixture.viewModelStoreRegistry.getOwner(childEntryId)
 
-        fixture.navigator.switchStack(0)
-        fixture.navigator.resetStack(stackIndex = 1, resetRoot = false)
+        fixture.navigator.switchTab(0)
+        fixture.navigator.resetTab(tabIndex = 1, resetRoot = false)
 
         assertNoOwner(childEntryId)
-        fixture.navigator.switchStack(1)
+        fixture.navigator.switchTab(1)
         assertEquals(1, fixture.state.currentBackStack.size)
         assertEquals(CleanupTab1, fixture.state.currentBackStack.first().routeKey())
     }
