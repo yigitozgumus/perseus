@@ -2,10 +2,14 @@ package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
+import com.yigitozgumus.perseus.SingleStackSpec
+import com.yigitozgumus.perseus.StackScopeKind
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
+import org.junit.Assert.fail
 import org.junit.Test
 
 class PerseusNavigationStateRestoreTest {
@@ -78,7 +82,70 @@ class PerseusNavigationStateRestoreTest {
         assertEquals(tab1, restored.currentBackStack.first().routeKey())
     }
 
-    private fun navigatorFor(state: PerseusNavigationState): PerseusNavigator {
+    @Test
+    fun snapshotRestoresPushedScopeAboveRootScope() {
+        val root = RestoreKey(id = 1, label = "root")
+        val flow = RestoreKey(id = 2, label = "flow")
+        val child = RestoreKey(id = 3, label = "child")
+        val state = PerseusNavigationState.singleStack(root)
+        state.pushScope(SingleStackSpec(flow))
+        state.navigateTo(child)
+
+        val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
+
+        assertEquals(StackScopeKind.SingleStack, restored.currentScope.kind)
+        assertEquals(listOf(flow, child), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
+    fun popUntilWorksInRestoredPushedScope() {
+        val root = RestoreKey(id = 1, label = "root")
+        val flow = RestoreKey(id = 2, label = "flow")
+        val child = RestoreKey(id = 3, label = "child")
+        val state = PerseusNavigationState.singleStack(root)
+        state.pushScope(SingleStackSpec(flow))
+        state.navigateTo(state.createBackStackKey(child, RestoreGroup, "correlation-456"))
+        val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
+        val navigator = navigatorFor(restored)
+
+        navigator.popUntil(RestoreGroup)
+
+        assertEquals(listOf(flow), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
+    fun removeRestoredPushedScopeReturnsToRootAndCleansStores() {
+        val root = RestoreKey(id = 1, label = "root")
+        val flow = RestoreKey(id = 2, label = "flow")
+        val child = RestoreKey(id = 3, label = "child")
+        val state = PerseusNavigationState.singleStack(root)
+        state.pushScope(SingleStackSpec(flow))
+        state.navigateTo(child)
+        val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
+        val pushedScopeId = restored.currentScope.id
+        val pushedEntryIds = restored.currentBackStack.map { it.backStackId() }
+        val fixture = navigatorFixture(restored)
+        pushedEntryIds.forEach { fixture.viewModelStoreRegistry.getOwner(it) }
+
+        fixture.navigator.removeScope(pushedScopeId)
+
+        assertEquals(listOf(root), restored.currentBackStack.map { it.routeKey() })
+        pushedEntryIds.forEach(::assertNoOwner)
+    }
+
+    private fun assertNoOwner(entryId: String) {
+        try {
+            PerseusViewModelStoreOwners.getOwner(entryId)
+            fail("Expected no ViewModelStoreOwner for entryId=$entryId")
+        } catch (_: IllegalStateException) {
+            // Expected.
+        }
+    }
+
+    private fun navigatorFor(state: PerseusNavigationState): PerseusNavigator =
+        navigatorFixture(state).navigator
+
+    private fun navigatorFixture(state: PerseusNavigationState): NavigatorFixture {
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
         val resultBus = ResultBusAdapter()
         val viewModelStoreRegistry = PerseusViewModelStoreRegistry()
@@ -89,13 +156,19 @@ class PerseusNavigationStateRestoreTest {
             resultBus = resultBus,
             viewModelStoreProvider = viewModelStoreRegistry,
         )
-        return PerseusNavigator(
+        val navigator = PerseusNavigator(
             stateHolder = stateHolder,
             resultBus = resultBus,
             entryRegistry = entryRegistry,
             viewModelStoreRegistry = viewModelStoreRegistry,
         )
+        return NavigatorFixture(navigator, viewModelStoreRegistry)
     }
+
+    private data class NavigatorFixture(
+        val navigator: PerseusNavigator,
+        val viewModelStoreRegistry: PerseusViewModelStoreRegistry,
+    )
 }
 
 private object RestoreGroup : GroupName("restore-group")
