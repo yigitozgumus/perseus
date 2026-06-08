@@ -1,8 +1,6 @@
 package com.yigitozgumus.perseus
 
 import androidx.compose.animation.ContentTransform
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.internal.PerseusViewModelStoreRegistry
@@ -30,7 +28,6 @@ import java.util.UUID
  * | `resetCurrentTab(resetRoot)` | `resetCurrentTab(resetRoot)` |
  * | `reset()` / `resetWithFragmentProvider()` | `resetAllWithKeys(keys)` |
  * | `clearGroup(name)` | `popUntil(groupName)` |
- * | `observeDestinationChanges(...)` | `observeDestinationChanges(...)` |
  */
 public class PerseusNavigator internal constructor(
     internal val stateHolder: PerseusNavigationStateHolder,
@@ -172,36 +169,4 @@ public class PerseusNavigator internal constructor(
         }
     }
 
-    /**
-     * Observes destination changes in the current back stack.
-     * Mirrors Medusa's `observeDestinationChanges()`.
-     *
-     * @param lifecycleOwner Controls the observer's lifecycle (auto-removed on destroy).
-     * @param listener Called with the RouterKey that became visible.
-     */
-    public fun observeDestinationChanges(
-        lifecycleOwner: LifecycleOwner,
-        listener: (RouterKey) -> Unit,
-    ): Unit {
-        lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            // Observe composition-driven changes via state snapshot.
-            // Implemented in a later v2 phase.
-        })
-    }
-
-    /**
-     * Observes fragment/composable transitions between screens.
-     * Mirrors Medusa's `observeFragmentTransaction()`.
-     *
-     * @param lifecycleOwner Controls the observer's lifecycle.
-     * @param listener Called with the previous and next RouterKey on each transition.
-     */
-    public fun observeTransaction(
-        lifecycleOwner: LifecycleOwner,
-        listener: (previousKey: RouterKey?, nextKey: RouterKey?) -> Unit,
-    ): Unit {
-        lifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
-            // Implemented in a later v2 phase.
-        })
-    }
 }
