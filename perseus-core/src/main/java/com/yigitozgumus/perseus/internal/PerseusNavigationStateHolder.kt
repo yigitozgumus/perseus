@@ -10,7 +10,7 @@ import com.yigitozgumus.perseus.key.RouterKey
  * The actual state is created via `rememberSaveable` in the host composable.
  * This holder stores a reference once [attach] is called.
  *
- * Calls to auth transition methods before [attach] are buffered and
+ * Calls to state transition methods before [attach] are buffered and
  * replayed when the state becomes available.
  */
 internal class PerseusNavigationStateHolder : NavigationStateManager {
@@ -63,6 +63,5 @@ internal class PerseusNavigationStateHolder : NavigationStateManager {
 
     val currentBackStack: SnapshotStateList<RouterKey> get() = state.currentBackStack
     val currentTabIndex: Int get() = _state?.currentTabIndex ?: 0
-    val mode: PerseusNavigationState.Mode get() = _state?.mode ?: PerseusNavigationState.Mode.Unauthenticated
     val topLevelRoutes: List<RouterKey> get() = _state?.topLevelRoutes ?: emptyList()
 }

@@ -41,15 +41,15 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * Main navigation host composable for Perseus.
  *
  * Renders a [NavDisplay] driven by [PerseusNavigationState]. Supports
- * unauthenticated (single stack) and authenticated (tabbed) modes,
- * dialog/bottom sheet scenes, and process death survival.
+ * single-stack and multi-stack navigation containers, dialog/bottom sheet
+ * scenes, and process death survival.
  *
- * Tab switching and reset are handled directly via [navigator].
+ * Stack switching and reset are handled directly via [navigator].
  *
  * @param navigator The [PerseusNavigator] driving all navigation.
  * @param initialKey The initial screen to show before any auth transition.
  * @param modifier Compose modifier for the host container.
- * @param bottomBar Slot for the bottom navigation bar (authenticated mode).
+ * @param bottomBar Slot for the bottom navigation bar (multi-stack mode).
  *   Receives the current tab index and a callback for tab selection.
  * @param onTabChanged Notified when the selected tab changes (for UI state).
  * @param transitionSpec Forward navigation transition animation.
@@ -98,10 +98,7 @@ public fun PerseusNavHost(
         )
     }
 
-    val isUnauthenticated =
-        navigationState.mode == PerseusNavigationState.Mode.Unauthenticated
-
-    if (isUnauthenticated) {
+    if (!navigationState.isMultiStack) {
         NavDisplay(
             backStack = navigationState.currentBackStack,
             onBack = { navigator.pop() },
@@ -117,7 +114,7 @@ public fun PerseusNavHost(
             entryProvider = { key -> entryRegistry.provide(key) },
         )
     } else {
-        AuthenticatedHost(
+        MultiStackHost(
             navigationState = navigationState,
             entryRegistry = entryRegistry,
             viewModelStoreRegistry = viewModelStoreRegistry,
@@ -134,7 +131,7 @@ public fun PerseusNavHost(
 }
 
 @Composable
-private fun AuthenticatedHost(
+private fun MultiStackHost(
     navigationState: PerseusNavigationState,
     entryRegistry: PerseusEntryProviderRegistry,
     viewModelStoreRegistry: PerseusViewModelStoreProvider,
