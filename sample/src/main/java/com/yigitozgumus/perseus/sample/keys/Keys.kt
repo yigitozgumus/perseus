@@ -20,3 +20,7 @@ import kotlinx.serialization.Serializable
 @Serializable data object InfoSheetKey : RouterKey, BottomSheetKey
 @Serializable data object CustomSheetKey : RouterKey
 @Serializable data object ScopeFlowKey : RouterKey
+@Serializable data class CheckoutStepKey(val step: Int) : RouterKey
+@Serializable data class CounterKey(val label: String) : RouterKey
+@Serializable data object HiddenBottomBarKey : RouterKey { override val hidesBottomNavigation: Boolean = true }
+@Serializable data object RestoreAuthKey : RouterKey

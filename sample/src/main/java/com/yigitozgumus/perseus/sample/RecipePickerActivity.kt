@@ -24,13 +24,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.sample.recipe.animation.AnimationActivity
 import com.yigitozgumus.perseus.sample.recipe.animation.PerTransitionActivity
+import com.yigitozgumus.perseus.sample.recipe.bottomnavhide.BottomNavHideActivity
 import com.yigitozgumus.perseus.sample.recipe.bottomsheet.BottomSheetActivity
 import com.yigitozgumus.perseus.sample.recipe.compose.ComposeOnlyActivity
 import com.yigitozgumus.perseus.sample.recipe.customsheet.CustomSheetActivity
 import com.yigitozgumus.perseus.sample.recipe.dialog.DialogActivity
 import com.yigitozgumus.perseus.sample.recipe.interop.InteropActivity
+import com.yigitozgumus.perseus.sample.recipe.grouppop.GroupPopActivity
 import com.yigitozgumus.perseus.sample.recipe.result.ResultActivity
+import com.yigitozgumus.perseus.sample.recipe.restore.ProcessDeathRestoreActivity
 import com.yigitozgumus.perseus.sample.recipe.scope.ScopeActivity
+import com.yigitozgumus.perseus.sample.recipe.tabs.TabsActivity
+import com.yigitozgumus.perseus.sample.recipe.viewmodellifetime.ViewModelLifetimeActivity
 
 class RecipePickerActivity : ComponentActivity() {
 
@@ -59,6 +64,11 @@ private val recipes = listOf(
         ComposeOnlyActivity::class.java,
     ),
     Recipe(
+        "Tabs / MultiStack",
+        "Two tabs with independent back stacks and tab reset",
+        TabsActivity::class.java,
+    ),
+    Recipe(
         "Fragment Interop",
         "Compose screens + legacy Fragment wrapped in Compose",
         InteropActivity::class.java,
@@ -79,6 +89,11 @@ private val recipes = listOf(
         BottomSheetActivity::class.java,
     ),
     Recipe(
+        "Hide Bottom Bar",
+        "RouterKey.hidesBottomNavigation in a multi-stack scope",
+        BottomNavHideActivity::class.java,
+    ),
+    Recipe(
         "Custom Sheet",
         "Custom bottom sheet implementation",
         CustomSheetActivity::class.java,
@@ -97,6 +112,21 @@ private val recipes = listOf(
         "Stack Scopes",
         "Replace root scopes and push/remove temporary scopes",
         ScopeActivity::class.java,
+    ),
+    Recipe(
+        "Process Death Restore",
+        "Manual saved-state restore test for multi-stack scopes",
+        ProcessDeathRestoreActivity::class.java,
+    ),
+    Recipe(
+        "Group Pop",
+        "GroupName + popUntil for clearing a flow",
+        GroupPopActivity::class.java,
+    ),
+    Recipe(
+        "ViewModel Lifetime",
+        "Entry-scoped ViewModelStore with duplicate routes",
+        ViewModelLifetimeActivity::class.java,
     ),
     Recipe(
         "Full Demo",

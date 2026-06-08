@@ -29,6 +29,11 @@
         <activity android:name=".recipe.animation.AnimationActivity" android:theme="@style/Theme.Perseus" />
         <activity android:name=".recipe.animation.PerTransitionActivity" android:theme="@style/Theme.Perseus" />
         <activity android:name=".recipe.scope.ScopeActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.tabs.TabsActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.restore.ProcessDeathRestoreActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.grouppop.GroupPopActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.viewmodellifetime.ViewModelLifetimeActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.bottomnavhide.BottomNavHideActivity" android:theme="@style/Theme.Perseus" />
 
     </application>
 </manifest>
