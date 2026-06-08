@@ -1,11 +1,11 @@
 package com.yigitozgumus.perseus.internal
 
+import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PerseusNavigationStateRestoreTest {
@@ -64,16 +64,15 @@ class PerseusNavigationStateRestoreTest {
     }
 
     @Test
-    fun snapshotRestoresAuthenticatedTopLevelDataClassKeys() {
+    fun snapshotRestoresMultiStackTopLevelDataClassKeys() {
         val tab0 = RestoreKey(id = 10, label = "home")
         val tab1 = RestoreKey(id = 20, label = "profile")
         val state = PerseusNavigationState.singleStack(tab0)
-        state.transitionToAuthenticated(listOf(tab0, tab1))
+        state.setRootScope(MultiStackSpec(listOf(tab0, tab1)))
         state.switchTab(1)
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
 
-        assertTrue(restored.isAuthenticated)
         assertEquals(listOf(tab0, tab1), restored.topLevelRoutes)
         restored.switchTab(1)
         assertEquals(tab1, restored.currentBackStack.first().routeKey())

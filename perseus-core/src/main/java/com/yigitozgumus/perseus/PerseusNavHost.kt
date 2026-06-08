@@ -47,7 +47,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * Stack switching and reset are handled directly via [navigator].
  *
  * @param navigator The [PerseusNavigator] driving all navigation.
- * @param initialKey The initial screen to show before any auth transition.
+ * @param initialKey The initial screen to show before any root scope replacement.
  * @param modifier Compose modifier for the host container.
  * @param bottomBar Slot for the bottom navigation bar (multi-stack mode).
  *   Receives the current tab index and a callback for tab selection.

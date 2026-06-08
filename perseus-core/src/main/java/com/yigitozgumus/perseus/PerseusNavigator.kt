@@ -165,26 +165,6 @@ public class PerseusNavigator internal constructor(
         cleanupRemoved(stateHolder.state.removeScope(scopeId))
     }
 
-    /** Transition to authenticated mode with the given tab root keys. */
-    public fun transitionToAuthenticated(tabRootKeys: List<RouterKey>): Unit {
-        if (stateHolder.isAttached) {
-            cleanupRemoved(stateHolder.state.transitionToAuthenticated(tabRootKeys))
-            entryRegistry.clearAllTracking()
-        } else {
-            stateHolder.transitionToAuthenticated(tabRootKeys)
-        }
-    }
-
-    /** Start in unauthenticated mode with the given initial screen. */
-    public fun startUnauthenticated(initialKey: RouterKey): Unit {
-        if (stateHolder.isAttached) {
-            cleanupRemoved(stateHolder.state.startUnauthenticated(initialKey))
-            entryRegistry.clearAllTracking()
-        } else {
-            stateHolder.startUnauthenticated(initialKey)
-        }
-    }
-
     private fun cleanupRemoved(removed: List<RouterKey>): Unit {
         removed.forEach { key ->
             entryRegistry.clearTrackingForKey(key)

@@ -52,8 +52,6 @@ internal class PerseusNavigationState private constructor(
 
     val isMultiStack: Boolean get() = currentContainer is MultiStackState
 
-    val isAuthenticated: Boolean get() = isMultiStack
-
     val topLevelRoutes: List<RouterKey>
         get() = (currentContainer as? MultiStackState)?.rootKeys ?: emptyList()
 
@@ -143,18 +141,9 @@ internal class PerseusNavigationState private constructor(
         return removedScope.container.allBackStackEntries()
     }
 
-    fun startUnauthenticated(rootKey: RouterKey): List<RouterKey> =
-        setRootScope(SingleStackSpec(rootKey))
-
-    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>): List<RouterKey> =
-        setRootScope(MultiStackSpec(tabRootKeys))
-
-    fun resetToUnauthenticated(rootKey: RouterKey): List<RouterKey> =
-        startUnauthenticated(rootKey)
-
     fun resetAllWithKeys(keys: List<RouterKey>): List<RouterKey> =
-        if (keys.size == 1) startUnauthenticated(keys.first())
-        else transitionToAuthenticated(keys)
+        if (keys.size == 1) setRootScope(SingleStackSpec(keys.first()))
+        else setRootScope(MultiStackSpec(keys))
 
     private fun createScopeState(spec: StackScopeSpec): StackScopeState {
         val id = spec.id ?: StackScopeId.create()

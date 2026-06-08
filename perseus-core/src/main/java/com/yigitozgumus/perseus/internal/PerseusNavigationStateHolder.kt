@@ -1,7 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import com.yigitozgumus.perseus.NavigationStateManager
 import com.yigitozgumus.perseus.StackScopeSpec
 import com.yigitozgumus.perseus.key.RouterKey
 
@@ -14,12 +13,9 @@ import com.yigitozgumus.perseus.key.RouterKey
  * Calls to state transition methods before [attach] are buffered and
  * replayed when the state becomes available.
  */
-internal class PerseusNavigationStateHolder : NavigationStateManager {
+internal class PerseusNavigationStateHolder {
 
     private sealed interface Pending {
-        data class StartUnauthenticated(val key: RouterKey) : Pending
-        data class TransitionToAuthenticated(val keys: List<RouterKey>) : Pending
-        data class ResetToUnauthenticated(val key: RouterKey) : Pending
         data class SetRootScope(val spec: StackScopeSpec) : Pending
     }
 
@@ -35,9 +31,6 @@ internal class PerseusNavigationStateHolder : NavigationStateManager {
         _state = state
         pending?.let { p ->
             when (p) {
-                is Pending.StartUnauthenticated -> state.startUnauthenticated(p.key)
-                is Pending.TransitionToAuthenticated -> state.transitionToAuthenticated(p.keys)
-                is Pending.ResetToUnauthenticated -> state.resetToUnauthenticated(p.key)
                 is Pending.SetRootScope -> state.setRootScope(p.spec)
             }
             pending = null
@@ -51,24 +44,6 @@ internal class PerseusNavigationStateHolder : NavigationStateManager {
             pending = Pending.SetRootScope(spec)
             emptyList()
         }
-
-    // ── NavigationStateManager ──────────────────────────────────────────────
-
-    override fun startUnauthenticated(initialKey: RouterKey) {
-        _state?.startUnauthenticated(initialKey) ?: run { pending = Pending.StartUnauthenticated(initialKey) }
-    }
-
-    override fun transitionToAuthenticated(tabRootKeys: List<RouterKey>) {
-        _state?.transitionToAuthenticated(tabRootKeys)
-            ?: run { pending = Pending.TransitionToAuthenticated(tabRootKeys) }
-    }
-
-    override fun resetToUnauthenticated(initialKey: RouterKey) {
-        _state?.resetToUnauthenticated(initialKey)
-            ?: run { pending = Pending.ResetToUnauthenticated(initialKey) }
-    }
-
-    override val isAuthenticated: Boolean get() = _state?.isAuthenticated ?: false
 
     val currentBackStack: SnapshotStateList<RouterKey> get() = state.currentBackStack
     val currentTabIndex: Int get() = _state?.currentTabIndex ?: 0

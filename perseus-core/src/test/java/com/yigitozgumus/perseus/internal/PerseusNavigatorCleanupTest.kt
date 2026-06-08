@@ -1,7 +1,9 @@
 package com.yigitozgumus.perseus.internal
 
+import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
+import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
@@ -13,7 +15,7 @@ class PerseusNavigatorCleanupTest {
     @Test
     fun resetTabCleansViewModelStoresForRemovedEntriesOnNonCurrentTab() {
         val fixture = navigatorFixture(CleanupTab0)
-        fixture.navigator.transitionToAuthenticated(listOf(CleanupTab0, CleanupTab1))
+        fixture.navigator.setRootScope(MultiStackSpec(listOf(CleanupTab0, CleanupTab1)))
         fixture.navigator.switchTab(1)
         fixture.navigator.navigateTo(CleanupChild)
         val childEntryId = fixture.state.currentBackStack.last().backStackId()
@@ -29,13 +31,13 @@ class PerseusNavigatorCleanupTest {
     }
 
     @Test
-    fun startUnauthenticatedCleansExistingEntryStores() {
+    fun setSingleStackRootCleansExistingEntryStores() {
         val fixture = navigatorFixture(CleanupTab0)
         fixture.navigator.navigateTo(CleanupChild)
         val entryIds = fixture.state.currentBackStack.map { it.backStackId() }
         entryIds.forEach { fixture.viewModelStoreRegistry.getOwner(it) }
 
-        fixture.navigator.startUnauthenticated(CleanupLogin)
+        fixture.navigator.setRootScope(SingleStackSpec(CleanupLogin))
 
         entryIds.forEach(::assertNoOwner)
         assertEquals(CleanupLogin, fixture.state.currentBackStack.single().routeKey())
