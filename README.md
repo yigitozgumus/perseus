@@ -32,7 +32,7 @@ Perseus is designed around three ideas:
 - [Transitions](#transitions)
 - [Hiding bottom navigation](#hiding-bottom-navigation)
 - [Process death and saved state](#process-death-and-saved-state)
-- [Restore policy and saved-state keys](#restore-policy-and-saved-state-keys)
+- [Restore policy](#restore-policy)
 - [ViewModel lifetime](#viewmodel-lifetime)
 - [Grouping and clearing flows](#grouping-and-clearing-flows)
 - [Recommended DI setup](#recommended-di-setup)
@@ -767,7 +767,7 @@ Avoid calling `scopeNavigator.setRootScope(...)` unconditionally from
 
 ---
 
-## Restore policy and saved-state keys
+## Restore policy
 
 By default, Perseus restores saved navigation state after process death:
 
@@ -794,19 +794,8 @@ PerseusNavHost(
 )
 ```
 
-Use `saveStateKey` to invalidate saved navigation state when app/session/schema
-state changes:
-
-```kotlin
-PerseusNavHost(
-    navigationOwner = navigationOwner,
-    initialScope = MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey)),
-    saveStateKey = "user:${userId}:nav-v2",
-)
-```
-
-Changing `saveStateKey` makes Perseus ignore saved state stored under the old
-key and start from `initialScope` for the new key.
+Use `AlwaysUseInitialScope` when you want process death to rebuild from your
+current app/auth state instead of restoring internal screens.
 
 ---
 

@@ -14,7 +14,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -50,8 +49,6 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * @param navigationOwner The [PerseusNavigationOwner] driving all navigation.
  * @param initialScope The initial stack scope to show before any root scope replacement.
  * @param modifier Compose modifier for the host container.
- * @param saveStateKey Caller-controlled key for saved navigation state. Change it to discard
- *   previously saved navigation state for this host.
  * @param restorePolicy Controls whether saved navigation state is restored or ignored.
  * @param bottomBar Slot for the bottom navigation bar (multi-stack mode).
  *   Receives the current tab index and a callback for tab selection.
@@ -65,7 +62,6 @@ public fun PerseusNavHost(
     navigationOwner: PerseusNavigationOwner,
     initialScope: StackScopeSpec,
     modifier: Modifier = Modifier,
-    saveStateKey: String = "perseus_nav_state",
     restorePolicy: PerseusRestorePolicy = PerseusRestorePolicy.RestoreSavedState,
     bottomBar: @Composable (
         selectedIndex: Int,
@@ -89,12 +85,10 @@ public fun PerseusNavHost(
     val viewModelStoreRegistry = impl.viewModelStoreRegistry
 
     val navigationState = when (restorePolicy) {
-        PerseusRestorePolicy.RestoreSavedState -> key(saveStateKey) {
-            rememberSaveable(saver = PerseusNavigationState.Saver) {
-                PerseusNavigationState.fromSpec(initialScope)
-            }
+        PerseusRestorePolicy.RestoreSavedState -> rememberSaveable(saver = PerseusNavigationState.Saver) {
+            PerseusNavigationState.fromSpec(initialScope)
         }
-        PerseusRestorePolicy.AlwaysUseInitialScope -> remember(saveStateKey, initialScope) {
+        PerseusRestorePolicy.AlwaysUseInitialScope -> remember(initialScope) {
             PerseusNavigationState.fromSpec(initialScope)
         }
     }
