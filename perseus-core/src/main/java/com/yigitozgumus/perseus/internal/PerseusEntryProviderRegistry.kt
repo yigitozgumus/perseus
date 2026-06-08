@@ -6,6 +6,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation3.runtime.NavEntry
 import androidx.compose.animation.ContentTransform
 import androidx.navigation3.scene.DialogSceneStrategy
+import androidx.navigation3.ui.NavDisplay
 import com.yigitozgumus.perseus.key.BottomSheetKey
 import com.yigitozgumus.perseus.provider.ComposeSceneProvider
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
@@ -153,8 +154,8 @@ internal class PerseusEntryProviderRegistry(
             else -> emptyMap()
         }
         val groupMeta = backStackKey.groupName()?.let { mapOf(GROUP_KEY to it) } ?: emptyMap()
-        val transMeta = pendingTransitions.remove(id)?.let {
-            mapOf(TRANSITION_KEY to it)
+        val transMeta = pendingTransitions.remove(id)?.let { transition ->
+            NavDisplay.transitionSpec { transition }
         } ?: emptyMap()
         return sceneMeta + groupMeta + transMeta
     }
@@ -171,6 +172,5 @@ internal class PerseusEntryProviderRegistry(
 
     internal companion object {
         const val GROUP_KEY = "perseus_group"
-        internal const val TRANSITION_KEY = "perseus_transition"
     }
 }
