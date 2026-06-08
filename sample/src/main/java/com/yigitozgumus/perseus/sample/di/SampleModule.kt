@@ -2,6 +2,7 @@ package com.yigitozgumus.perseus.sample.di
 
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
+import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
 import com.yigitozgumus.perseus.sample.compose.DetailScreenProvider
 import com.yigitozgumus.perseus.sample.compose.DetailViewModel
@@ -30,6 +31,8 @@ val infrastructureModule = module {
             fragmentEntryFactory = DefaultFragmentEntryFactory,
         )
     }
+
+    single<PerseusScopeNavigator> { get<PerseusNavigator>() }
 
     factory { HomeViewModel(get()) }
     factory { DetailViewModel(get()) }
