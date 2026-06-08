@@ -30,6 +30,7 @@ import com.yigitozgumus.perseus.sample.recipe.customsheet.CustomSheetActivity
 import com.yigitozgumus.perseus.sample.recipe.dialog.DialogActivity
 import com.yigitozgumus.perseus.sample.recipe.interop.InteropActivity
 import com.yigitozgumus.perseus.sample.recipe.result.ResultActivity
+import com.yigitozgumus.perseus.sample.recipe.scope.ScopeActivity
 
 class RecipePickerActivity : ComponentActivity() {
 
@@ -91,6 +92,11 @@ private val recipes = listOf(
         "Per-Transition",
         "Each screen opens/closes with a different animation",
         PerTransitionActivity::class.java,
+    ),
+    Recipe(
+        "Stack Scopes",
+        "Replace root scopes and push/remove temporary scopes",
+        ScopeActivity::class.java,
     ),
     Recipe(
         "Full Demo",

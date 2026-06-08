@@ -19,3 +19,4 @@ import kotlinx.serialization.Serializable
 @Serializable data object ConfirmDialogKey : RouterKey, DialogKey
 @Serializable data object InfoSheetKey : RouterKey, BottomSheetKey
 @Serializable data object CustomSheetKey : RouterKey
+@Serializable data object ScopeFlowKey : RouterKey
