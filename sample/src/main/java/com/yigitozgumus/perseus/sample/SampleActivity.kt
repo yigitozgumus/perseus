@@ -20,7 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.yigitozgumus.perseus.MultiStackSpec
-import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.sample.di.SampleModule
 import com.yigitozgumus.perseus.sample.di.infrastructureModule
@@ -49,7 +49,7 @@ class SampleApplication : Application() {
 
 class SampleActivity : FragmentActivity(), KoinComponent {
 
-    private val navigator: PerseusNavigator by inject()
+    private val navigationOwner: PerseusNavigationOwner by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +59,7 @@ class SampleActivity : FragmentActivity(), KoinComponent {
             var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
             PerseusNavHost(
-                navigator = navigator,
+                navigationOwner = navigationOwner,
                 initialScope = MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey)),
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = { currentIndex, onTabSelected ->

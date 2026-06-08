@@ -6,13 +6,15 @@ import org.junit.Test
 class PerseusNavigatorFactoryTest {
 
     @Test
-    fun createProvidesNavigatorForHostAndCommands() {
-        val navigator = PerseusNavigatorFactory.create(
+    fun createProvidesNavigationOwnerForHostAndCommands() {
+        val navigationOwner = PerseusNavigatorFactory.create(
             composeProviders = emptyList(),
             fragmentProviders = emptyList(),
             sceneProviders = emptyList(),
         )
 
-        assertNotNull(navigator)
+        assertNotNull(navigationOwner)
+        assertNotNull(navigationOwner.navigator)
+        assertNotNull(navigationOwner.scopeNavigator)
     }
 }

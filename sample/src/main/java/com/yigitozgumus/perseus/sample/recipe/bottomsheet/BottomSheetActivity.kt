@@ -22,27 +22,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.LocalSceneActions
 import com.yigitozgumus.perseus.PerseusNavHost
+import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.InfoSheetKey
-import com.yigitozgumus.perseus.sample.recipe.createNavigator
+import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 class BottomSheetActivity : ComponentActivity() {
 
-    private val navigator: PerseusNavigator = createNavigator(
+    private val navigationOwner: PerseusNavigationOwner = createNavigationOwner(
         composeProviders = listOf(SheetHomeProvider(), InfoSheetProvider()),
     )
+    private val navigator: PerseusNavigator get() = navigationOwner.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                navigator = navigator,
+                navigationOwner = navigationOwner,
                 initialScope = SingleStackSpec(HomeKey),
                 modifier = Modifier.fillMaxSize(),
             )

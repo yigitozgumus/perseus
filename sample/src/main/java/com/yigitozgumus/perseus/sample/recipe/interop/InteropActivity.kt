@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.PerseusNavHost
+import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
@@ -35,23 +36,24 @@ import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.sample.keys.FragmentScreenKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import com.yigitozgumus.perseus.sample.recipe.createNavigator
+import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 class InteropActivity : FragmentActivity() {
 
-    private val navigator: PerseusNavigator = createNavigator(
+    private val navigationOwner: PerseusNavigationOwner = createNavigationOwner(
         composeProviders = listOf(InteropHomeProvider()),
         fragmentProviders = listOf(SampleFragmentProvider()),
         fragmentEntryFactory = DefaultFragmentEntryFactory,
     )
+    private val navigator: PerseusNavigator get() = navigationOwner.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                navigator = navigator,
+                navigationOwner = navigationOwner,
                 initialScope = SingleStackSpec(HomeKey),
                 modifier = Modifier.fillMaxSize(),
             )

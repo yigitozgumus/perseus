@@ -1,7 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.MultiStackSpec
-import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
@@ -142,7 +141,7 @@ class PerseusNavigationStateRestoreTest {
         }
     }
 
-    private fun navigatorFor(state: PerseusNavigationState): PerseusNavigator =
+    private fun navigatorFor(state: PerseusNavigationState): DefaultPerseusNavigator =
         navigatorFixture(state).navigator
 
     private fun navigatorFixture(state: PerseusNavigationState): NavigatorFixture {
@@ -156,7 +155,7 @@ class PerseusNavigationStateRestoreTest {
             resultBus = resultBus,
             viewModelStoreProvider = viewModelStoreRegistry,
         )
-        val navigator = PerseusNavigator(
+        val navigator = DefaultPerseusNavigator(
             stateHolder = stateHolder,
             resultBus = resultBus,
             entryRegistry = entryRegistry,
@@ -166,7 +165,7 @@ class PerseusNavigationStateRestoreTest {
     }
 
     private data class NavigatorFixture(
-        val navigator: PerseusNavigator,
+        val navigator: DefaultPerseusNavigator,
         val viewModelStoreRegistry: PerseusViewModelStoreRegistry,
     )
 }

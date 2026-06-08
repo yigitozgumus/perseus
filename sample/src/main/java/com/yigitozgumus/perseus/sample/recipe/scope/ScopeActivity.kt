@@ -27,7 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusNavHost
+import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
 import com.yigitozgumus.perseus.key.RouterKey
@@ -37,12 +39,12 @@ import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.LoginKey
 import com.yigitozgumus.perseus.sample.keys.ScopeFlowKey
 import com.yigitozgumus.perseus.sample.keys.SearchKey
-import com.yigitozgumus.perseus.sample.recipe.createNavigator
+import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 
 @OptIn(ExperimentalMaterial3Api::class)
 class ScopeActivity : ComponentActivity() {
 
-    private val navigator: PerseusNavigator = createNavigator(
+    private val navigationOwner: PerseusNavigationOwner = createNavigationOwner(
         composeProviders = listOf(
             LoginProvider(),
             HomeProvider(),
@@ -51,13 +53,15 @@ class ScopeActivity : ComponentActivity() {
             ScopeFlowProvider(),
         ),
     )
+    private val navigator: PerseusNavigator get() = navigationOwner.navigator
+    private val scopeNavigator: PerseusScopeNavigator get() = navigationOwner.scopeNavigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                navigator = navigator,
+                navigationOwner = navigationOwner,
                 initialScope = SingleStackSpec(LoginKey),
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = { selectedIndex, onTabSelected ->
@@ -82,11 +86,11 @@ class ScopeActivity : ComponentActivity() {
         @Composable
         override fun Content(key: LoginKey) {
             ScopeScaffold(title = "Single-stack root") {
-                Text("Current scope: ${navigator.currentScope.kind}")
+                Text("Current scope: ${scopeNavigator.currentScope.kind}")
                 Text("This starts as a single-stack scope with LoginKey as root.")
                 Button(
                     onClick = dropUnlessResumed {
-                        navigator.setRootScope(MultiStackSpec(listOf(HomeKey, SearchKey)))
+                        scopeNavigator.setRootScope(MultiStackSpec(listOf(HomeKey, SearchKey)))
                     },
                 ) {
                     Text("Replace root with multi-stack scope")
@@ -109,13 +113,13 @@ class ScopeActivity : ComponentActivity() {
                 }
                 Button(
                     onClick = dropUnlessResumed {
-                        navigator.pushScope(SingleStackSpec(ScopeFlowKey))
+                        scopeNavigator.pushScope(SingleStackSpec(ScopeFlowKey))
                     },
                 ) {
                     Text("Push temporary single-stack scope")
                 }
                 Button(
-                    onClick = dropUnlessResumed { navigator.setRootScope(SingleStackSpec(LoginKey)) },
+                    onClick = dropUnlessResumed { scopeNavigator.setRootScope(SingleStackSpec(LoginKey)) },
                 ) {
                     Text("Replace root with Login scope")
                 }
@@ -154,7 +158,7 @@ class ScopeActivity : ComponentActivity() {
                 }
                 Button(
                     onClick = dropUnlessResumed {
-                        navigator.removeScope(navigator.currentScope.id)
+                        scopeNavigator.removeScope(scopeNavigator.currentScope.id)
                     },
                 ) {
                     Text("Remove this scope")
@@ -173,10 +177,10 @@ class ScopeActivity : ComponentActivity() {
                 Button(onClick = dropUnlessResumed { navigator.pop() }) {
                     Text("Pop")
                 }
-                if (navigator.currentScope.kind == StackScopeKind.SingleStack) {
+                if (scopeNavigator.currentScope.kind == StackScopeKind.SingleStack) {
                     Button(
                         onClick = dropUnlessResumed {
-                            navigator.removeScope(navigator.currentScope.id)
+                            scopeNavigator.removeScope(scopeNavigator.currentScope.id)
                         },
                     ) {
                         Text("Remove current scope")
@@ -216,7 +220,7 @@ class ScopeActivity : ComponentActivity() {
 
     @Composable
     private fun ScopeStatus() {
-        val scope = navigator.currentScope
+        val scope = scopeNavigator.currentScope
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(4.dp),
