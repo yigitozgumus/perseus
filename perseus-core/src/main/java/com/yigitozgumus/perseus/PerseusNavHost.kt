@@ -81,7 +81,7 @@ public fun PerseusNavHost(
     val viewModelStoreRegistry = navigator.viewModelStoreRegistry
 
     val navigationState = rememberSaveable(saver = PerseusNavigationState.Saver) {
-        PerseusNavigationState.unauthenticated(initialKey)
+        PerseusNavigationState.singleStack(initialKey)
     }
 
     DisposableEffect(navigationState) {

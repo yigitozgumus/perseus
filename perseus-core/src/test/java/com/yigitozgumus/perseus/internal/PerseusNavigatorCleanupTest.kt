@@ -42,7 +42,7 @@ class PerseusNavigatorCleanupTest {
     }
 
     private fun navigatorFixture(initialKey: RouterKey): NavigatorFixture {
-        val state = PerseusNavigationState.unauthenticated(initialKey)
+        val state = PerseusNavigationState.singleStack(initialKey)
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
         val resultBus = ResultBusAdapter()
         val viewModelStoreRegistry = PerseusViewModelStoreRegistry()

@@ -7,6 +7,12 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
+import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.SingleStackSpec
+import com.yigitozgumus.perseus.StackScopeId
+import com.yigitozgumus.perseus.StackScopeKind
+import com.yigitozgumus.perseus.StackScopeSnapshot
+import com.yigitozgumus.perseus.StackScopeSpec
 import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
 import com.yigitozgumus.perseus.key.EncodedRouterKey
 import com.yigitozgumus.perseus.key.GroupName
@@ -32,11 +38,11 @@ internal class PerseusNavigationState private constructor(
     private val scopeStack: SnapshotStateList<StackScopeState> =
         initialScopes.toMutableStateList()
 
-    private val currentScope: StackScopeState
+    private val currentScopeState: StackScopeState
         get() = scopeStack.lastOrNull() ?: error("PerseusNavigationState requires at least one scope.")
 
     private val currentContainer: StackContainerState
-        get() = currentScope.container
+        get() = currentScopeState.container
 
     val currentBackStack: SnapshotStateList<RouterKey>
         get() = when (val container = currentContainer) {
@@ -53,6 +59,9 @@ internal class PerseusNavigationState private constructor(
 
     val currentTabIndex: Int
         get() = (currentContainer as? MultiStackState)?.currentStackIndex ?: 0
+
+    val currentScope: StackScopeSnapshot
+        get() = currentScopeState.toSnapshot()
 
     fun createBackStackKey(
         key: RouterKey,
@@ -107,21 +116,38 @@ internal class PerseusNavigationState private constructor(
     fun resetCurrentTab(resetRoot: Boolean = false): List<RouterKey> =
         resetTab(currentTabIndex, resetRoot)
 
-    fun startUnauthenticated(rootKey: RouterKey): List<RouterKey> =
-        replaceRootScope(SingleStackState(listOf(createBackStackKey(rootKey)).toMutableStateList()))
-
-    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>): List<RouterKey> {
-        require(tabRootKeys.isNotEmpty())
-        return replaceRootScope(
-            MultiStackState(
-                rootKeys = tabRootKeys,
-                backStacks = mutableMapOf(
-                    0 to listOf(createBackStackKey(tabRootKeys.first())).toMutableStateList()
-                ),
-                initialStackIndex = 0,
-            )
-        )
+    fun setRootScope(spec: StackScopeSpec): List<RouterKey> {
+        val removed = allBackStackEntries()
+        scopeStack.clear()
+        scopeStack.add(createScopeState(spec))
+        return removed
     }
+
+    fun replaceCurrentScope(spec: StackScopeSpec): List<RouterKey> {
+        val removed = currentScopeState.container.allBackStackEntries()
+        scopeStack[scopeStack.lastIndex] = createScopeState(spec)
+        return removed
+    }
+
+    fun pushScope(spec: StackScopeSpec): StackScopeId {
+        val scope = createScopeState(spec)
+        scopeStack.add(scope)
+        return StackScopeId(scope.id)
+    }
+
+    fun removeScope(scopeId: StackScopeId): List<RouterKey> {
+        if (scopeStack.size == 1) return emptyList()
+        val index = scopeStack.indexOfFirst { it.id == scopeId.value }
+        if (index <= 0) return emptyList()
+        val removedScope = scopeStack.removeAt(index)
+        return removedScope.container.allBackStackEntries()
+    }
+
+    fun startUnauthenticated(rootKey: RouterKey): List<RouterKey> =
+        setRootScope(SingleStackSpec(rootKey))
+
+    fun transitionToAuthenticated(tabRootKeys: List<RouterKey>): List<RouterKey> =
+        setRootScope(MultiStackSpec(tabRootKeys))
 
     fun resetToUnauthenticated(rootKey: RouterKey): List<RouterKey> =
         startUnauthenticated(rootKey)
@@ -130,11 +156,25 @@ internal class PerseusNavigationState private constructor(
         if (keys.size == 1) startUnauthenticated(keys.first())
         else transitionToAuthenticated(keys)
 
-    private fun replaceRootScope(container: StackContainerState): List<RouterKey> {
-        val removed = allBackStackEntries()
-        scopeStack.clear()
-        scopeStack.add(StackScopeState(id = UUID.randomUUID().toString(), container = container))
-        return removed
+    private fun createScopeState(spec: StackScopeSpec): StackScopeState {
+        val id = spec.id ?: StackScopeId.create()
+        return StackScopeState(
+            id = id.value,
+            container = when (spec) {
+                is SingleStackSpec -> SingleStackState(
+                    listOf(createBackStackKey(spec.initialKey)).toMutableStateList()
+                )
+                is MultiStackSpec -> MultiStackState(
+                    rootKeys = spec.rootKeys,
+                    backStacks = mutableMapOf(
+                        spec.initialStackIndex to listOf(
+                            createBackStackKey(spec.rootKeys[spec.initialStackIndex])
+                        ).toMutableStateList()
+                    ),
+                    initialStackIndex = spec.initialStackIndex,
+                )
+            },
+        )
     }
 
     private fun allBackStackEntries(): List<RouterKey> =
@@ -184,7 +224,7 @@ internal class PerseusNavigationState private constructor(
         private const val SINGLE_STACK_TYPE = 0
         private const val MULTI_STACK_TYPE = 1
 
-        fun unauthenticated(rootKey: RouterKey) = PerseusNavigationState(
+        fun singleStack(rootKey: RouterKey) = PerseusNavigationState(
             initialScopes = listOf(
                 StackScopeState(
                     id = UUID.randomUUID().toString(),
@@ -334,6 +374,24 @@ private fun entrySnapshot(key: RouterKey): PerseusNavigationState.EntrySnapshot 
         groupName = key.groupName()?.name,
         correlationId = key.correlationId() ?: UUID.randomUUID().toString(),
     )
+
+private fun StackScopeState.toSnapshot(): StackScopeSnapshot =
+    when (val container = container) {
+        is SingleStackState -> StackScopeSnapshot(
+            id = StackScopeId(id),
+            kind = StackScopeKind.SingleStack,
+            currentStackIndex = null,
+            rootKeys = listOfNotNull(container.backStack.firstOrNull()?.routeKey()),
+            currentBackStack = container.backStack.map { it.routeKey() },
+        )
+        is MultiStackState -> StackScopeSnapshot(
+            id = StackScopeId(id),
+            kind = StackScopeKind.MultiStack,
+            currentStackIndex = container.currentStackIndex,
+            rootKeys = container.rootKeys,
+            currentBackStack = container.getOrCreateStack(container.currentStackIndex).map { it.routeKey() },
+        )
+    }
 
 private fun containerSnapshot(container: StackContainerState): PerseusNavigationState.ContainerSnapshot =
     when (container) {

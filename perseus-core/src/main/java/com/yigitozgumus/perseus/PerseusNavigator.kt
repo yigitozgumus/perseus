@@ -43,6 +43,9 @@ public class PerseusNavigator internal constructor(
         entryRegistry.onPopCallback = { pop() }
     }
 
+    /** Snapshot of the active stack scope. */
+    public val currentScope: StackScopeSnapshot get() = stateHolder.state.currentScope
+
     /** The currently selected tab index. */
     public val currentTabIndex: Int get() = stateHolder.currentTabIndex
 
@@ -133,6 +136,33 @@ public class PerseusNavigator internal constructor(
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.resetAllWithKeys(keys))
         entryRegistry.clearAllTracking()
+    }
+
+    /** Replaces the root scope and removes all existing scopes. */
+    public fun setRootScope(scope: StackScopeSpec): Unit {
+        cleanupRemoved(stateHolder.setRootScope(scope))
+        entryRegistry.clearAllTracking()
+    }
+
+    /** Replaces the current top scope. */
+    public fun replaceCurrentScope(scope: StackScopeSpec): Unit {
+        if (!stateHolder.isAttached) {
+            setRootScope(scope)
+            return
+        }
+        cleanupRemoved(stateHolder.state.replaceCurrentScope(scope))
+    }
+
+    /** Pushes a new scope above the current scope and returns its id. */
+    public fun pushScope(scope: StackScopeSpec): StackScopeId {
+        check(stateHolder.isAttached) { "PerseusNavigationState not attached. Call pushScope after PerseusNavHost is composed." }
+        return stateHolder.state.pushScope(scope)
+    }
+
+    /** Removes a non-root scope and cleans all entries owned by it. */
+    public fun removeScope(scopeId: StackScopeId): Unit {
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.removeScope(scopeId))
     }
 
     /** Transition to authenticated mode with the given tab root keys. */

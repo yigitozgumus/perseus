@@ -11,7 +11,7 @@ class PerseusNavigationStateEntryIdentityTest {
 
     @Test
     fun duplicateRouteKeysGetDistinctBackStackEntryIds() {
-        val state = PerseusNavigationState.unauthenticated(EntryIdentityKey)
+        val state = PerseusNavigationState.singleStack(EntryIdentityKey)
 
         state.navigateTo(EntryIdentityKey)
         state.navigateTo(EntryIdentityKey)
@@ -27,7 +27,7 @@ class PerseusNavigationStateEntryIdentityTest {
 
     @Test
     fun entryIdIsStableForAnEntryUntilItIsRemoved() {
-        val state = PerseusNavigationState.unauthenticated(EntryIdentityKey)
+        val state = PerseusNavigationState.singleStack(EntryIdentityKey)
         val initialId = state.currentBackStack.last().backStackId()
 
         state.navigateTo(EntryIdentityKey)

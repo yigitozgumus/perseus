@@ -14,7 +14,7 @@ class PerseusNavigationStateRestoreTest {
     fun snapshotRestoresDataClassKeysWithArguments() {
         val root = RestoreKey(id = 1, label = "root")
         val child = RestoreKey(id = 2, label = "child")
-        val state = PerseusNavigationState.unauthenticated(root)
+        val state = PerseusNavigationState.singleStack(root)
         state.navigateTo(child)
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
@@ -32,7 +32,7 @@ class PerseusNavigationStateRestoreTest {
     fun snapshotRestoresDurableEntryMetadata() {
         val root = RestoreKey(id = 1, label = "root")
         val child = RestoreKey(id = 2, label = "child")
-        val state = PerseusNavigationState.unauthenticated(root)
+        val state = PerseusNavigationState.singleStack(root)
         state.navigateTo(
             state.createBackStackKey(
                 key = child,
@@ -53,7 +53,7 @@ class PerseusNavigationStateRestoreTest {
     fun popUntilWorksAfterRestoringGroupMetadata() {
         val root = RestoreKey(id = 1, label = "root")
         val child = RestoreKey(id = 2, label = "child")
-        val state = PerseusNavigationState.unauthenticated(root)
+        val state = PerseusNavigationState.singleStack(root)
         state.navigateTo(state.createBackStackKey(child, RestoreGroup, "correlation-123"))
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
         val navigator = navigatorFor(restored)
@@ -67,7 +67,7 @@ class PerseusNavigationStateRestoreTest {
     fun snapshotRestoresAuthenticatedTopLevelDataClassKeys() {
         val tab0 = RestoreKey(id = 10, label = "home")
         val tab1 = RestoreKey(id = 20, label = "profile")
-        val state = PerseusNavigationState.unauthenticated(tab0)
+        val state = PerseusNavigationState.singleStack(tab0)
         state.transitionToAuthenticated(listOf(tab0, tab1))
         state.switchTab(1)
 

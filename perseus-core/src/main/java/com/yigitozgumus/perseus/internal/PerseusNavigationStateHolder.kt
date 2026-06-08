@@ -2,6 +2,7 @@ package com.yigitozgumus.perseus.internal
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.yigitozgumus.perseus.NavigationStateManager
+import com.yigitozgumus.perseus.StackScopeSpec
 import com.yigitozgumus.perseus.key.RouterKey
 
 /**
@@ -19,6 +20,7 @@ internal class PerseusNavigationStateHolder : NavigationStateManager {
         data class StartUnauthenticated(val key: RouterKey) : Pending
         data class TransitionToAuthenticated(val keys: List<RouterKey>) : Pending
         data class ResetToUnauthenticated(val key: RouterKey) : Pending
+        data class SetRootScope(val spec: StackScopeSpec) : Pending
     }
 
     private var _state: PerseusNavigationState? = null
@@ -36,12 +38,19 @@ internal class PerseusNavigationStateHolder : NavigationStateManager {
                 is Pending.StartUnauthenticated -> state.startUnauthenticated(p.key)
                 is Pending.TransitionToAuthenticated -> state.transitionToAuthenticated(p.keys)
                 is Pending.ResetToUnauthenticated -> state.resetToUnauthenticated(p.key)
+                is Pending.SetRootScope -> state.setRootScope(p.spec)
             }
             pending = null
         }
     }
 
     fun detach() { _state = null }
+
+    fun setRootScope(spec: StackScopeSpec): List<RouterKey> =
+        _state?.setRootScope(spec) ?: run {
+            pending = Pending.SetRootScope(spec)
+            emptyList()
+        }
 
     // ── NavigationStateManager ──────────────────────────────────────────────
 
