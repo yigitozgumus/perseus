@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 3. Fragment screen provider ([ScreenProvider]) — wrapped via [FragmentEntry]
  *
  * Also tracks:
- * - Group membership for [PerseusNavigatorImpl.clearGroup] operations
+ * - Group membership for group pop operations
  * - Correlation IDs for result routing
  */
 internal class PerseusEntryProviderRegistry(

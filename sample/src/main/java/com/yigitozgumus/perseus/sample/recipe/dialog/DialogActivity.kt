@@ -35,7 +35,7 @@ import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ConfirmDialogKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import com.yigitozgumus.perseus.sample.recipe.createController
+import com.yigitozgumus.perseus.sample.recipe.createNavigator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -50,19 +50,18 @@ class DialogActivity : ComponentActivity() {
 
     private val state = DialogState()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-    private val controller by lazy {
-        createController(
+    private val navigator: PerseusNavigator by lazy {
+        createNavigator(
             composeProviders = listOf(DialogHomeProvider(), ConfirmDialogProvider()),
         )
     }
-    private val navigator: PerseusNavigator get() = controller.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                controller = controller,
+                navigator = navigator,
                 initialKey = HomeKey,
                 modifier = Modifier.fillMaxSize(),
             )

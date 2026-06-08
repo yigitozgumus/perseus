@@ -20,7 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
-import com.yigitozgumus.perseus.PerseusController
+import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.sample.di.SampleModule
@@ -50,8 +50,7 @@ class SampleApplication : Application() {
 
 class SampleActivity : FragmentActivity(), KoinComponent {
 
-    private val controller: PerseusController by inject()
-    private val navigator get() = controller.navigator
+    private val navigator: PerseusNavigator by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +62,7 @@ class SampleActivity : FragmentActivity(), KoinComponent {
             var selectedTab by rememberSaveable { mutableIntStateOf(0) }
 
             PerseusNavHost(
-                controller = controller,
+                navigator = navigator,
                 initialKey = HomeKey,
                 modifier = Modifier.fillMaxSize(),
                 bottomBar = { currentIndex, onTabSelected ->

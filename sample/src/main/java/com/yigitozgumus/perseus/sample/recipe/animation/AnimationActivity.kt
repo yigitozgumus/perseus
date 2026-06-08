@@ -35,17 +35,16 @@ import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import com.yigitozgumus.perseus.sample.recipe.createController
+import com.yigitozgumus.perseus.sample.recipe.createNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
 class AnimationActivity : ComponentActivity() {
 
-    private val controller by lazy {
-        createController(
+    private val navigator: PerseusNavigator by lazy {
+        createNavigator(
             composeProviders = listOf(AnimHomeProvider(), AnimDetailProvider()),
         )
     }
-    private val navigator: PerseusNavigator get() = controller.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +52,7 @@ class AnimationActivity : ComponentActivity() {
 
         setContent {
             PerseusNavHost(
-                controller = controller,
+                navigator = navigator,
                 initialKey = HomeKey,
                 modifier = Modifier.fillMaxSize(),
                 transitionSpec = {

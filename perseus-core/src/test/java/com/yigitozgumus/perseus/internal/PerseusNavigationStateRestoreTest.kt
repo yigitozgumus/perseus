@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
+import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.serialization.Serializable
@@ -78,7 +79,7 @@ class PerseusNavigationStateRestoreTest {
         assertEquals(tab1, restored.currentBackStack.first().routeKey())
     }
 
-    private fun navigatorFor(state: PerseusNavigationState): PerseusNavigatorImpl {
+    private fun navigatorFor(state: PerseusNavigationState): PerseusNavigator {
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
         val resultBus = ResultBusAdapter()
         val viewModelStoreRegistry = PerseusViewModelStoreRegistry()
@@ -89,7 +90,7 @@ class PerseusNavigationStateRestoreTest {
             resultBus = resultBus,
             viewModelStoreProvider = viewModelStoreRegistry,
         )
-        return PerseusNavigatorImpl(
+        return PerseusNavigator(
             stateHolder = stateHolder,
             resultBus = resultBus,
             entryRegistry = entryRegistry,

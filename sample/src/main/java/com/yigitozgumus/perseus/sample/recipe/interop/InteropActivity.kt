@@ -34,24 +34,23 @@ import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.sample.keys.FragmentScreenKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
-import com.yigitozgumus.perseus.sample.recipe.createController
+import com.yigitozgumus.perseus.sample.recipe.createNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
 class InteropActivity : FragmentActivity() {
 
-    private val controller = createController(
+    private val navigator: PerseusNavigator = createNavigator(
         composeProviders = listOf(InteropHomeProvider()),
         fragmentProviders = listOf(SampleFragmentProvider()),
         fragmentEntryFactory = DefaultFragmentEntryFactory,
     )
-    private val navigator: PerseusNavigator = controller.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             PerseusNavHost(
-                controller = controller,
+                navigator = navigator,
                 initialKey = HomeKey,
                 modifier = Modifier.fillMaxSize(),
             )

@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
+import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.serialization.Serializable
@@ -52,7 +53,7 @@ class PerseusNavigatorCleanupTest {
             resultBus = resultBus,
             viewModelStoreProvider = viewModelStoreRegistry,
         )
-        val navigator = PerseusNavigatorImpl(
+        val navigator = PerseusNavigator(
             stateHolder = stateHolder,
             resultBus = resultBus,
             entryRegistry = entryRegistry,
@@ -72,7 +73,7 @@ class PerseusNavigatorCleanupTest {
 
     private data class NavigatorFixture(
         val state: PerseusNavigationState,
-        val navigator: PerseusNavigatorImpl,
+        val navigator: PerseusNavigator,
         val viewModelStoreRegistry: PerseusViewModelStoreRegistry,
     )
 }

@@ -1,6 +1,5 @@
 package com.yigitozgumus.perseus.sample.di
 
-import com.yigitozgumus.perseus.PerseusController
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
@@ -20,8 +19,8 @@ import org.koin.dsl.module
 class SampleModule
 
 val infrastructureModule = module {
-    single<PerseusController> {
-        PerseusNavigatorFactory.createController(
+    single<PerseusNavigator> {
+        PerseusNavigatorFactory.create(
             composeProviders = listOf(
                 HomeScreenProvider(), DetailScreenProvider(),
                 LoginScreenProvider(), SearchScreenProvider(),
@@ -31,7 +30,6 @@ val infrastructureModule = module {
             fragmentEntryFactory = DefaultFragmentEntryFactory,
         )
     }
-    single<PerseusNavigator> { get<PerseusController>().navigator }
 
     factory { HomeViewModel(get()) }
     factory { DetailViewModel(get()) }
