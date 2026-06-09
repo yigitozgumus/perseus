@@ -8,6 +8,7 @@ This document captures potential Perseus features that are not currently impleme
 ## v3 implementation tracker
 
 Verification command: `./gradlew build` ✅ (2026-06-09)
+Sample verification: `./gradlew :sample:compileDebugKotlin` ✅ (2026-06-09)
 
 ### To-do / implementation stages
 
@@ -44,6 +45,12 @@ Verification command: `./gradlew build` ✅ (2026-06-09)
     - Added lightweight `perseusGraph { screen<Key> { ... } }` builder for Compose screen providers.
 14. ✅ Animated tab switching
     - Added `tabTransitionSpec = { fromIndex, toIndex -> ContentTransform? }` to `PerseusNavHost` for user-driven tab changes.
+
+### Sample coverage
+
+- ✅ Added `V3FeaturesActivity` recipe.
+- ✅ Added recipe picker and manifest entries.
+- ✅ The recipe demonstrates back behavior policy, scope results, `replaceApp`, pop-to-root helpers, pop-until-type, `NonRestorableKey`, `ScopeRestorePolicy`, `debugSnapshot`, provider validation, deep links, declarative graph registration, and tab transition animation.
 
 ---
 

@@ -35,6 +35,7 @@ import com.yigitozgumus.perseus.sample.recipe.result.ResultActivity
 import com.yigitozgumus.perseus.sample.recipe.restore.ProcessDeathRestoreActivity
 import com.yigitozgumus.perseus.sample.recipe.scope.ScopeActivity
 import com.yigitozgumus.perseus.sample.recipe.tabs.TabsActivity
+import com.yigitozgumus.perseus.sample.recipe.v3.V3FeaturesActivity
 import com.yigitozgumus.perseus.sample.recipe.viewmodellifetime.ViewModelLifetimeActivity
 
 class RecipePickerActivity : ComponentActivity() {
@@ -127,6 +128,11 @@ private val recipes = listOf(
         "ViewModel Lifetime",
         "Entry-scoped ViewModelStore with duplicate routes",
         ViewModelLifetimeActivity::class.java,
+    ),
+    Recipe(
+        "v3 Features",
+        "Back policy, scope results, deep links, graph builder, and helpers",
+        V3FeaturesActivity::class.java,
     ),
     Recipe(
         "Full Demo",

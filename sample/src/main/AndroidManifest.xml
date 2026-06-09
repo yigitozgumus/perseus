@@ -34,6 +34,7 @@
         <activity android:name=".recipe.grouppop.GroupPopActivity" android:theme="@style/Theme.Perseus" />
         <activity android:name=".recipe.viewmodellifetime.ViewModelLifetimeActivity" android:theme="@style/Theme.Perseus" />
         <activity android:name=".recipe.bottomnavhide.BottomNavHideActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.v3.V3FeaturesActivity" android:theme="@style/Theme.Perseus" />
 
     </application>
 </manifest>
