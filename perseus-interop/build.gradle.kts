@@ -1,10 +1,15 @@
+import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dokka)
+    `maven-publish`
 }
+
+version = "0.1.0-SNAPSHOT"
+group = "com.yigitozgumus.perseus"
 
 
 android {
@@ -28,6 +33,12 @@ android {
     buildFeatures {
         compose = true
     }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 kotlin {
@@ -35,6 +46,17 @@ kotlin {
     @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
     abiValidation {
         referenceDumpDir.set(layout.projectDirectory.dir("api"))
+    }
+}
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            artifactId = "perseus-interop"
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
     }
 }
 

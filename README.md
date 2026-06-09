@@ -135,8 +135,31 @@ dependencies {
 }
 ```
 
-If Perseus is published later, replace the project dependencies with the
-published coordinates.
+For local publishing tests, publish the release AARs to Maven Local:
+
+```bash
+./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal
+```
+
+Then consume them from another project:
+
+```kotlin
+repositories {
+    mavenLocal()
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    implementation("com.yigitozgumus.perseus:perseus-core:0.1.0-SNAPSHOT")
+
+    // Optional: Fragment interop support
+    implementation("com.yigitozgumus.perseus:perseus-interop:0.1.0-SNAPSHOT")
+}
+```
+
+If Perseus is published later, replace the snapshot coordinates with the
+published version.
 
 ---
 
