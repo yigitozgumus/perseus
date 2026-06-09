@@ -461,6 +461,16 @@ class HomeViewModel(
 }
 ```
 
+Observe the current visible key:
+
+```kotlin
+navigator.currentKey
+    .onEach { key ->
+        // Update app chrome, analytics, or feature state.
+    }
+    .launchIn(scope)
+```
+
 Check whether the active back stack can pop:
 
 ```kotlin

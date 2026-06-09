@@ -3,6 +3,7 @@ package com.yigitozgumus.perseus
 import androidx.compose.animation.ContentTransform
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Route and tab navigator for Perseus.
@@ -15,6 +16,9 @@ import com.yigitozgumus.perseus.key.RouterKey
 public interface PerseusNavigator {
     /** The currently selected tab index in the current multi-stack scope. */
     public val currentTabIndex: Int
+
+    /** Current visible route key, or null before the host attaches navigation state. */
+    public val currentKey: StateFlow<RouterKey?>
 
     /**
      * Navigates to the screen identified by [key].

@@ -100,6 +100,7 @@ public fun PerseusNavHost(
 
     DisposableEffect(navigationState) {
         stateHolder.attach(navigationState)
+        impl.syncCurrentKey()
         entryRegistry.onPopCallback = { navigator.pop() }
         if (impl.validateProviders) entryRegistry.validateScope(initialScope)
         onDispose { stateHolder.detach() }

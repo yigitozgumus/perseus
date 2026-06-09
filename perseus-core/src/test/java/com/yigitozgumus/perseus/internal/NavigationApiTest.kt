@@ -65,6 +65,23 @@ class NavigationApiTest {
 
         assertEquals(handle.scopeId.value, handle.correlationId)
     }
+
+    @Test
+    fun currentKeyStateFlowTracksVisibleRouteKey() {
+        val owner = createTestPerseusNavigationOwner(MultiStackSpec(listOf(NavigationHome, NavigationSearch)))
+
+        assertEquals(NavigationHome, owner.navigator.currentKey.value)
+
+        owner.navigator.navigateTo(NavigationDetail(1))
+        assertEquals(NavigationDetail(1), owner.navigator.currentKey.value)
+
+        owner.navigator.switchTab(1)
+        assertEquals(NavigationSearch, owner.navigator.currentKey.value)
+
+        owner.navigator.switchTab(0)
+        owner.navigator.pop()
+        assertEquals(NavigationHome, owner.navigator.currentKey.value)
+    }
 }
 
 @Serializable

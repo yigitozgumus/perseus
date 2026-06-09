@@ -15,6 +15,8 @@ import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
 
 internal class DefaultPerseusNavigator(
@@ -25,13 +27,18 @@ internal class DefaultPerseusNavigator(
     internal val validateProviders: Boolean = false,
 ) : PerseusNavigator, PerseusScopeNavigator {
 
+    private val _currentKey = MutableStateFlow<RouterKey?>(null)
+
     init {
         entryRegistry.onPopCallback = { pop() }
+        syncCurrentKey()
     }
 
     override val currentScope: StackScopeSnapshot get() = stateHolder.state.currentScope
 
     override val currentTabIndex: Int get() = stateHolder.currentTabIndex
+
+    override val currentKey: StateFlow<RouterKey?> = _currentKey
 
     override fun navigateTo(
         key: RouterKey,
@@ -49,12 +56,14 @@ internal class DefaultPerseusNavigator(
         if (transition != null) entryRegistry.setPendingTransition(backStackKey, transition)
 
         stateHolder.state.navigateTo(backStackKey)
+        syncCurrentKey()
         return resultBus.createHandle(correlationId)
     }
 
     override fun pop() {
         if (!stateHolder.isAttached) return
         cleanupRemoved(listOfNotNull(stateHolder.state.goBack()))
+        syncCurrentKey()
     }
 
     override fun handleBack(behavior: PerseusBackBehavior): Boolean {
@@ -88,16 +97,19 @@ internal class DefaultPerseusNavigator(
             entryRegistry.getGroupForKey(key) == groupName
         }
         cleanupRemoved(removed)
+        syncCurrentKey()
     }
 
     override fun popUntilKey(key: RouterKey) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.popUntilKey(key))
+        syncCurrentKey()
     }
 
     override fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.popUntilKeyType(keyClass))
+        syncCurrentKey()
     }
 
     override fun <R : Any> sendResult(context: NavigationContext<*>, result: R) {
@@ -106,16 +118,19 @@ internal class DefaultPerseusNavigator(
 
     override fun switchTab(tabIndex: Int) {
         stateHolder.state.switchTab(tabIndex)
+        syncCurrentKey()
     }
 
     override fun resetTab(tabIndex: Int, resetRoot: Boolean) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.resetTab(tabIndex, resetRoot))
+        syncCurrentKey()
     }
 
     override fun resetCurrentTab(resetRoot: Boolean) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.resetCurrentTab(resetRoot))
+        syncCurrentKey()
     }
 
     override fun popToRoot(resetRoot: Boolean) {
@@ -129,18 +144,21 @@ internal class DefaultPerseusNavigator(
     override fun popCurrentTabToRoot(resetRoot: Boolean) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.popCurrentStackToRoot(resetRoot))
+        syncCurrentKey()
     }
 
     override fun resetAllWithKeys(keys: List<RouterKey>) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.resetAllWithKeys(keys))
         entryRegistry.clearAllTracking()
+        syncCurrentKey()
     }
 
     override fun setRootScope(scope: StackScopeSpec) {
         if (validateProviders) entryRegistry.validateScope(scope)
         cleanupRemoved(stateHolder.setRootScope(scope))
         entryRegistry.clearAllTracking()
+        syncCurrentKey()
     }
 
     override fun replaceApp(scope: StackScopeSpec) {
@@ -154,12 +172,13 @@ internal class DefaultPerseusNavigator(
         }
         if (validateProviders) entryRegistry.validateScope(scope)
         cleanupRemoved(stateHolder.state.replaceCurrentScope(scope))
+        syncCurrentKey()
     }
 
     override fun pushScope(scope: StackScopeSpec): StackScopeId {
         check(stateHolder.isAttached) { "PerseusNavigationState not attached. Call pushScope after PerseusNavHost is composed." }
         if (validateProviders) entryRegistry.validateScope(scope)
-        return stateHolder.state.pushScope(scope)
+        return stateHolder.state.pushScope(scope).also { syncCurrentKey() }
     }
 
     override fun pushScopeForResult(scope: StackScopeSpec): ScopeNavigationHandle {
@@ -170,11 +189,20 @@ internal class DefaultPerseusNavigator(
     override fun removeScope(scopeId: StackScopeId) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.removeScope(scopeId))
+        syncCurrentKey()
     }
 
     override fun <R : Any> removeScope(scopeId: StackScopeId, result: R) {
         resultBus.send(scopeId.value, result)
         removeScope(scopeId)
+    }
+
+    internal fun syncCurrentKey() {
+        _currentKey.value = if (stateHolder.isAttached) {
+            stateHolder.state.currentBackStack.lastOrNull()?.routeKey()
+        } else {
+            null
+        }
     }
 
     private fun cleanupRemoved(removed: List<RouterKey>) {
