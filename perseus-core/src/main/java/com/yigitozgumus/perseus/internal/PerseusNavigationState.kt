@@ -8,6 +8,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.NonRestorableKey
+import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeId
 import com.yigitozgumus.perseus.StackScopeKind
@@ -92,6 +94,20 @@ internal class PerseusNavigationState private constructor(
         return removed
     }
 
+    fun popUntilKey(key: RouterKey): List<RouterKey> = removeUntil { it.routeKey() == key }
+
+    fun popUntilKeyType(keyClass: kotlin.reflect.KClass<out RouterKey>): List<RouterKey> =
+        removeUntil { keyClass.isInstance(it.routeKey()) }
+
+    private fun removeUntil(predicate: (RouterKey) -> Boolean): List<RouterKey> {
+        val bs = currentBackStack
+        val index = bs.indexOfLast { predicate(it) }
+        if (index <= 0) return emptyList()
+        val removed = bs.subList(index, bs.size).toList()
+        repeat(removed.size) { bs.removeAt(bs.lastIndex) }
+        return removed
+    }
+
     fun switchTab(index: Int) {
         val container = currentContainer as? MultiStackState ?: return
         if (index !in container.rootKeys.indices) return
@@ -113,6 +129,20 @@ internal class PerseusNavigationState private constructor(
 
     fun resetCurrentTab(resetRoot: Boolean = false): List<RouterKey> =
         resetTab(currentTabIndex, resetRoot)
+
+    fun popCurrentStackToRoot(resetRoot: Boolean = false): List<RouterKey> {
+        if (isMultiStack) return resetCurrentTab(resetRoot)
+        val bs = currentBackStack
+        val removed = if (resetRoot) bs.toList() else bs.drop(1)
+        if (resetRoot) {
+            val root = bs.firstOrNull()?.routeKey() ?: return emptyList()
+            bs.clear()
+            bs.add(createBackStackKey(root))
+        } else {
+            while (bs.size > 1) bs.removeAt(bs.lastIndex)
+        }
+        return removed
+    }
 
     fun setRootScope(spec: StackScopeSpec): List<RouterKey> {
         val removed = allBackStackEntries()
@@ -160,6 +190,7 @@ internal class PerseusNavigationState private constructor(
     data class ScopeSnapshot(
         val id: String,
         val container: ContainerSnapshot,
+        val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
     ) : java.io.Serializable
 
     data class ContainerSnapshot(
@@ -187,6 +218,7 @@ internal class PerseusNavigationState private constructor(
             ScopeSnapshot(
                 id = scope.id,
                 container = containerSnapshot(scope.container),
+                restorePolicy = scope.restorePolicy,
             )
         }
     )
@@ -207,7 +239,8 @@ internal class PerseusNavigationState private constructor(
                 initialScopes = snapshot.scopes.map { scope ->
                     StackScopeState(
                         id = scope.id,
-                        container = restoreContainer(scope.container),
+                        container = restoreContainer(scope.container).dropNonRestorableEntries(),
+                        restorePolicy = scope.restorePolicy,
                     )
                 }
             )
@@ -217,6 +250,10 @@ internal class PerseusNavigationState private constructor(
             val id = spec.id ?: StackScopeId.create()
             return StackScopeState(
                 id = id.value,
+                restorePolicy = when (spec) {
+                    is SingleStackSpec -> spec.restorePolicy
+                    is MultiStackSpec -> spec.restorePolicy
+                },
                 container = when (spec) {
                     is SingleStackSpec -> SingleStackState(
                         listOf(createInitialBackStackKey(spec.initialKey)).toMutableStateList()
@@ -283,10 +320,24 @@ internal class PerseusNavigationState private constructor(
 internal data class StackScopeState(
     val id: String,
     val container: StackContainerState,
+    val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
 )
 
 internal sealed interface StackContainerState {
     fun allBackStackEntries(): List<RouterKey>
+}
+
+internal fun StackContainerState.dropNonRestorableEntries(): StackContainerState {
+    fun SnapshotStateList<RouterKey>.dropAfterFirstNonRestorable() {
+        val index = indexOfFirst { it.routeKey() is NonRestorableKey }
+        if (index < 0) return
+        while (lastIndex >= index && size > 1) removeAt(lastIndex)
+    }
+    when (this) {
+        is SingleStackState -> backStack.dropAfterFirstNonRestorable()
+        is MultiStackState -> backStacks.values.forEach { it.dropAfterFirstNonRestorable() }
+    }
+    return this
 }
 
 internal data class SingleStackState(

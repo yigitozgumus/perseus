@@ -3,13 +3,18 @@ package com.yigitozgumus.perseus.internal
 import androidx.compose.animation.ContentTransform
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.NavigationHandle
+import com.yigitozgumus.perseus.PerseusBackBehavior
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusScopeNavigator
+import com.yigitozgumus.perseus.RootBackBehavior
+import com.yigitozgumus.perseus.ScopeNavigationHandle
 import com.yigitozgumus.perseus.StackScopeId
 import com.yigitozgumus.perseus.StackScopeSnapshot
 import com.yigitozgumus.perseus.StackScopeSpec
+import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
+import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
 internal class DefaultPerseusNavigator(
@@ -17,6 +22,7 @@ internal class DefaultPerseusNavigator(
     private val resultBus: ResultBusAdapter,
     internal val entryRegistry: PerseusEntryProviderRegistry,
     internal val viewModelStoreRegistry: PerseusViewModelStoreRegistry,
+    internal val validateProviders: Boolean = false,
 ) : PerseusNavigator, PerseusScopeNavigator {
 
     init {
@@ -50,6 +56,29 @@ internal class DefaultPerseusNavigator(
         cleanupRemoved(listOfNotNull(stateHolder.state.goBack()))
     }
 
+    override fun handleBack(behavior: PerseusBackBehavior): Boolean {
+        if (!stateHolder.isAttached) return false
+        if (canGoBack()) {
+            pop()
+            return true
+        }
+        val state = stateHolder.state
+        if (state.isMultiStack) {
+            when (behavior.tabBackBehavior) {
+                TabBackBehavior.StayOnCurrentTab -> Unit
+                TabBackBehavior.SwitchToInitialTab -> if (state.currentTabIndex != 0) {
+                    switchTab(0)
+                    return true
+                }
+                TabBackBehavior.ResetCurrentTab -> {
+                    resetCurrentTab(resetRoot = true)
+                    return true
+                }
+            }
+        }
+        return behavior.rootBackBehavior == RootBackBehavior.Block
+    }
+
     override fun canGoBack(): Boolean = stateHolder.currentBackStack.size > 1
 
     override fun popUntil(groupName: GroupName) {
@@ -58,6 +87,16 @@ internal class DefaultPerseusNavigator(
             entryRegistry.getGroupForKey(key) == groupName
         }
         cleanupRemoved(removed)
+    }
+
+    override fun popUntilKey(key: RouterKey) {
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.popUntilKey(key))
+    }
+
+    override fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>) {
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.popUntilKeyType(keyClass))
     }
 
     override fun <R : Any> sendResult(context: NavigationContext<*>, result: R) {
@@ -78,6 +117,19 @@ internal class DefaultPerseusNavigator(
         cleanupRemoved(stateHolder.state.resetCurrentTab(resetRoot))
     }
 
+    override fun popToRoot(resetRoot: Boolean) {
+        popCurrentTabToRoot(resetRoot)
+    }
+
+    override fun popTabToRoot(tabIndex: Int, resetRoot: Boolean) {
+        resetTab(tabIndex, resetRoot)
+    }
+
+    override fun popCurrentTabToRoot(resetRoot: Boolean) {
+        if (!stateHolder.isAttached) return
+        cleanupRemoved(stateHolder.state.popCurrentStackToRoot(resetRoot))
+    }
+
     override fun resetAllWithKeys(keys: List<RouterKey>) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.resetAllWithKeys(keys))
@@ -87,6 +139,10 @@ internal class DefaultPerseusNavigator(
     override fun setRootScope(scope: StackScopeSpec) {
         cleanupRemoved(stateHolder.setRootScope(scope))
         entryRegistry.clearAllTracking()
+    }
+
+    override fun replaceApp(scope: StackScopeSpec) {
+        setRootScope(scope)
     }
 
     override fun replaceCurrentScope(scope: StackScopeSpec) {
@@ -102,9 +158,19 @@ internal class DefaultPerseusNavigator(
         return stateHolder.state.pushScope(scope)
     }
 
+    override fun pushScopeForResult(scope: StackScopeSpec): ScopeNavigationHandle {
+        val scopeId = pushScope(scope)
+        return ScopeNavigationHandleImpl(scopeId, resultBus.createHandle(scopeId.value))
+    }
+
     override fun removeScope(scopeId: StackScopeId) {
         if (!stateHolder.isAttached) return
         cleanupRemoved(stateHolder.state.removeScope(scopeId))
+    }
+
+    override fun <R : Any> removeScope(scopeId: StackScopeId, result: R) {
+        resultBus.send(scopeId.value, result)
+        removeScope(scopeId)
     }
 
     private fun cleanupRemoved(removed: List<RouterKey>) {
@@ -112,5 +178,13 @@ internal class DefaultPerseusNavigator(
             entryRegistry.clearTrackingForKey(key)
             viewModelStoreRegistry.clear(key.backStackId())
         }
+    }
+
+    private class ScopeNavigationHandleImpl(
+        override val scopeId: StackScopeId,
+        private val delegate: NavigationHandle,
+    ) : ScopeNavigationHandle {
+        override val correlationId: String get() = delegate.correlationId
+        override fun <R : Any> observeResult(): Flow<R> = delegate.observeResult()
     }
 }

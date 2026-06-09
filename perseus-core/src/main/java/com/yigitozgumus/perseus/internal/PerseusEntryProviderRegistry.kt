@@ -19,6 +19,9 @@ import com.yigitozgumus.perseus.LocalSceneActions
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
+import com.yigitozgumus.perseus.StackScopeSpec
+import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.SceneActions
 import com.yigitozgumus.perseus.SceneResultCallback
 import java.util.concurrent.ConcurrentHashMap
@@ -61,6 +64,21 @@ internal class PerseusEntryProviderRegistry(
     fun clearAllTracking() {
         pendingTransitions.clear()
     }
+
+    fun validateScope(scope: StackScopeSpec) {
+        val keys = when (scope) {
+            is SingleStackSpec -> listOf(scope.initialKey)
+            is MultiStackSpec -> scope.rootKeys
+        }
+        keys.forEach { key ->
+            require(hasProviderFor(key)) { missingProviderMessage(key) }
+        }
+    }
+
+    fun hasProviderFor(key: RouterKey): Boolean =
+        composeProviders.any { it.canProvide(key) } ||
+            sceneProviders.any { it.canProvide(key) } ||
+            fragmentProviders.any { it.canProvide(key) }
 
     @Suppress("UNCHECKED_CAST")
     fun provide(backStackKey: RouterKey): NavEntry<RouterKey> {
@@ -125,10 +143,20 @@ internal class PerseusEntryProviderRegistry(
             }
         }
 
-        throw IllegalArgumentException(
-            "No entry registered for ${key::class.simpleName}. " +
-                    "Ensure a ComposeScreenProvider, ScreenProvider, or ComposeSceneProvider is registered."
-        )
+        throw IllegalArgumentException(missingProviderMessage(key))
+    }
+
+    private fun missingProviderMessage(key: RouterKey): String = buildString {
+        appendLine("No provider found for ${key} (${key::class.qualifiedName}).")
+        appendLine()
+        appendLine("Registered Compose providers:")
+        if (composeProviders.isEmpty()) appendLine("- <none>") else composeProviders.forEach { appendLine("- ${it::class.qualifiedName ?: it::class.simpleName}") }
+        appendLine()
+        appendLine("Registered Fragment providers:")
+        if (fragmentProviders.isEmpty()) appendLine("- <none>") else fragmentProviders.forEach { appendLine("- ${it::class.qualifiedName ?: it::class.simpleName}") }
+        appendLine()
+        appendLine("Registered Scene providers:")
+        if (sceneProviders.isEmpty()) appendLine("- <none>") else sceneProviders.forEach { appendLine("- ${it::class.qualifiedName ?: it::class.simpleName}") }
     }
 
     private fun computeAndCacheMetadata(backStackKey: RouterKey): Map<String, Any> {

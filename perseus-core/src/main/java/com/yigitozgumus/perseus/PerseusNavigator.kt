@@ -33,6 +33,9 @@ public interface PerseusNavigator {
     /** Pops the current screen from the back stack. */
     public fun pop()
 
+    /** Handles a back press according to [behavior]. Returns true when consumed. */
+    public fun handleBack(behavior: PerseusBackBehavior = PerseusBackBehavior()): Boolean
+
     /** Returns true if the back stack has more than one entry. */
     public fun canGoBack(): Boolean
 
@@ -41,6 +44,12 @@ public interface PerseusNavigator {
      * The root entry is never removed.
      */
     public fun popUntil(groupName: GroupName)
+
+    /** Pops all entries above and including [key] in the current stack, keeping the root entry. */
+    public fun popUntilKey(key: RouterKey)
+
+    /** Pops all entries above and including the first entry whose route key is [K]. */
+    public fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>)
 
     /**
      * Sends a result from a child screen back to its parent.
@@ -63,6 +72,15 @@ public interface PerseusNavigator {
 
     /** Resets the current tab to its root. */
     public fun resetCurrentTab(resetRoot: Boolean = false)
+
+    /** Alias for [resetCurrentTab] that reads like common navigation APIs. */
+    public fun popToRoot(resetRoot: Boolean = false)
+
+    /** Alias for [resetTab] that reads like common navigation APIs. */
+    public fun popTabToRoot(tabIndex: Int, resetRoot: Boolean = false)
+
+    /** Alias for [resetCurrentTab] that reads like common navigation APIs. */
+    public fun popCurrentTabToRoot(resetRoot: Boolean = false)
 
     /**
      * Resets all stacks and navigation state with the given root keys.

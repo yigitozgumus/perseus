@@ -20,6 +20,7 @@ public sealed interface StackScopeSpec {
 public data class SingleStackSpec(
     val initialKey: RouterKey,
     override val id: StackScopeId? = null,
+    val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
 ) : StackScopeSpec
 
 /** A scope with multiple sibling back stacks. */
@@ -27,6 +28,7 @@ public data class MultiStackSpec(
     val rootKeys: List<RouterKey>,
     val initialStackIndex: Int = 0,
     override val id: StackScopeId? = null,
+    val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
 ) : StackScopeSpec {
     init {
         require(rootKeys.isNotEmpty()) { "MultiStackSpec requires at least one root key." }

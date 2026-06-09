@@ -14,4 +14,7 @@ public class PerseusNavigationOwner internal constructor(
 ) {
     public val navigator: PerseusNavigator = impl
     public val scopeNavigator: PerseusScopeNavigator = impl
+
+    /** Pull-based diagnostic snapshot for logs, debug screens, and tests. */
+    public fun debugSnapshot(): StackScopeSnapshot = scopeNavigator.currentScope
 }

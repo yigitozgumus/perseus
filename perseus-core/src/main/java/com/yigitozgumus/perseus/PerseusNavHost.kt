@@ -14,8 +14,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
@@ -56,6 +58,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * @param transitionSpec Forward navigation transition animation.
  * @param popTransitionSpec Back navigation transition animation.
  * @param predictivePopTransitionSpec Predictive back gesture animation.
+ * @param tabTransitionSpec Optional transition override for user-driven tab switches.
  */
 @Composable
 public fun PerseusNavHost(
@@ -63,6 +66,7 @@ public fun PerseusNavHost(
     initialScope: StackScopeSpec,
     modifier: Modifier = Modifier,
     restorePolicy: PerseusRestorePolicy = PerseusRestorePolicy.RestoreSavedState,
+    backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
     bottomBar: @Composable (
         selectedIndex: Int,
         onTabSelected: (Int) -> Unit,
@@ -77,6 +81,7 @@ public fun PerseusNavHost(
     predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(progress: Int) -> ContentTransform = {
         fastFadeTransition()
     },
+    tabTransitionSpec: ((fromIndex: Int, toIndex: Int) -> ContentTransform?)? = null,
 ) {
     val impl = navigationOwner.impl
     val navigator = navigationOwner.navigator
@@ -96,6 +101,7 @@ public fun PerseusNavHost(
     DisposableEffect(navigationState) {
         stateHolder.attach(navigationState)
         entryRegistry.onPopCallback = { navigator.pop() }
+        if (impl.validateProviders) entryRegistry.validateScope(initialScope)
         onDispose { stateHolder.detach() }
     }
 
@@ -110,7 +116,7 @@ public fun PerseusNavHost(
     if (!navigationState.isMultiStack) {
         NavDisplay(
             backStack = navigationState.currentBackStack,
-            onBack = { navigator.pop() },
+            onBack = { navigator.handleBack(backBehavior) },
             modifier = modifier.fillMaxSize(),
             sceneStrategies = sceneStrategies,
             transitionSpec = transitionSpec,
@@ -129,11 +135,13 @@ public fun PerseusNavHost(
             viewModelStoreRegistry = viewModelStoreRegistry,
             sceneStrategies = sceneStrategies,
             navigator = navigator,
+            backBehavior = backBehavior,
             bottomBar = bottomBar,
             onTabChanged = onTabChanged,
             transitionSpec = transitionSpec,
             popTransitionSpec = popTransitionSpec,
             predictivePopTransitionSpec = predictivePopTransitionSpec,
+            tabTransitionSpec = tabTransitionSpec,
             modifier = modifier,
         )
     }
@@ -146,11 +154,13 @@ private fun MultiStackHost(
     viewModelStoreRegistry: PerseusViewModelStoreProvider,
     sceneStrategies: List<SceneStrategy<RouterKey>>,
     navigator: PerseusNavigator,
+    backBehavior: PerseusBackBehavior,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
     onTabChanged: (Int) -> Unit,
     transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
     popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
     predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(Int) -> ContentTransform,
+    tabTransitionSpec: ((fromIndex: Int, toIndex: Int) -> ContentTransform?)?,
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(navigationState.currentTabIndex) {
@@ -164,6 +174,11 @@ private fun MultiStackHost(
         }
     }
 
+    var pendingTabTransition by remember { mutableStateOf<ContentTransform?>(null) }
+    LaunchedEffect(navigationState.currentTabIndex) {
+        pendingTabTransition = null
+    }
+
     val backStack = navigationState.currentBackStack
     if (backStack.isEmpty()) return
 
@@ -172,9 +187,9 @@ private fun MultiStackHost(
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier.fillMaxSize(),
-                onBack = { navigator.pop() },
+                onBack = { navigator.handleBack(backBehavior) },
                 sceneStrategies = sceneStrategies,
-                transitionSpec = transitionSpec,
+                transitionSpec = { pendingTabTransition ?: transitionSpec() },
                 popTransitionSpec = popTransitionSpec,
                 predictivePopTransitionSpec = predictivePopTransitionSpec,
                 entryDecorators = listOf(
@@ -189,6 +204,7 @@ private fun MultiStackHost(
                 if (index == navigationState.currentTabIndex) {
                     navigator.resetCurrentTab(resetRoot = false)
                 } else {
+                    pendingTabTransition = tabTransitionSpec?.invoke(navigationState.currentTabIndex, index)
                     navigator.switchTab(index)
                 }
             }
