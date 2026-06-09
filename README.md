@@ -845,6 +845,22 @@ class ProfileFragment : Fragment() {
 }
 ```
 
+For entry-scoped Fragment ViewModels, use Perseus' entry owner. If your
+ViewModel uses Koin or another DI factory, pass that factory explicitly; the
+Android default factory can only create no-arg ViewModels.
+
+```kotlin
+val owner = requirePerseusViewModelStoreOwner()
+
+// Example shape; use your DI framework's ViewModelProvider.Factory here.
+private val viewModel by perseusScopedViewModel<MyViewModel> {
+    myKoinViewModelFactory
+}
+```
+
+If your DI helper supports a custom `ViewModelStoreOwner`, pass
+`requirePerseusViewModelStoreOwner()` to that helper.
+
 ---
 
 ## Transitions
