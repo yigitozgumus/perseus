@@ -1116,23 +1116,6 @@ Run the `sample` app and open the recipe picker to explore them.
 
 ## Development notes
 
-### Binary compatibility
-
-This project uses the Kotlin Binary Compatibility Validator to track public API
-changes.
-
-Check compatibility:
-
-```bash
-./gradlew checkKotlinAbi
-```
-
-If API changes are intentional, update the reference dump:
-
-```bash
-./gradlew updateKotlinAbi
-```
-
 ### Verification
 
 Useful verification commands:
