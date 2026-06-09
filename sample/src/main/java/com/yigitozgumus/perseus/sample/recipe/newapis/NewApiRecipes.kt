@@ -20,11 +20,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.dropUnlessResumed
+import com.yigitozgumus.perseus.AndroidPerseusLogger
 import com.yigitozgumus.perseus.DeepLinkResolver
 import com.yigitozgumus.perseus.DeepLinkTarget
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.NonRestorableKey
 import com.yigitozgumus.perseus.PerseusBackBehavior
+import com.yigitozgumus.perseus.PerseusLogLevel
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
@@ -80,6 +82,7 @@ abstract class NewApiRecipeActivity(
         fragmentProviders = emptyList(),
         sceneProviders = emptyList(),
         validateProviders = true,
+        logger = AndroidPerseusLogger(tag = "Perseus", level = PerseusLogLevel.Debug)
     )
     private val navigator: PerseusNavigator get() = navigationOwner.navigator
     private val scopeNavigator: PerseusScopeNavigator get() = navigationOwner.scopeNavigator

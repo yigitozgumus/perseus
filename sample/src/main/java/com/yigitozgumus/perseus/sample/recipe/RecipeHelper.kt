@@ -1,5 +1,7 @@
 package com.yigitozgumus.perseus.sample.recipe
 
+import com.yigitozgumus.perseus.AndroidPerseusLogger
+import com.yigitozgumus.perseus.PerseusLogLevel
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
@@ -23,6 +25,7 @@ fun createNavigationOwner(
                         fragmentProviders = fragmentProviders,
                         sceneProviders = emptyList(),
                         fragmentEntryFactory = fragmentEntryFactory,
+                        logger = AndroidPerseusLogger(tag = "Perseus", level = PerseusLogLevel.Debug)
                     )
                 }
             }

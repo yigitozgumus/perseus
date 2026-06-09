@@ -1,5 +1,7 @@
 package com.yigitozgumus.perseus.sample.di
 
+import com.yigitozgumus.perseus.AndroidPerseusLogger
+import com.yigitozgumus.perseus.PerseusLogLevel
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
@@ -30,6 +32,7 @@ val infrastructureModule = module {
             fragmentProviders = listOf(ProfileFragmentProvider()),
             sceneProviders = emptyList(),
             fragmentEntryFactory = DefaultFragmentEntryFactory,
+            logger = AndroidPerseusLogger(tag = "Perseus", level = PerseusLogLevel.Debug)
         )
     }
 

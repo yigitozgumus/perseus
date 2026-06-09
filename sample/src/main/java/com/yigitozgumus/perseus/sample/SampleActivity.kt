@@ -28,9 +28,12 @@ import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import com.yigitozgumus.perseus.sample.keys.SearchKey
 import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
+import org.koin.core.logger.Level
+import org.koin.core.logger.Logger
 import org.koin.ksp.generated.com_yigitozgumus_perseus_sample_di_SampleModule
 import org.koin.ksp.generated.module
 
