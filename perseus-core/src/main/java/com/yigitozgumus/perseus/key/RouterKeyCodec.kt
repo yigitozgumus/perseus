@@ -1,5 +1,8 @@
 package com.yigitozgumus.perseus.key
 
+import android.os.Parcel
+import android.os.Parcelable
+import android.util.Base64
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -24,12 +27,16 @@ public interface RouterKeyCodec {
 }
 
 /**
- * Default [RouterKeyCodec] backed by kotlinx.serialization generated serializers.
+ * Default [RouterKeyCodec] backed by kotlinx.serialization generated serializers,
+ * with a Parcelable fallback for Android-only keys.
  *
- * Router keys must be annotated with `@Serializable`. Unknown or non-serializable
- * key types fail with an actionable [IllegalArgumentException].
+ * Prefer `@Serializable` keys when possible: the payload is stable, readable, and
+ * easier to evolve. Keys that already implement [Parcelable] can still be saved
+ * and restored without adding kotlinx.serialization annotations.
  */
 public object DefaultRouterKeyCodec : RouterKeyCodec {
+    private const val PARCELABLE_PREFIX = "parcelable:"
+
     private val json = Json {
         encodeDefaults = true
         ignoreUnknownKeys = true
@@ -38,10 +45,19 @@ public object DefaultRouterKeyCodec : RouterKeyCodec {
     @OptIn(InternalSerializationApi::class)
     @Suppress("UNCHECKED_CAST")
     public override fun encode(key: RouterKey): EncodedRouterKey {
-        val serializer = serializerFor(key::class.java)
+        val payload = runCatching {
+            val serializer = serializerFor(key::class.java)
+            json.encodeToString(serializer, key)
+        }.getOrElse { serializationError ->
+            if (key is Parcelable) {
+                encodeParcelable(key)
+            } else {
+                throw notEncodableError(key::class.java, serializationError)
+            }
+        }
         return EncodedRouterKey(
             className = key::class.qualifiedName ?: key::class.java.name,
-            payload = json.encodeToString(serializer, key),
+            payload = payload,
         )
     }
 
@@ -53,6 +69,10 @@ public object DefaultRouterKeyCodec : RouterKeyCodec {
                 "RouterKey class not found: ${encoded.className}",
                 e,
             )
+        }
+
+        if (encoded.payload.startsWith(PARCELABLE_PREFIX)) {
+            return decodeParcelable(clazz, encoded.payload)
         }
 
         val serializer = serializerFor(clazz)
@@ -81,4 +101,39 @@ public object DefaultRouterKeyCodec : RouterKeyCodec {
             )
         }
     }
+
+    private fun encodeParcelable(key: Parcelable): String {
+        val parcel = Parcel.obtain()
+        return try {
+            parcel.writeParcelable(key, 0)
+            val bytes = parcel.marshall()
+            PARCELABLE_PREFIX + Base64.encodeToString(bytes, Base64.NO_WRAP)
+        } finally {
+            parcel.recycle()
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun decodeParcelable(clazz: Class<*>, payload: String): RouterKey {
+        if (!Parcelable::class.java.isAssignableFrom(clazz)) {
+            throw IllegalArgumentException("Parcelable payload found for non-Parcelable RouterKey: ${clazz.name}")
+        }
+        val bytes = Base64.decode(payload.removePrefix(PARCELABLE_PREFIX), Base64.NO_WRAP)
+        val parcel = Parcel.obtain()
+        return try {
+            parcel.unmarshall(bytes, 0, bytes.size)
+            parcel.setDataPosition(0)
+            val restored = parcel.readParcelable<Parcelable>(clazz.classLoader)
+            restored as? RouterKey
+                ?: throw IllegalArgumentException("Parcelable payload did not restore a RouterKey: ${clazz.name}")
+        } finally {
+            parcel.recycle()
+        }
+    }
+
+    private fun notEncodableError(clazz: Class<*>, cause: Throwable): IllegalArgumentException =
+        IllegalArgumentException(
+            "RouterKey ${clazz.name} must be annotated with @Serializable or implement Parcelable.",
+            cause,
+        )
 }

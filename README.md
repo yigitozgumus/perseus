@@ -61,7 +61,8 @@ data class DetailKey(val itemId: Int) : RouterKey
 ```
 
 Keys should be `@Serializable` so Perseus can restore navigation state after
-process death.
+process death. If you already have Android `Parcelable` keys, Perseus can also
+restore those as a fallback without requiring a kotlinx.serialization migration.
 
 ### `ComposeScreenProvider`
 
@@ -251,6 +252,19 @@ data class ProductKey(
     val productId: String,
 ) : RouterKey
 ```
+
+Parcelable keys are also supported as a restore fallback:
+
+```kotlin
+@Parcelize
+data class ProductKey(
+    val productId: String,
+) : RouterKey, Parcelable
+```
+
+`@Serializable` remains the recommended default because the saved payload is
+stable and easier to inspect, but Parcelable support helps migrate existing
+Android navigation models incrementally.
 
 ### Bottom navigation visibility
 
