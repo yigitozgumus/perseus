@@ -1,21 +1,21 @@
 [versions]
-agp = "9.2.1"
-coreKtx = "1.10.1"
+agp = { strictly = "8.11.1" }
+coreKtx = "1.16.0"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.6.1"
-activityCompose = "1.8.0"
-kotlin = "2.4.0"
-composeBom = "2026.02.01"
-navigation3 = "1.2.0-alpha02"
-fragmentCompose = "1.8.9"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+lifecycleRuntimeKtx = "2.9.3"
+activityCompose = "1.9.3"
+kotlin = { strictly = "2.2.21" }
+composeBom = "2025.12.01"
+navigation3 = "1.1.2"
+fragmentCompose = "1.8.6"
 koin = "4.2.1"
 koinAnnotations = "2.3.1"
-ksp = "2.3.9"
+ksp = { strictly = "2.2.21-2.0.4" }
 dokka = "2.2.0"
-lifecycleViewmodelNav3 = "2.11.0-beta01"
-kotlinxSerialization = "1.11.0"
+lifecycleViewmodelNav3 = "2.9.3"
+kotlinxSerialization = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

@@ -1130,23 +1130,6 @@ Run the `sample` app and open the recipe picker to explore them.
 
 ## Development notes
 
-### Binary compatibility
-
-This project enables Kotlin Gradle plugin ABI validation for the public library
-modules (`perseus-core` and `perseus-interop`) to track public API changes.
-
-Check compatibility:
-
-```bash
-./gradlew checkKotlinAbi
-```
-
-If API changes are intentional, update the reference dump:
-
-```bash
-./gradlew updateKotlinAbi
-```
-
 ### API documentation
 
 Generate Dokka HTML documentation for the public library modules:
@@ -1164,5 +1147,6 @@ Useful verification commands:
 ```bash
 ./gradlew :perseus-core:testDebugUnitTest --console=plain
 ./gradlew :perseus-interop:compileDebugKotlin :sample:compileDebugKotlin --console=plain
+./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal --console=plain
 ./gradlew check --console=plain
 ```

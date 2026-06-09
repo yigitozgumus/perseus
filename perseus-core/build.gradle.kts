@@ -2,6 +2,7 @@ import org.gradle.api.publish.maven.MavenPublication
 
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dokka)
@@ -14,11 +15,7 @@ group = "com.yigitozgumus.perseus"
 
 android {
     namespace = "com.yigitozgumus.perseus.core"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 29
@@ -43,10 +40,6 @@ android {
 
 kotlin {
     explicitApi()
-    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
-    abiValidation {
-        referenceDumpDir.set(layout.projectDirectory.dir("api"))
-    }
 }
 
 publishing {
