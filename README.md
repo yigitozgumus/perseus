@@ -37,7 +37,7 @@ Perseus is designed around three ideas:
 - [Hiding bottom navigation](#hiding-bottom-navigation)
 - [Process death and saved state](#process-death-and-saved-state)
 - [Restore policy](#restore-policy)
-- [Debug snapshots and test utilities](#debug-snapshots-and-test-utilities)
+- [Debug snapshots](#debug-snapshots)
 - [ViewModel lifetime](#viewmodel-lifetime)
 - [Grouping and clearing flows](#grouping-and-clearing-flows)
 - [Recommended DI setup](#recommended-di-setup)
@@ -961,21 +961,12 @@ SingleStackSpec(
 
 ---
 
-## Debug snapshots and test utilities
+## Debug snapshots
 
 Use a pull-based snapshot for debug screens, logs, or assertions.
 
 ```kotlin
 val snapshot: StackScopeSnapshot = navigationOwner.debugSnapshot()
-```
-
-For JVM tests, create an attached owner without composing `PerseusNavHost`.
-
-```kotlin
-val owner = createTestPerseusNavigationOwner(SingleStackSpec(HomeKey))
-
-owner.navigator.navigateTo(DetailKey(1))
-assertThat(owner.currentBackStack()).containsExactly(HomeKey, DetailKey(1))
 ```
 
 ---
@@ -1115,6 +1106,33 @@ Run the `sample` app and open the recipe picker to explore them.
 ---
 
 ## Development notes
+
+### Binary compatibility
+
+This project enables Kotlin Gradle plugin ABI validation for the public library
+modules (`perseus-core` and `perseus-interop`) to track public API changes.
+
+Check compatibility:
+
+```bash
+./gradlew checkKotlinAbi
+```
+
+If API changes are intentional, update the reference dump:
+
+```bash
+./gradlew updateKotlinAbi
+```
+
+### API documentation
+
+Generate Dokka HTML documentation for the public library modules:
+
+```bash
+./gradlew :perseus-core:dokkaGenerateHtml :perseus-interop:dokkaGenerateHtml
+```
+
+Generated documentation is written under each module's `build/dokka/` directory.
 
 ### Verification
 

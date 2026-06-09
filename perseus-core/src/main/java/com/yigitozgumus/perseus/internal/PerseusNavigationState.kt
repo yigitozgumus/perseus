@@ -243,8 +243,11 @@ internal class PerseusNavigationState private constructor(
 
         fun fromSnapshot(snapshot: Snapshot): PerseusNavigationState {
             require(snapshot.scopes.isNotEmpty()) { "PerseusNavigationState snapshot requires at least one scope." }
+            val restorableScopes = snapshot.scopes.filterIndexed { index, scope ->
+                index == 0 || scope.restorePolicy != ScopeRestorePolicy.NeverRestore
+            }
             return PerseusNavigationState(
-                initialScopes = snapshot.scopes.map { scope ->
+                initialScopes = restorableScopes.map { scope ->
                     StackScopeState(
                         id = scope.id,
                         container = restoreContainer(scope.container).dropNonRestorableEntries(),

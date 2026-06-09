@@ -63,4 +63,15 @@ class ResultBusAdapterTest {
 
         assertEquals("later", deferred.await())
     }
+
+    @Test
+    fun consumedResultStreamsAreCleanedUp() = runBlocking {
+        val bus = ResultBusAdapter()
+        val handle = bus.createHandle("correlation-a")
+
+        bus.send("correlation-a", "ready")
+        withTimeout(1_000) { handle.observeResult<String>().first() }
+
+        assertEquals(0, bus.streamCount())
+    }
 }

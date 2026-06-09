@@ -38,19 +38,29 @@ internal class ResultBusAdapter {
     @Suppress("UNCHECKED_CAST")
     private fun <R : Any> observe(correlationId: String): Flow<R> = flow {
         val stream = streamFor(correlationId)
-        while (currentCoroutineContext().isActive) {
-            var emitted = false
-            while (true) {
-                val result = stream.poll() ?: break
-                emitted = true
-                emit(result as R)
+        try {
+            while (currentCoroutineContext().isActive) {
+                var emitted = false
+                while (true) {
+                    val result = stream.poll() ?: break
+                    emitted = true
+                    emit(result as R)
+                }
+                if (emitted && stream.isEmpty()) {
+                    streams.remove(correlationId, stream)
+                    return@flow
+                }
+                if (!emitted) {
+                    val seenVersion = stream.version.value
+                    stream.version.first { it != seenVersion }
+                }
             }
-            if (!emitted) {
-                val seenVersion = stream.version.value
-                stream.version.first { it != seenVersion }
-            }
+        } finally {
+            if (stream.isEmpty()) streams.remove(correlationId, stream)
         }
     }
+
+    fun streamCount(): Int = streams.size
 
     private fun streamFor(correlationId: String): ResultStream =
         streams.getOrPut(correlationId) { ResultStream() }
@@ -73,5 +83,7 @@ internal class ResultBusAdapter {
         }
 
         fun poll(): Any? = pending.poll()
+
+        fun isEmpty(): Boolean = pending.isEmpty()
     }
 }
