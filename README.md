@@ -1118,8 +1118,8 @@ Run the `sample` app and open the recipe picker to explore them.
 
 ### Binary compatibility
 
-This project uses the Kotlin Binary Compatibility Validator to track public API
-changes.
+This project enables Kotlin Gradle plugin ABI validation for the public library
+modules (`perseus-core` and `perseus-interop`) to track public API changes.
 
 Check compatibility:
 

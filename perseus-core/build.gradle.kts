@@ -31,6 +31,10 @@ android {
 
 kotlin {
     explicitApi()
+    @OptIn(org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation::class)
+    abiValidation {
+        referenceDumpDir.set(layout.projectDirectory.dir("api"))
+    }
 }
 
 dependencies {
