@@ -133,13 +133,16 @@ dependencies {
 
     // Optional: Fragment interop support
     implementation(project(":perseus-interop"))
+
+    // Optional: Koin helpers for Perseus-scoped Fragment ViewModels
+    implementation(project(":perseus-koin"))
 }
 ```
 
 For local publishing tests, publish the release AARs to Maven Local:
 
 ```bash
-./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal
+./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal :perseus-koin:publishToMavenLocal
 ```
 
 Then consume them from another project:
@@ -156,6 +159,9 @@ dependencies {
 
     // Optional: Fragment interop support
     implementation("com.yigitozgumus.perseus:perseus-interop:0.1.0-SNAPSHOT")
+
+    // Optional: Koin helpers for Perseus-scoped Fragment ViewModels
+    implementation("com.yigitozgumus.perseus:perseus-koin:0.1.0-SNAPSHOT")
 }
 ```
 
@@ -845,21 +851,33 @@ class ProfileFragment : Fragment() {
 }
 ```
 
-For entry-scoped Fragment ViewModels, use Perseus' entry owner. If your
-ViewModel uses Koin or another DI factory, pass that factory explicitly; the
-Android default factory can only create no-arg ViewModels.
+For entry-scoped Fragment ViewModels, use Perseus' entry owner.
 
 ```kotlin
-val owner = requirePerseusViewModelStoreOwner()
+private val viewModel by perseusScopedViewModel<MyViewModel>()
+```
 
-// Example shape; use your DI framework's ViewModelProvider.Factory here.
-private val viewModel by perseusScopedViewModel<MyViewModel> {
-    myKoinViewModelFactory
+If your ViewModel uses Koin constructor injection, add `perseus-koin` and use
+the Koin helper instead. It uses the same Perseus entry scope but lets Koin
+create the ViewModel.
+
+```kotlin
+import com.yigitozgumus.perseus.koin.perseusKoinViewModel
+
+private val viewModel by perseusKoinViewModel<MyViewModel>()
+```
+
+You can also pass Koin qualifier, key, scope, and parameters:
+
+```kotlin
+private val viewModel by perseusKoinViewModel<MyViewModel> {
+    parametersOf(id)
 }
 ```
 
-If your DI helper supports a custom `ViewModelStoreOwner`, pass
-`requirePerseusViewModelStoreOwner()` to that helper.
+If you use another DI framework, pass its `ViewModelProvider.Factory` to
+`perseusScopedViewModel { ... }` or pass `requirePerseusViewModelStoreOwner()`
+to a DI helper that accepts a custom `ViewModelStoreOwner`.
 
 ---
 
@@ -1187,6 +1205,6 @@ Useful verification commands:
 ```bash
 ./gradlew :perseus-core:testDebugUnitTest --console=plain
 ./gradlew :perseus-interop:compileDebugKotlin :sample:compileDebugKotlin --console=plain
-./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal --console=plain
+./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal :perseus-koin:publishToMavenLocal --console=plain
 ./gradlew check --console=plain
 ```

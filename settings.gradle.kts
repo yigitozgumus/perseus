@@ -26,4 +26,5 @@ rootProject.name = "Perseus"
 include(":sample")
 include(":perseus-core")
 include(":perseus-interop")
+include(":perseus-koin")
  
