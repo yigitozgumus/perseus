@@ -35,7 +35,10 @@ import com.yigitozgumus.perseus.sample.recipe.result.ResultActivity
 import com.yigitozgumus.perseus.sample.recipe.restore.ProcessDeathRestoreActivity
 import com.yigitozgumus.perseus.sample.recipe.scope.ScopeActivity
 import com.yigitozgumus.perseus.sample.recipe.tabs.TabsActivity
-import com.yigitozgumus.perseus.sample.recipe.v3.V3FeaturesActivity
+import com.yigitozgumus.perseus.sample.recipe.newapis.BackBehaviorActivity
+import com.yigitozgumus.perseus.sample.recipe.newapis.NavigationHelpersActivity
+import com.yigitozgumus.perseus.sample.recipe.newapis.RestoreGuardActivity
+import com.yigitozgumus.perseus.sample.recipe.newapis.ScopeResultActivity
 import com.yigitozgumus.perseus.sample.recipe.viewmodellifetime.ViewModelLifetimeActivity
 
 class RecipePickerActivity : ComponentActivity() {
@@ -130,9 +133,24 @@ private val recipes = listOf(
         ViewModelLifetimeActivity::class.java,
     ),
     Recipe(
-        "v3 Features",
-        "Back policy, scope results, deep links, graph builder, and helpers",
-        V3FeaturesActivity::class.java,
+        "Back Behavior Policy",
+        "Root and tab back behavior controls",
+        BackBehaviorActivity::class.java,
+    ),
+    Recipe(
+        "Scope Results",
+        "pushScopeForResult and removeScope(result)",
+        ScopeResultActivity::class.java,
+    ),
+    Recipe(
+        "Navigation Helpers",
+        "Deep links, pop helpers, graph builder, and provider validation",
+        NavigationHelpersActivity::class.java,
+    ),
+    Recipe(
+        "Restore Guards",
+        "NonRestorableKey and ScopeRestorePolicy",
+        RestoreGuardActivity::class.java,
     ),
     Recipe(
         "Full Demo",

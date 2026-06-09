@@ -20,19 +20,24 @@ Perseus is designed around three ideas:
 - [Quick start](#quick-start)
 - [Creating keys](#creating-keys)
 - [Rendering Compose screens](#rendering-compose-screens)
+- [Declarative graph registration](#declarative-graph-registration)
 - [Creating the navigation owner](#creating-the-navigation-owner)
+- [Provider validation and missing-provider errors](#provider-validation-and-missing-provider-errors)
 - [Hosting Perseus](#hosting-perseus)
+- [Back behavior policy](#back-behavior-policy)
 - [Navigating between screens](#navigating-between-screens)
 - [Single-stack vs multi-stack scopes](#single-stack-vs-multi-stack-scopes)
 - [Tabs with `MultiStackSpec`](#tabs-with-multistackspec)
 - [Scope navigation: replacing or stacking app surfaces](#scope-navigation-replacing-or-stacking-app-surfaces)
 - [Returning results](#returning-results)
+- [Deep links](#deep-links)
 - [Dialogs and bottom sheets](#dialogs-and-bottom-sheets)
 - [Fragment interop](#fragment-interop)
 - [Transitions](#transitions)
 - [Hiding bottom navigation](#hiding-bottom-navigation)
 - [Process death and saved state](#process-death-and-saved-state)
 - [Restore policy](#restore-policy)
+- [Debug snapshots and test utilities](#debug-snapshots-and-test-utilities)
 - [ViewModel lifetime](#viewmodel-lifetime)
 - [Grouping and clearing flows](#grouping-and-clearing-flows)
 - [Recommended DI setup](#recommended-di-setup)
@@ -270,6 +275,27 @@ PerseusNavigatorFactory.create(
 
 ---
 
+## Declarative graph registration
+
+For Compose-only screens, you can register providers with the lightweight typed graph builder.
+
+```kotlin
+val graph = perseusGraph {
+    screen<HomeKey> { HomeScreen() }
+    screen<DetailKey> { key -> DetailScreen(key.itemId) }
+}
+
+val navigationOwner = PerseusNavigatorFactory.create(
+    composeProviders = graph.composeProviders,
+    fragmentProviders = emptyList(),
+    sceneProviders = emptyList(),
+)
+```
+
+Use explicit provider classes when you need DI-managed provider instances or more custom provider logic.
+
+---
+
 ## Creating the navigation owner
 
 `PerseusNavigatorFactory.create(...)` returns a `PerseusNavigationOwner`.
@@ -279,6 +305,7 @@ val navigationOwner: PerseusNavigationOwner = PerseusNavigatorFactory.create(
     composeProviders = listOf(HomeProvider(), DetailProvider()),
     fragmentProviders = emptyList(),
     sceneProviders = emptyList(),
+    validateProviders = true, // optional startup validation
 )
 ```
 
@@ -297,6 +324,23 @@ The owner also exposes narrower APIs:
 val navigator: PerseusNavigator = navigationOwner.navigator
 val scopeNavigator: PerseusScopeNavigator = navigationOwner.scopeNavigator
 ```
+
+---
+
+## Provider validation and missing-provider errors
+
+Pass `validateProviders = true` to validate initial root providers when the host starts.
+
+```kotlin
+PerseusNavigatorFactory.create(
+    composeProviders = getAll(),
+    fragmentProviders = getAll(),
+    sceneProviders = getAll(),
+    validateProviders = true,
+)
+```
+
+If a key cannot be rendered, Perseus throws a readable error that includes the missing key and registered Compose, Fragment, and Scene providers.
 
 ---
 
@@ -345,6 +389,37 @@ PerseusNavHost(
 
 ---
 
+## Back behavior policy
+
+`PerseusNavHost` can consume root back presses and apply tab-root behavior.
+
+```kotlin
+PerseusNavHost(
+    navigationOwner = navigationOwner,
+    initialScope = MultiStackSpec(listOf(HomeKey, SearchKey)),
+    backBehavior = PerseusBackBehavior(
+        rootBackBehavior = RootBackBehavior.Block,
+        tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
+    ),
+)
+```
+
+Options:
+
+- `RootBackBehavior.ExitHost` — do not consume root back; let the host/activity handle it.
+- `RootBackBehavior.Block` — consume root back and stay in Perseus.
+- `TabBackBehavior.StayOnCurrentTab` — at a tab root, stay on the current tab.
+- `TabBackBehavior.SwitchToInitialTab` — at a non-initial tab root, switch to tab `0`.
+- `TabBackBehavior.ResetCurrentTab` — at a tab root, recreate/reset the current tab root.
+
+You can also call it directly from custom back handling:
+
+```kotlin
+val consumed = navigator.handleBack(PerseusBackBehavior())
+```
+
+---
+
 ## Navigating between screens
 
 Inject or pass `PerseusNavigator` to code that performs regular navigation.
@@ -369,6 +444,16 @@ Check whether the active back stack can pop:
 if (navigator.canGoBack()) {
     navigator.pop()
 }
+```
+
+Common stack helpers:
+
+```kotlin
+navigator.popToRoot()
+navigator.popCurrentTabToRoot()
+navigator.popTabToRoot(tabIndex = 1)
+navigator.popUntilKey(DetailKey(42))
+navigator.popUntilKeyType<DetailKey>()
 ```
 
 ---
@@ -461,12 +546,14 @@ class SessionNavigationController(
     }
 
     fun showMainApp() {
-        scopeNavigator.setRootScope(
+        scopeNavigator.replaceApp(
             MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey))
         )
     }
 }
 ```
+
+`replaceApp(...)` is a semantic alias for `setRootScope(...)`.
 
 ### Push a temporary app-like flow
 
@@ -487,6 +574,18 @@ Remove the whole pushed scope when done:
 
 ```kotlin
 scopeNavigator.removeScope(checkoutScopeId)
+```
+
+Or push a scope that can return a result:
+
+```kotlin
+val handle = scopeNavigator.pushScopeForResult(SingleStackSpec(CheckoutStartKey))
+
+handle.observeResult<CheckoutResult>()
+    .onEach { result -> /* checkout completed/cancelled */ }
+    .launchIn(viewModelScope)
+
+scopeNavigator.removeScope(handle.scopeId, CheckoutResult.Success)
 ```
 
 ### Replace only the current scope
@@ -544,6 +643,29 @@ fun PickerScreen(navigator: PerseusNavigator) {
 
 Results are scoped by a correlation ID. If two parents open the same destination,
 each parent only receives results from its own navigation session.
+
+Pushed scopes can also return results; see [Scope navigation](#scope-navigation-replacing-or-stacking-app-surfaces).
+
+---
+
+## Deep links
+
+Perseus provides small helpers for mapping URIs to keys or scopes.
+
+```kotlin
+val resolver = DeepLinkResolver { uri ->
+    when (uri.host) {
+        "detail" -> DeepLinkTarget.Key(DetailKey(uri.lastPathSegment!!.toInt()))
+        "home" -> DeepLinkTarget.Scope(MultiStackSpec(listOf(HomeKey, SearchKey)))
+        else -> null
+    }
+}
+
+navigator.handleDeepLink(uri, resolver)      // navigates to key targets
+scopeNavigator.handleDeepLink(uri, resolver) // replaces root for scope targets
+```
+
+The resolver is intentionally app-owned so URL parsing, authentication, and routing policy stay outside Perseus.
 
 ---
 
@@ -713,6 +835,22 @@ navigator.navigateTo(
 Per-navigation transitions use Navigation 3 transition metadata and apply to
 that entry only.
 
+### Tab transition
+
+For multi-stack hosts, use `tabTransitionSpec` to animate user-driven tab changes.
+
+```kotlin
+PerseusNavHost(
+    navigationOwner = navigationOwner,
+    initialScope = MultiStackSpec(listOf(HomeKey, SearchKey)),
+    tabTransitionSpec = { fromIndex, toIndex ->
+        fadeIn(tween(220)) togetherWith fadeOut(tween(220))
+    },
+)
+```
+
+Return `null` to fall back to the normal host transition.
+
 ---
 
 ## Hiding bottom navigation
@@ -736,7 +874,7 @@ data object FullScreenDetailKey : RouterKey {
 
 ## Process death and saved state
 
-Perseus uses `rememberSaveable` and a custom saver for navigation state.
+Perseus uses `rememberSaveable` and a custom saver for navigation state. Internally, the saved snapshot is encoded as a JSON `String`, which is Bundle-native; route keys are still serialized with kotlinx.serialization.
 
 Saved state includes:
 
@@ -796,6 +934,49 @@ PerseusNavHost(
 
 Use `AlwaysUseInitialScope` when you want process death to rebuild from your
 current app/auth state instead of restoring internal screens.
+
+### Per-key restore guard
+
+Mark a destination as non-restorable if it cannot safely survive process death.
+
+```kotlin
+@Serializable
+data object PaymentSdkKey : NonRestorableKey
+```
+
+If restored state contains a `NonRestorableKey`, Perseus truncates that restored stack before the non-restorable entry while keeping the root when possible.
+
+### Scope restore policy
+
+Scopes can also declare restore intent.
+
+```kotlin
+SingleStackSpec(
+    initialKey = CheckoutStartKey,
+    restorePolicy = ScopeRestorePolicy.NeverRestore,
+)
+```
+
+`ScopeRestorePolicy` is stored with scope specs and snapshots. Host-level `PerseusRestorePolicy` still decides whether saved state is used at all.
+
+---
+
+## Debug snapshots and test utilities
+
+Use a pull-based snapshot for debug screens, logs, or assertions.
+
+```kotlin
+val snapshot: StackScopeSnapshot = navigationOwner.debugSnapshot()
+```
+
+For JVM tests, create an attached owner without composing `PerseusNavHost`.
+
+```kotlin
+val owner = createTestPerseusNavigationOwner(SingleStackSpec(HomeKey))
+
+owner.navigator.navigateTo(DetailKey(1))
+assertThat(owner.currentBackStack()).containsExactly(HomeKey, DetailKey(1))
+```
 
 ---
 
@@ -923,6 +1104,10 @@ The sample app contains focused recipes for Perseus features:
 | Process Death Restore | Manual saved-state restore flow |
 | Group Pop | `GroupName` + `popUntil` |
 | ViewModel Lifetime | Entry-scoped ViewModel stores |
+| Back Behavior Policy | Root and tab back behavior controls |
+| Scope Results | `pushScopeForResult` and `removeScope(result)` |
+| Navigation Helpers | Deep links, pop helpers, graph builder, and provider validation |
+| Restore Guards | `NonRestorableKey` and `ScopeRestorePolicy` |
 | Full Demo | Multi-feature sample |
 
 Run the `sample` app and open the recipe picker to explore them.

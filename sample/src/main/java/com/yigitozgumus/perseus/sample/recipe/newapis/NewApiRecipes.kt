@@ -1,4 +1,4 @@
-package com.yigitozgumus.perseus.sample.recipe.v3
+package com.yigitozgumus.perseus.sample.recipe.newapis
 
 import android.net.Uri
 import android.os.Bundle
@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
@@ -18,7 +19,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.DeepLinkResolver
 import com.yigitozgumus.perseus.DeepLinkTarget
@@ -48,17 +48,31 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
-class V3FeaturesActivity : ComponentActivity() {
+class BackBehaviorActivity : NewApiRecipeActivity(RecipeMode.BackBehavior)
+class ScopeResultActivity : NewApiRecipeActivity(RecipeMode.ScopeResult)
+class NavigationHelpersActivity : NewApiRecipeActivity(RecipeMode.NavigationHelpers)
+class RestoreGuardActivity : NewApiRecipeActivity(RecipeMode.RestoreGuards)
+
+public enum class RecipeMode {
+    BackBehavior,
+    ScopeResult,
+    NavigationHelpers,
+    RestoreGuards,
+}
+
+abstract class NewApiRecipeActivity(
+    private val mode: RecipeMode,
+) : ComponentActivity() {
 
     private var scopeResultText by mutableStateOf("No scope result yet")
 
     private val graph = perseusGraph {
-        screen<V3HomeKey> { HomeContent() }
-        screen<V3SearchKey> { SearchContent() }
-        screen<V3SettingsKey> { SettingsContent() }
-        screen<V3DetailKey> { DetailContent(it) }
-        screen<V3CheckoutKey> { CheckoutContent() }
-        screen<V3OneTimePaymentKey> { OneTimePaymentContent() }
+        screen<NewHomeKey> { HomeContent() }
+        screen<NewSearchKey> { SearchContent() }
+        screen<NewSettingsKey> { SettingsContent() }
+        screen<NewDetailKey> { DetailContent(it) }
+        screen<NewCheckoutKey> { CheckoutContent() }
+        screen<NewPaymentKey> { PaymentContent() }
     }
 
     private val navigationOwner: PerseusNavigationOwner = PerseusNavigatorFactory.create(
@@ -72,8 +86,8 @@ class V3FeaturesActivity : ComponentActivity() {
 
     private val deepLinkResolver = DeepLinkResolver { uri ->
         when (uri.host) {
-            "detail" -> DeepLinkTarget.Key(V3DetailKey(uri.lastPathSegment?.toIntOrNull() ?: 0))
-            "settings" -> DeepLinkTarget.Scope(SingleStackSpec(V3SettingsKey))
+            "detail" -> DeepLinkTarget.Key(NewDetailKey(uri.lastPathSegment?.toIntOrNull() ?: 0))
+            "settings" -> DeepLinkTarget.Scope(SingleStackSpec(NewSettingsKey))
             else -> null
         }
     }
@@ -85,7 +99,7 @@ class V3FeaturesActivity : ComponentActivity() {
             PerseusNavHost(
                 navigationOwner = navigationOwner,
                 initialScope = MultiStackSpec(
-                    rootKeys = listOf(V3HomeKey, V3SearchKey),
+                    rootKeys = listOf(NewHomeKey, NewSearchKey),
                     restorePolicy = ScopeRestorePolicy.RestoreSavedState,
                 ),
                 modifier = Modifier.fillMaxSize(),
@@ -93,9 +107,7 @@ class V3FeaturesActivity : ComponentActivity() {
                     rootBackBehavior = RootBackBehavior.Block,
                     tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
                 ),
-                tabTransitionSpec = { _, _ ->
-                    fadeIn(tween(220)) togetherWith fadeOut(tween(220))
-                },
+                tabTransitionSpec = { _, _ -> fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
                 bottomBar = { selected, onTabSelected ->
                     NavigationBar {
                         listOf("Home", "Search").forEachIndexed { index, label ->
@@ -114,52 +126,93 @@ class V3FeaturesActivity : ComponentActivity() {
 
     @Composable
     private fun HomeContent() {
-        val coroutineScope = rememberCoroutineScope()
+        when (mode) {
+            RecipeMode.BackBehavior -> BackBehaviorContent()
+            RecipeMode.ScopeResult -> ScopeResultContent()
+            RecipeMode.NavigationHelpers -> NavigationHelpersContent()
+            RecipeMode.RestoreGuards -> RestoreGuardsContent()
+        }
+    }
+
+    @Composable
+    private fun BackBehaviorContent() {
         RecipeScaffold(
-            title = "v3 feature samples",
-            subtitle = "Back policy, scope results, graph registration, deep links, and helpers",
+            title = "Back behavior policy",
+            subtitle = "Root and tab back handling",
         ) {
             ScopeVisualizer(navigationOwner.debugSnapshot())
             RecipeSection(
-                title = "Back behavior policy",
-                body = "Back pops when possible. At a tab root it switches to the first tab; at the first root it is blocked.",
+                title = "Configured behavior",
+                body = "Root back is blocked. Back at the Search tab root switches back to Home.",
             )
-            RecipeSection(
-                title = "Scope results",
-                body = scopeResultText,
-            ) {
-                RecipeButton("Open checkout scope for result") {
-                    val handle = scopeNavigator.pushScopeForResult(
-                        SingleStackSpec(
-                            initialKey = V3CheckoutKey,
-                            restorePolicy = ScopeRestorePolicy.NeverRestore,
-                        )
+            RecipeButton("Push detail, then back pops") { navigator.navigateTo(NewDetailKey(1)) }
+            SecondaryRecipeButton("Switch to Search tab") { navigator.switchTab(1) }
+        }
+    }
+
+    @Composable
+    private fun ScopeResultContent() {
+        val coroutineScope = rememberCoroutineScope()
+        RecipeScaffold(
+            title = "Scope result API",
+            subtitle = "pushScopeForResult and removeScope(result)",
+        ) {
+            ScopeVisualizer(navigationOwner.debugSnapshot())
+            RecipeSection(title = "Latest result", body = scopeResultText)
+            RecipeButton("Open checkout scope") {
+                val handle = scopeNavigator.pushScopeForResult(
+                    SingleStackSpec(
+                        initialKey = NewCheckoutKey,
+                        restorePolicy = ScopeRestorePolicy.NeverRestore,
                     )
-                    coroutineScope.launch {
-                        scopeResultText = handle.observeResult<String>().first()
-                    }
+                )
+                coroutineScope.launch {
+                    scopeResultText = handle.observeResult<String>().first()
                 }
             }
+            SecondaryRecipeButton("replaceApp(Settings)") {
+                scopeNavigator.replaceApp(SingleStackSpec(NewSettingsKey))
+            }
+        }
+    }
+
+    @Composable
+    private fun NavigationHelpersContent() {
+        RecipeScaffold(
+            title = "Navigation helpers",
+            subtitle = "Graph registration, deep links, pop helpers, provider validation",
+        ) {
+            BackStackVisualizer(navigationOwner.debugSnapshot().currentBackStack)
             RecipeSection(
-                title = "Navigation helpers",
-                body = "Push two detail screens, then use popUntilKeyType<Detail>() to clear the flow.",
-            ) {
-                RecipeButton("Push detail flow") { navigator.navigateTo(V3DetailKey(1)) }
-                SecondaryRecipeButton("Open deep link: detail/42") {
-                    navigator.handleDeepLink(Uri.parse("perseus://detail/42"), deepLinkResolver)
-                }
+                title = "Declarative graph + validation",
+                body = "This sample registers screens with perseusGraph { screen<Key> { ... } } and enables validateProviders.",
+            )
+            RecipeButton("Push detail flow") { navigator.navigateTo(NewDetailKey(1)) }
+            SecondaryRecipeButton("Open deep link: detail/42") {
+                navigator.handleDeepLink(Uri.parse("perseus://detail/42"), deepLinkResolver)
             }
+            SecondaryRecipeButton("Scope deep link: settings") {
+                scopeNavigator.handleDeepLink(Uri.parse("perseus://settings"), deepLinkResolver)
+            }
+        }
+    }
+
+    @Composable
+    private fun RestoreGuardsContent() {
+        RecipeScaffold(
+            title = "Restore guards",
+            subtitle = "NonRestorableKey and ScopeRestorePolicy",
+        ) {
+            ScopeVisualizer(navigationOwner.debugSnapshot())
             RecipeSection(
-                title = "Scope helpers",
-                body = "replaceApp is a semantic alias for replacing the root app/session scope.",
-            ) {
-                SecondaryRecipeButton("replaceApp(Settings)") {
-                    scopeNavigator.replaceApp(SingleStackSpec(V3SettingsKey))
-                }
-                SecondaryRecipeButton("Scope deep link: settings") {
-                    scopeNavigator.handleDeepLink(Uri.parse("perseus://settings"), deepLinkResolver)
-                }
-            }
+                title = "Per-key guard",
+                body = "The payment screen implements NonRestorableKey, so restored stacks are truncated before it.",
+            )
+            RecipeButton("Push non-restorable payment screen") { navigator.navigateTo(NewPaymentKey) }
+            RecipeSection(
+                title = "Scope restore policy",
+                body = "Checkout scopes in the scope result sample are created with ScopeRestorePolicy.NeverRestore.",
+            )
         }
     }
 
@@ -171,12 +224,9 @@ class V3FeaturesActivity : ComponentActivity() {
         ) {
             ScopeVisualizer(navigationOwner.debugSnapshot())
             RecipeSection(
-                title = "Tab back behavior",
-                body = "Press system back at this tab root to switch back to Home instead of exiting.",
+                title = "Try system back",
+                body = "At this tab root, back switches to Home because TabBackBehavior.SwitchToInitialTab is configured.",
             )
-            RecipeButton("Push non-restorable payment screen") {
-                navigator.navigateTo(V3OneTimePaymentKey)
-            }
         }
     }
 
@@ -189,19 +239,19 @@ class V3FeaturesActivity : ComponentActivity() {
                 body = "This single-stack root replaced the tabbed app scope.",
             )
             RecipeButton("Restore tabbed app") {
-                scopeNavigator.replaceApp(MultiStackSpec(listOf(V3HomeKey, V3SearchKey)))
+                scopeNavigator.replaceApp(MultiStackSpec(listOf(NewHomeKey, NewSearchKey)))
             }
         }
     }
 
     @Composable
-    private fun DetailContent(key: V3DetailKey) {
+    private fun DetailContent(key: NewDetailKey) {
         RecipeScaffold(title = "Detail ${key.id}") {
             BackStackVisualizer(navigationOwner.debugSnapshot().currentBackStack)
             if (key.id == 1) {
-                RecipeButton("Push detail 2") { navigator.navigateTo(V3DetailKey(2)) }
+                RecipeButton("Push detail 2") { navigator.navigateTo(NewDetailKey(2)) }
             } else {
-                RecipeButton("popUntilKeyType<Detail>") { navigator.popUntilKeyType<V3DetailKey>() }
+                RecipeButton("popUntilKeyType<Detail>") { navigator.popUntilKeyType<NewDetailKey>() }
             }
             SecondaryRecipeButton("popToRoot") { navigator.popToRoot() }
         }
@@ -211,10 +261,6 @@ class V3FeaturesActivity : ComponentActivity() {
     private fun CheckoutContent() {
         RecipeScaffold(title = "Checkout scope") {
             ScopeVisualizer(navigationOwner.debugSnapshot())
-            RecipeSection(
-                title = "ScopeRestorePolicy.NeverRestore",
-                body = "This temporary flow is marked as a non-restoring scope in its spec.",
-            )
             RecipeButton("Complete checkout") {
                 scopeNavigator.removeScope(scopeNavigator.currentScope.id, "Checkout completed")
             }
@@ -225,11 +271,11 @@ class V3FeaturesActivity : ComponentActivity() {
     }
 
     @Composable
-    private fun OneTimePaymentContent() {
+    private fun PaymentContent() {
         RecipeScaffold(title = "One-time payment") {
             RecipeSection(
                 title = "NonRestorableKey",
-                body = "This key implements NonRestorableKey. If process state is restored with it present, Perseus truncates the restored stack before this entry.",
+                body = "This key opts out of restore. Use this for SDK-backed or transaction-only screens.",
             )
             RecipeButton("Pop current tab to root") { navigator.popCurrentTabToRoot() }
         }
@@ -237,19 +283,19 @@ class V3FeaturesActivity : ComponentActivity() {
 }
 
 @Serializable
-private data object V3HomeKey : RouterKey
+private data object NewHomeKey : RouterKey
 
 @Serializable
-private data object V3SearchKey : RouterKey
+private data object NewSearchKey : RouterKey
 
 @Serializable
-private data object V3SettingsKey : RouterKey
+private data object NewSettingsKey : RouterKey
 
 @Serializable
-private data object V3CheckoutKey : RouterKey
+private data object NewCheckoutKey : RouterKey
 
 @Serializable
-private data class V3DetailKey(val id: Int) : RouterKey
+private data class NewDetailKey(val id: Int) : RouterKey
 
 @Serializable
-private data object V3OneTimePaymentKey : NonRestorableKey
+private data object NewPaymentKey : NonRestorableKey
