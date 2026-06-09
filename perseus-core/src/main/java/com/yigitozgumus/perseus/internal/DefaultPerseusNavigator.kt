@@ -38,6 +38,7 @@ internal class DefaultPerseusNavigator(
         groupName: GroupName?,
         transition: ContentTransform?,
     ): NavigationHandle {
+        if (validateProviders) entryRegistry.validateProviderForKey(key)
         val correlationId = UUID.randomUUID().toString()
         val backStackKey = stateHolder.state.createBackStackKey(
             key = key,
@@ -137,6 +138,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun setRootScope(scope: StackScopeSpec) {
+        if (validateProviders) entryRegistry.validateScope(scope)
         cleanupRemoved(stateHolder.setRootScope(scope))
         entryRegistry.clearAllTracking()
     }
@@ -150,11 +152,13 @@ internal class DefaultPerseusNavigator(
             setRootScope(scope)
             return
         }
+        if (validateProviders) entryRegistry.validateScope(scope)
         cleanupRemoved(stateHolder.state.replaceCurrentScope(scope))
     }
 
     override fun pushScope(scope: StackScopeSpec): StackScopeId {
         check(stateHolder.isAttached) { "PerseusNavigationState not attached. Call pushScope after PerseusNavHost is composed." }
+        if (validateProviders) entryRegistry.validateScope(scope)
         return stateHolder.state.pushScope(scope)
     }
 

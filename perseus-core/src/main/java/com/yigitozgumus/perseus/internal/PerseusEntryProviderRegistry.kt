@@ -70,15 +70,32 @@ internal class PerseusEntryProviderRegistry(
             is SingleStackSpec -> listOf(scope.initialKey)
             is MultiStackSpec -> scope.rootKeys
         }
-        keys.forEach { key ->
-            require(hasProviderFor(key)) { missingProviderMessage(key) }
+        keys.forEach(::validateProviderForKey)
+    }
+
+    fun validateProviderForKey(key: RouterKey) {
+        val matches = providerMatchesFor(key)
+        require(matches.isNotEmpty()) { missingProviderMessage(key) }
+        require(matches.size == 1) {
+            "Multiple providers found for $key (${key::class.qualifiedName}).\n\n" +
+                matches.joinToString(separator = "\n") { "- $it" } +
+                "\n\nOnly one provider should claim a RouterKey when provider validation is enabled."
+        }
+        if (matches.single().startsWith("Scene") && key !is DialogKey && key !is BottomSheetKey) {
+            throw IllegalArgumentException(
+                "Scene provider found for non-scene key $key (${key::class.qualifiedName}). " +
+                    "Scene providers should handle DialogKey or BottomSheetKey destinations."
+            )
         }
     }
 
-    fun hasProviderFor(key: RouterKey): Boolean =
-        composeProviders.any { it.canProvide(key) } ||
-            sceneProviders.any { it.canProvide(key) } ||
-            fragmentProviders.any { it.canProvide(key) }
+    fun hasProviderFor(key: RouterKey): Boolean = providerMatchesFor(key).isNotEmpty()
+
+    private fun providerMatchesFor(key: RouterKey): List<String> = buildList {
+        composeProviders.filter { it.canProvide(key) }.forEach { add("Compose: ${providerName(it)}") }
+        fragmentProviders.filter { it.canProvide(key) }.forEach { add("Fragment: ${providerName(it)}") }
+        sceneProviders.filter { it.canProvide(key) }.forEach { add("Scene: ${providerName(it)}") }
+    }
 
     @Suppress("UNCHECKED_CAST")
     fun provide(backStackKey: RouterKey): NavEntry<RouterKey> {
@@ -150,14 +167,17 @@ internal class PerseusEntryProviderRegistry(
         appendLine("No provider found for ${key} (${key::class.qualifiedName}).")
         appendLine()
         appendLine("Registered Compose providers:")
-        if (composeProviders.isEmpty()) appendLine("- <none>") else composeProviders.forEach { appendLine("- ${it::class.qualifiedName ?: it::class.simpleName}") }
+        if (composeProviders.isEmpty()) appendLine("- <none>") else composeProviders.forEach { appendLine("- ${providerName(it)}") }
         appendLine()
         appendLine("Registered Fragment providers:")
-        if (fragmentProviders.isEmpty()) appendLine("- <none>") else fragmentProviders.forEach { appendLine("- ${it::class.qualifiedName ?: it::class.simpleName}") }
+        if (fragmentProviders.isEmpty()) appendLine("- <none>") else fragmentProviders.forEach { appendLine("- ${providerName(it)}") }
         appendLine()
         appendLine("Registered Scene providers:")
-        if (sceneProviders.isEmpty()) appendLine("- <none>") else sceneProviders.forEach { appendLine("- ${it::class.qualifiedName ?: it::class.simpleName}") }
+        if (sceneProviders.isEmpty()) appendLine("- <none>") else sceneProviders.forEach { appendLine("- ${providerName(it)}") }
     }
+
+    private fun providerName(provider: Any): String =
+        provider::class.qualifiedName ?: provider::class.simpleName ?: provider.toString()
 
     private fun computeAndCacheMetadata(backStackKey: RouterKey): Map<String, Any> {
         val key = backStackKey.routeKey()
