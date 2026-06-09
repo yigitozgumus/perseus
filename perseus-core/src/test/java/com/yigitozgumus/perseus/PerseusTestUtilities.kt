@@ -11,7 +11,7 @@ import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 
 /** Creates an attached navigation owner for JVM tests without composing [PerseusNavHost]. */
-public fun createTestPerseusNavigationOwner(
+internal fun createTestPerseusNavigationOwner(
     initialScope: StackScopeSpec,
     composeProviders: List<ComposeScreenProvider<*>> = emptyList(),
     fragmentProviders: List<FragmentProviderMarker> = emptyList(),
@@ -33,5 +33,5 @@ public fun createTestPerseusNavigationOwner(
     )
 }
 
-public fun PerseusNavigationOwner.currentBackStack(): List<com.yigitozgumus.perseus.key.RouterKey> =
+internal fun PerseusNavigationOwner.currentBackStack(): List<com.yigitozgumus.perseus.key.RouterKey> =
     debugSnapshot().currentBackStack

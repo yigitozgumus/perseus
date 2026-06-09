@@ -14,32 +14,32 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PerseusV3FeatureTest {
+class NavigationApiTest {
 
     @Test
     fun popToRootAliasesResetCurrentStack() {
-        val owner = createTestPerseusNavigationOwner(SingleStackSpec(V3Home))
+        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
 
-        owner.navigator.navigateTo(V3Detail(1))
+        owner.navigator.navigateTo(NavigationDetail(1))
         owner.navigator.popToRoot()
 
-        assertEquals(listOf(V3Home), owner.currentBackStack())
+        assertEquals(listOf(NavigationHome), owner.currentBackStack())
     }
 
     @Test
     fun popUntilKeyRemovesTargetAndEntriesAboveIt() {
-        val owner = createTestPerseusNavigationOwner(SingleStackSpec(V3Home))
+        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
 
-        owner.navigator.navigateTo(V3Detail(1))
-        owner.navigator.navigateTo(V3Detail(2))
-        owner.navigator.popUntilKey(V3Detail(1))
+        owner.navigator.navigateTo(NavigationDetail(1))
+        owner.navigator.navigateTo(NavigationDetail(2))
+        owner.navigator.popUntilKey(NavigationDetail(1))
 
-        assertEquals(listOf(V3Home), owner.currentBackStack())
+        assertEquals(listOf(NavigationHome), owner.currentBackStack())
     }
 
     @Test
     fun rootBackCanBeBlockedOrLeftToHost() {
-        val owner = createTestPerseusNavigationOwner(SingleStackSpec(V3Home))
+        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
 
         assertTrue(owner.navigator.handleBack(PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block)))
         assertFalse(owner.navigator.handleBack(PerseusBackBehavior(rootBackBehavior = RootBackBehavior.ExitHost)))
@@ -47,7 +47,7 @@ class PerseusV3FeatureTest {
 
     @Test
     fun backAtNonInitialTabRootCanSwitchToInitialTab() {
-        val owner = createTestPerseusNavigationOwner(MultiStackSpec(listOf(V3Home, V3Search), initialStackIndex = 1))
+        val owner = createTestPerseusNavigationOwner(MultiStackSpec(listOf(NavigationHome, NavigationSearch), initialStackIndex = 1))
 
         val consumed = owner.navigator.handleBack(
             PerseusBackBehavior(tabBackBehavior = TabBackBehavior.SwitchToInitialTab)
@@ -59,22 +59,22 @@ class PerseusV3FeatureTest {
 
     @Test
     fun scopeResultHandleUsesPushedScopeIdAsCorrelation() {
-        val owner = createTestPerseusNavigationOwner(SingleStackSpec(V3Home))
+        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
 
-        val handle = owner.scopeNavigator.pushScopeForResult(SingleStackSpec(V3Checkout))
+        val handle = owner.scopeNavigator.pushScopeForResult(SingleStackSpec(NavigationCheckout))
 
         assertEquals(handle.scopeId.value, handle.correlationId)
     }
 }
 
 @Serializable
-private data object V3Home : RouterKey
+private data object NavigationHome : RouterKey
 
 @Serializable
-private data object V3Search : RouterKey
+private data object NavigationSearch : RouterKey
 
 @Serializable
-private data object V3Checkout : RouterKey
+private data object NavigationCheckout : RouterKey
 
 @Serializable
-private data class V3Detail(val id: Int) : RouterKey
+private data class NavigationDetail(val id: Int) : RouterKey

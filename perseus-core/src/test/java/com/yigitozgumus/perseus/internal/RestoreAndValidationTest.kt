@@ -16,46 +16,46 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PerseusRoadmapPriorityTest {
+class RestoreAndValidationTest {
 
     @Test
     fun neverRestorePushedScopeIsDroppedWhenSnapshotIsRestored() {
-        val state = PerseusNavigationState.singleStack(RoadmapHome)
+        val state = PerseusNavigationState.singleStack(ValidationHome)
         state.pushScope(
             SingleStackSpec(
-                initialKey = RoadmapCheckout,
+                initialKey = ValidationCheckout,
                 restorePolicy = ScopeRestorePolicy.NeverRestore,
             )
         )
-        state.navigateTo(RoadmapDetail(1))
+        state.navigateTo(ValidationDetail(1))
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
 
-        assertEquals(listOf(RoadmapHome), restored.currentBackStack.map { it.routeKey() })
+        assertEquals(listOf(ValidationHome), restored.currentBackStack.map { it.routeKey() })
     }
 
     @Test
     fun nonRestorableKeyTruncatesRestoredStackBeforeThatEntry() {
-        val state = PerseusNavigationState.singleStack(RoadmapHome)
-        state.navigateTo(RoadmapPayment)
-        state.navigateTo(RoadmapDetail(2))
+        val state = PerseusNavigationState.singleStack(ValidationHome)
+        state.navigateTo(ValidationPayment)
+        state.navigateTo(ValidationDetail(2))
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
 
-        assertEquals(listOf(RoadmapHome), restored.currentBackStack.map { it.routeKey() })
+        assertEquals(listOf(ValidationHome), restored.currentBackStack.map { it.routeKey() })
     }
 
     @Test
     fun validateProvidersRejectsMissingNavigationProvider() {
         val owner = PerseusNavigatorFactory.create(
-            composeProviders = listOf(providerFor<RoadmapHome>()),
+            composeProviders = listOf(providerFor<ValidationHome>()),
             fragmentProviders = emptyList(),
             sceneProviders = emptyList(),
             validateProviders = true,
         )
-        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(RoadmapHome))
+        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(ValidationHome))
 
-        val error = runCatching { owner.navigator.navigateTo(RoadmapDetail(3)) }.exceptionOrNull()
+        val error = runCatching { owner.navigator.navigateTo(ValidationDetail(3)) }.exceptionOrNull()
 
         assertTrue(error is IllegalArgumentException)
         assertTrue(error?.message.orEmpty().contains("No provider found"))
@@ -64,14 +64,14 @@ class PerseusRoadmapPriorityTest {
     @Test
     fun validateProvidersRejectsDuplicateProviderMatches() {
         val owner = PerseusNavigatorFactory.create(
-            composeProviders = listOf(providerFor<RoadmapHome>(), providerFor<RoadmapHome>()),
+            composeProviders = listOf(providerFor<ValidationHome>(), providerFor<ValidationHome>()),
             fragmentProviders = emptyList(),
             sceneProviders = emptyList(),
             validateProviders = true,
         )
-        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(RoadmapHome))
+        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(ValidationHome))
 
-        val error = runCatching { owner.navigator.navigateTo(RoadmapHome) }.exceptionOrNull()
+        val error = runCatching { owner.navigator.navigateTo(ValidationHome) }.exceptionOrNull()
 
         assertTrue(error is IllegalArgumentException)
         assertTrue(error?.message.orEmpty().contains("Multiple providers"))
@@ -79,8 +79,8 @@ class PerseusRoadmapPriorityTest {
 
     @Test
     fun scopeResultDeliversActualResult() = runBlocking {
-        val navigator = navigatorFixture(RoadmapHome)
-        val handle = navigator.pushScopeForResult(SingleStackSpec(RoadmapCheckout))
+        val navigator = navigatorFixture(ValidationHome)
+        val handle = navigator.pushScopeForResult(SingleStackSpec(ValidationCheckout))
 
         navigator.removeScope(handle.scopeId, "done")
 
@@ -118,13 +118,13 @@ class PerseusRoadmapPriorityTest {
 }
 
 @Serializable
-internal data object RoadmapHome : RouterKey
+internal data object ValidationHome : RouterKey
 
 @Serializable
-internal data object RoadmapCheckout : RouterKey
+internal data object ValidationCheckout : RouterKey
 
 @Serializable
-internal data class RoadmapDetail(val id: Int) : RouterKey
+internal data class ValidationDetail(val id: Int) : RouterKey
 
 @Serializable
-internal data object RoadmapPayment : NonRestorableKey
+internal data object ValidationPayment : NonRestorableKey
