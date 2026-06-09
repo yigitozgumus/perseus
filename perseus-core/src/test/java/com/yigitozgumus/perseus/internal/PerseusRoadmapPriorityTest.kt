@@ -16,46 +16,46 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class PerseusV4RoadmapTest {
+class PerseusRoadmapPriorityTest {
 
     @Test
     fun neverRestorePushedScopeIsDroppedWhenSnapshotIsRestored() {
-        val state = PerseusNavigationState.singleStack(V4Home)
+        val state = PerseusNavigationState.singleStack(RoadmapHome)
         state.pushScope(
             SingleStackSpec(
-                initialKey = V4Checkout,
+                initialKey = RoadmapCheckout,
                 restorePolicy = ScopeRestorePolicy.NeverRestore,
             )
         )
-        state.navigateTo(V4Detail(1))
+        state.navigateTo(RoadmapDetail(1))
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
 
-        assertEquals(listOf(V4Home), restored.currentBackStack.map { it.routeKey() })
+        assertEquals(listOf(RoadmapHome), restored.currentBackStack.map { it.routeKey() })
     }
 
     @Test
     fun nonRestorableKeyTruncatesRestoredStackBeforeThatEntry() {
-        val state = PerseusNavigationState.singleStack(V4Home)
-        state.navigateTo(V4Payment)
-        state.navigateTo(V4Detail(2))
+        val state = PerseusNavigationState.singleStack(RoadmapHome)
+        state.navigateTo(RoadmapPayment)
+        state.navigateTo(RoadmapDetail(2))
 
         val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
 
-        assertEquals(listOf(V4Home), restored.currentBackStack.map { it.routeKey() })
+        assertEquals(listOf(RoadmapHome), restored.currentBackStack.map { it.routeKey() })
     }
 
     @Test
     fun validateProvidersRejectsMissingNavigationProvider() {
         val owner = PerseusNavigatorFactory.create(
-            composeProviders = listOf(providerFor<V4Home>()),
+            composeProviders = listOf(providerFor<RoadmapHome>()),
             fragmentProviders = emptyList(),
             sceneProviders = emptyList(),
             validateProviders = true,
         )
-        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(V4Home))
+        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(RoadmapHome))
 
-        val error = runCatching { owner.navigator.navigateTo(V4Detail(3)) }.exceptionOrNull()
+        val error = runCatching { owner.navigator.navigateTo(RoadmapDetail(3)) }.exceptionOrNull()
 
         assertTrue(error is IllegalArgumentException)
         assertTrue(error?.message.orEmpty().contains("No provider found"))
@@ -64,14 +64,14 @@ class PerseusV4RoadmapTest {
     @Test
     fun validateProvidersRejectsDuplicateProviderMatches() {
         val owner = PerseusNavigatorFactory.create(
-            composeProviders = listOf(providerFor<V4Home>(), providerFor<V4Home>()),
+            composeProviders = listOf(providerFor<RoadmapHome>(), providerFor<RoadmapHome>()),
             fragmentProviders = emptyList(),
             sceneProviders = emptyList(),
             validateProviders = true,
         )
-        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(V4Home))
+        owner.impl.stateHolder.attach(PerseusNavigationState.singleStack(RoadmapHome))
 
-        val error = runCatching { owner.navigator.navigateTo(V4Home) }.exceptionOrNull()
+        val error = runCatching { owner.navigator.navigateTo(RoadmapHome) }.exceptionOrNull()
 
         assertTrue(error is IllegalArgumentException)
         assertTrue(error?.message.orEmpty().contains("Multiple providers"))
@@ -79,8 +79,8 @@ class PerseusV4RoadmapTest {
 
     @Test
     fun scopeResultDeliversActualResult() = runBlocking {
-        val navigator = navigatorFixture(V4Home)
-        val handle = navigator.pushScopeForResult(SingleStackSpec(V4Checkout))
+        val navigator = navigatorFixture(RoadmapHome)
+        val handle = navigator.pushScopeForResult(SingleStackSpec(RoadmapCheckout))
 
         navigator.removeScope(handle.scopeId, "done")
 
@@ -118,13 +118,13 @@ class PerseusV4RoadmapTest {
 }
 
 @Serializable
-internal data object V4Home : RouterKey
+internal data object RoadmapHome : RouterKey
 
 @Serializable
-internal data object V4Checkout : RouterKey
+internal data object RoadmapCheckout : RouterKey
 
 @Serializable
-internal data class V4Detail(val id: Int) : RouterKey
+internal data class RoadmapDetail(val id: Int) : RouterKey
 
 @Serializable
-internal data object V4Payment : NonRestorableKey
+internal data object RoadmapPayment : NonRestorableKey
