@@ -38,6 +38,7 @@ public object PerseusNavigatorFactory {
      * @param sceneProviders Providers for dialog/bottom sheet scenes.
      * @param fragmentEntryFactory Factory for wrapping fragments in Compose.
      * @param validateProviders If true, [PerseusNavHost] validates initial root providers at startup.
+     * @param logger Optional diagnostics logger for navigation operations and stack mutations.
      * @return A configured [PerseusNavigationOwner] ready for host and navigator use.
      */
     public fun create(
@@ -46,17 +47,19 @@ public object PerseusNavigatorFactory {
         sceneProviders: List<ComposeSceneProvider<*>>,
         fragmentEntryFactory: FragmentEntryFactory? = null,
         validateProviders: Boolean = false,
+        logger: PerseusLogger = EmptyPerseusLogger,
     ): PerseusNavigationOwner {
         val stateHolder = PerseusNavigationStateHolder()
         val resultBus = ResultBusAdapter()
-        val viewModelStore = PerseusViewModelStoreRegistry()
+        val viewModelStore = PerseusViewModelStoreRegistry(logger)
         val entryRegistry = PerseusEntryProviderRegistry(
-            composeProviders,
-            fragmentProviders,
-            sceneProviders,
-            resultBus,
-            viewModelStore,
-            fragmentEntryFactory,
+            composeProviders = composeProviders,
+            fragmentProviders = fragmentProviders,
+            sceneProviders = sceneProviders,
+            resultBus = resultBus,
+            viewModelStoreProvider = viewModelStore,
+            fragmentEntryFactory = fragmentEntryFactory,
+            logger = logger,
         )
         return PerseusNavigationOwner(
             DefaultPerseusNavigator(
@@ -65,6 +68,7 @@ public object PerseusNavigatorFactory {
                 entryRegistry,
                 viewModelStore,
                 validateProviders,
+                logger,
             )
         )
     }

@@ -869,6 +869,45 @@ to a DI helper that accepts a custom `ViewModelStoreOwner`.
 
 ---
 
+## Logging
+
+Perseus can log navigation operations and stack snapshots. Logging is disabled
+by default.
+
+```kotlin
+val navigationOwner = PerseusNavigatorFactory.create(
+    composeProviders = composeProviders,
+    fragmentProviders = fragmentProviders,
+    sceneProviders = sceneProviders,
+    fragmentEntryFactory = DefaultFragmentEntryFactory,
+    logger = AndroidPerseusLogger(level = PerseusLogLevel.Debug),
+)
+```
+
+`Debug` logs before/after stack state, provider resolution, transition tracking,
+and ViewModelStore cleanup. `Info` logs operation results and the resulting
+stack. Example shape:
+
+```text
+after navigateTo entryId=... currentKey=Detail stack=scope=... single [Home#..., Detail#...]
+after switchTab current=1 currentKey=Search stack=scope=... multi currentTab=1 tabs=[0:[Home#...], *1:[Search#...]]
+```
+
+You can provide your own logger if you need to route messages to another
+system:
+
+```kotlin
+class MyPerseusLogger : PerseusLogger {
+    override val level = PerseusLogLevel.Debug
+
+    override fun log(messageLevel: PerseusLogLevel, message: String) {
+        analytics.log("Perseus", message)
+    }
+}
+```
+
+---
+
 ## Transitions
 
 ### Host-level transitions

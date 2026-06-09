@@ -221,6 +221,22 @@ internal class PerseusNavigationState private constructor(
         val correlationId: String,
     )
 
+    fun debugDescription(): String = scopeStack.joinToString(separator = " | ") { scope ->
+        val container = scope.container
+        val body = when (container) {
+            is SingleStackState -> "single ${container.backStack.entryNames()}"
+            is MultiStackState -> buildString {
+                append("multi currentTab=${container.currentStackIndex} ")
+                append(container.rootKeys.indices.joinToString(prefix = "tabs=[", postfix = "]") { index ->
+                    val marker = if (index == container.currentStackIndex) "*" else ""
+                    val stack = container.backStacks[index]?.entryNames() ?: "[]"
+                    "$marker$index:$stack"
+                })
+            }
+        }
+        "scope=${scope.id} $body"
+    }
+
     fun toSnapshot(): Snapshot = Snapshot(
         scopes = scopeStack.map { scope ->
             ScopeSnapshot(
@@ -412,6 +428,13 @@ private fun createRootBackStackKey(key: RouterKey): RouterKey = PerseusBackStack
     groupName = null,
     correlationId = UUID.randomUUID().toString(),
 )
+
+private fun List<RouterKey>.entryNames(): String =
+    joinToString(prefix = "[", postfix = "]") { key ->
+        val route = key.routeKey()
+        val name = route::class.simpleName ?: keyClassName(route)
+        "$name#${key.backStackId().take(8)}"
+    }
 
 private fun routeSnapshot(key: RouterKey): PerseusNavigationState.RouteSnapshot {
     val encoded = DefaultRouterKeyCodec.encode(key.routeKey())

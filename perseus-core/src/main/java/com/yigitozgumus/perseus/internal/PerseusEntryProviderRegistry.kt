@@ -16,14 +16,17 @@ import com.yigitozgumus.perseus.key.DialogKey
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.LocalSceneActions
+import com.yigitozgumus.perseus.EmptyPerseusLogger
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.PerseusLogger
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.StackScopeSpec
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.SceneActions
 import com.yigitozgumus.perseus.SceneResultCallback
+import com.yigitozgumus.perseus.debug
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -44,7 +47,8 @@ internal class PerseusEntryProviderRegistry(
     private val sceneProviders: List<ComposeSceneProvider<*>>,
     private val resultBus: ResultBusAdapter,
     private val viewModelStoreProvider: PerseusViewModelStoreProvider,
-    private val fragmentEntryFactory: FragmentEntryFactory? = null
+    private val fragmentEntryFactory: FragmentEntryFactory? = null,
+    private val logger: PerseusLogger = EmptyPerseusLogger,
 ) {
     // Per-navigate transition storage
     private val pendingTransitions = ConcurrentHashMap<String, ContentTransform>()
@@ -54,14 +58,17 @@ internal class PerseusEntryProviderRegistry(
 
     fun getGroupForKey(key: RouterKey): GroupName? = key.groupName()
     fun clearTrackingForKey(key: RouterKey) {
+        logger.debug("clearTrackingForKey entryId=${key.backStackId()} key=${key.shortName()}")
         pendingTransitions.remove(key.backStackId())
     }
 
     fun setPendingTransition(key: RouterKey, transition: ContentTransform) {
+        logger.debug("setPendingTransition entryId=${key.backStackId()} key=${key.shortName()} transition=${transition::class.simpleName}")
         pendingTransitions[key.backStackId()] = transition
     }
 
     fun clearAllTracking() {
+        logger.debug("clearAllTracking pendingTransitions=${pendingTransitions.size}")
         pendingTransitions.clear()
     }
 
@@ -113,6 +120,7 @@ internal class PerseusEntryProviderRegistry(
                 entryId = entryId,
                 correlationId = backStackKey.correlationId() ?: error("Missing correlationId for $entryId"),
             )
+            logger.debug("provide Compose entryId=$entryId key=${key.shortName()} provider=${providerName(foundProvider)}")
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 CompositionLocalProvider(LocalNavigationContext provides navCtx) {
                     if (isScene) {
@@ -134,6 +142,7 @@ internal class PerseusEntryProviderRegistry(
                 }
             }
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
+            logger.debug("provide Scene entryId=$entryId key=${key.shortName()} provider=${providerName(provider)}")
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 (provider as ComposeSceneProvider<RouterKey>).Content(
                     key = key,
@@ -155,6 +164,7 @@ internal class PerseusEntryProviderRegistry(
                     "Fragment provider found for ${key::class.simpleName} but no fragmentEntryFactory set. " +
                     "Add perseus-interop dependency and pass a FragmentEntryFactory to PerseusNavigatorFactory."
                 )
+            logger.debug("provide Fragment entryId=$entryId key=${key.shortName()} provider=${providerName(provider)}")
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
                 factory.Create(provider, key, ctx, viewModelStoreProvider)
             }
@@ -178,6 +188,9 @@ internal class PerseusEntryProviderRegistry(
 
     private fun providerName(provider: Any): String =
         provider::class.qualifiedName ?: provider::class.simpleName ?: provider.toString()
+
+    private fun RouterKey.shortName(): String =
+        routeKey()::class.simpleName ?: keyClassName(routeKey())
 
     private fun computeAndCacheMetadata(backStackKey: RouterKey): Map<String, Any> {
         val key = backStackKey.routeKey()
