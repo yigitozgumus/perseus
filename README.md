@@ -133,16 +133,13 @@ dependencies {
 
     // Optional: Fragment interop support
     implementation(project(":perseus-interop"))
-
-    // Optional: Koin helpers for Perseus-scoped Fragment ViewModels
-    implementation(project(":perseus-koin"))
 }
 ```
 
 For local publishing tests, publish the release AARs to Maven Local:
 
 ```bash
-./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal :perseus-koin:publishToMavenLocal
+./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal
 ```
 
 Then consume them from another project:
@@ -159,9 +156,6 @@ dependencies {
 
     // Optional: Fragment interop support
     implementation("com.yigitozgumus.perseus:perseus-interop:0.1.0-SNAPSHOT")
-
-    // Optional: Koin helpers for Perseus-scoped Fragment ViewModels
-    implementation("com.yigitozgumus.perseus:perseus-koin:0.1.0-SNAPSHOT")
 }
 ```
 
@@ -857,23 +851,17 @@ For entry-scoped Fragment ViewModels, use Perseus' entry owner.
 private val viewModel by perseusScopedViewModel<MyViewModel>()
 ```
 
-If your ViewModel uses Koin constructor injection, add `perseus-koin` and use
-the Koin helper instead. It uses the same Perseus entry scope but lets Koin
-create the ViewModel.
+If your ViewModel uses Koin constructor injection, keep Koin responsible for
+creation and pass Perseus' owner to Koin's Fragment delegate:
 
 ```kotlin
-import com.yigitozgumus.perseus.koin.perseusKoinViewModel
-
-private val viewModel by perseusKoinViewModel<MyViewModel>()
+private val viewModel by viewModel<MyViewModel>(
+    ownerProducer = { requirePerseusViewModelStoreOwner() },
+)
 ```
 
-You can also pass Koin qualifier, key, scope, and parameters:
-
-```kotlin
-private val viewModel by perseusKoinViewModel<MyViewModel> {
-    parametersOf(id)
-}
-```
+For an embedded Koin instance, expose the desired Koin `Scope` from the Fragment
+and still use the Perseus owner as the `ownerProducer`.
 
 If you use another DI framework, pass its `ViewModelProvider.Factory` to
 `perseusScopedViewModel { ... }` or pass `requirePerseusViewModelStoreOwner()`
@@ -1205,6 +1193,6 @@ Useful verification commands:
 ```bash
 ./gradlew :perseus-core:testDebugUnitTest --console=plain
 ./gradlew :perseus-interop:compileDebugKotlin :sample:compileDebugKotlin --console=plain
-./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal :perseus-koin:publishToMavenLocal --console=plain
+./gradlew :perseus-core:publishToMavenLocal :perseus-interop:publishToMavenLocal --console=plain
 ./gradlew check --console=plain
 ```

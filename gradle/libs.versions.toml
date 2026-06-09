@@ -41,7 +41,6 @@ koin-compose-viewmodel = { group = "io.insert-koin", name = "koin-compose-viewmo
 koin-navigation3 = { group = "io.insert-koin", name = "koin-compose-navigation3", version.ref = "koin" }
 koin-annotations = { group = "io.insert-koin", name = "koin-annotations", version.ref = "koinAnnotations" }
 koin-ksp-compiler = { group = "io.insert-koin", name = "koin-ksp-compiler", version.ref = "koinAnnotations" }
-koin-core-viewmodel = { group = "io.insert-koin", name = "koin-core-viewmodel", version.ref = "koin" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 
