@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:name=".SampleApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Perseus">
+
+        <activity
+            android:name=".RecipePickerActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Perseus">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".SampleActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.compose.ComposeOnlyActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.interop.InteropActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.result.ResultActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.dialog.DialogActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.bottomsheet.BottomSheetActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.customsheet.CustomSheetActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.animation.AnimationActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.animation.PerTransitionActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.scope.ScopeActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.tabs.TabsActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.restore.ProcessDeathRestoreActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.grouppop.GroupPopActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.viewmodellifetime.ViewModelLifetimeActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.bottomnavhide.BottomNavHideActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.newapis.BackBehaviorActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.newapis.ScopeResultActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.newapis.NavigationHelpersActivity" android:theme="@style/Theme.Perseus" />
+        <activity android:name=".recipe.newapis.RestoreGuardActivity" android:theme="@style/Theme.Perseus" />
+
+    </application>
+</manifest>
