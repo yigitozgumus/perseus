@@ -20,6 +20,9 @@ import com.yigitozgumus.perseus.key.EncodedRouterKey
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.RouterKey
 import java.util.UUID
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 /**
  * Navigation state that survives process death via [Saver].
@@ -183,35 +186,40 @@ internal class PerseusNavigationState private constructor(
 
     // ── Process Death ──────────────────────────────────────────────────────
 
+    @Serializable
     data class Snapshot(
         val scopes: List<ScopeSnapshot>,
-    ) : java.io.Serializable
+    )
 
+    @Serializable
     data class ScopeSnapshot(
         val id: String,
         val container: ContainerSnapshot,
         val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
-    ) : java.io.Serializable
+    )
 
+    @Serializable
     data class ContainerSnapshot(
         val type: Int,
         val singleBackStack: List<EntrySnapshot> = emptyList(),
         val rootRoutes: List<RouteSnapshot> = emptyList(),
         val multiBackStacks: Map<Int, List<EntrySnapshot>> = emptyMap(),
         val currentStackIndex: Int = 0,
-    ) : java.io.Serializable
+    )
 
+    @Serializable
     data class RouteSnapshot(
         val keyClassName: String,
         val keyPayload: String,
-    ) : java.io.Serializable
+    )
 
+    @Serializable
     data class EntrySnapshot(
         val id: String,
         val route: RouteSnapshot,
         val groupName: String?,
         val correlationId: String,
-    ) : java.io.Serializable
+    )
 
     fun toSnapshot(): Snapshot = Snapshot(
         scopes = scopeStack.map { scope ->
@@ -310,9 +318,14 @@ internal class PerseusNavigationState private constructor(
                 correlationId = UUID.randomUUID().toString(),
             )
 
-        val Saver: Saver<PerseusNavigationState, Snapshot> = Saver(
-            save = { it.toSnapshot() },
-            restore = { fromSnapshot(it) }
+        private val SnapshotJson: Json = Json {
+            encodeDefaults = true
+            ignoreUnknownKeys = true
+        }
+
+        val Saver: Saver<PerseusNavigationState, String> = Saver(
+            save = { SnapshotJson.encodeToString(it.toSnapshot()) },
+            restore = { fromSnapshot(SnapshotJson.decodeFromString(it)) }
         )
     }
 }
