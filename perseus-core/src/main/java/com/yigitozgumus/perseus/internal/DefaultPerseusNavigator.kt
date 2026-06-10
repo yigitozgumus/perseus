@@ -40,7 +40,7 @@ internal class DefaultPerseusNavigator(
         logger.info("navigatorCreated validateProviders=$validateProviders")
     }
 
-    override val currentScope: StackScopeSnapshot get() = stateHolder.state.currentScope
+    override val currentScope: StackScopeSnapshot get() = stateHolder.requireState("currentScope").currentScope
 
     override val currentTabIndex: Int get() = stateHolder.currentTabIndex
 
@@ -53,8 +53,9 @@ internal class DefaultPerseusNavigator(
     ): NavigationHandle {
         if (validateProviders) entryRegistry.validateProviderForKey(key)
         logBefore("navigateTo key=${key.shortName()} group=${groupName?.name} transition=${transition != null}")
+        val state = stateHolder.requireState("navigateTo")
         val correlationId = UUID.randomUUID().toString()
-        val backStackKey = stateHolder.state.createBackStackKey(
+        val backStackKey = state.createBackStackKey(
             key = key,
             groupName = groupName,
             correlationId = correlationId,
@@ -62,35 +63,28 @@ internal class DefaultPerseusNavigator(
 
         if (transition != null) entryRegistry.setPendingTransition(backStackKey, transition)
 
-        stateHolder.state.navigateTo(backStackKey)
+        state.navigateTo(backStackKey)
         syncCurrentKey()
         logAfter("navigateTo entryId=${backStackKey.backStackId()} correlationId=$correlationId")
         return resultBus.createHandle(correlationId)
     }
 
     override fun pop() {
-        if (!stateHolder.isAttached) {
-            logger.debug("pop ignored state=detached")
-            return
-        }
+        val state = stateHolder.requireState("pop")
         logBefore("pop")
-        cleanupRemoved(listOfNotNull(stateHolder.state.goBack()))
+        cleanupRemoved(listOfNotNull(state.goBack()))
         syncCurrentKey()
         logAfter("pop")
     }
 
     override fun handleBack(behavior: PerseusBackBehavior): Boolean {
-        if (!stateHolder.isAttached) {
-            logger.debug("handleBack ignored state=detached")
-            return false
-        }
+        val state = stateHolder.requireState("handleBack")
         logBefore("handleBack tab=${behavior.tabBackBehavior} root=${behavior.rootBackBehavior}")
-        if (canGoBack()) {
+        if (state.currentBackStack.size > 1) {
             pop()
             logAfter("handleBack consumed=pop")
             return true
         }
-        val state = stateHolder.state
         if (state.isMultiStack) {
             when (behavior.tabBackBehavior) {
                 TabBackBehavior.StayOnCurrentTab -> Unit
@@ -111,15 +105,12 @@ internal class DefaultPerseusNavigator(
         return consumed
     }
 
-    override fun canGoBack(): Boolean = stateHolder.currentBackStack.size > 1
+    override fun canGoBack(): Boolean = stateHolder.requireState("canGoBack").currentBackStack.size > 1
 
     override fun popUntil(groupName: GroupName) {
-        if (!stateHolder.isAttached) {
-            logger.debug("popUntil ignored state=detached group=${groupName.name}")
-            return
-        }
+        val state = stateHolder.requireState("popUntil")
         logBefore("popUntil group=${groupName.name}")
-        val removed = stateHolder.state.removeWhere { key ->
+        val removed = state.removeWhere { key ->
             entryRegistry.getGroupForKey(key) == groupName
         }
         cleanupRemoved(removed)
@@ -128,24 +119,18 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun popUntilKey(key: RouterKey) {
-        if (!stateHolder.isAttached) {
-            logger.debug("popUntilKey ignored state=detached key=${key.shortName()}")
-            return
-        }
+        val state = stateHolder.requireState("popUntilKey")
         logBefore("popUntilKey key=${key.shortName()}")
-        val removed = stateHolder.state.popUntilKey(key)
+        val removed = state.popUntilKey(key)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("popUntilKey removed=${removed.size}")
     }
 
     override fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>) {
-        if (!stateHolder.isAttached) {
-            logger.debug("popUntilKeyType ignored state=detached keyClass=${keyClass.simpleName}")
-            return
-        }
+        val state = stateHolder.requireState("popUntilKeyType")
         logBefore("popUntilKeyType keyClass=${keyClass.simpleName}")
-        val removed = stateHolder.state.popUntilKeyType(keyClass)
+        val removed = state.popUntilKeyType(keyClass)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("popUntilKeyType removed=${removed.size}")
@@ -157,63 +142,54 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun switchTab(tabIndex: Int) {
+        val state = stateHolder.requireState("switchTab")
         logBefore("switchTab from=${stateHolder.currentTabIndex} to=$tabIndex")
-        stateHolder.state.switchTab(tabIndex)
+        state.switchTab(tabIndex)
         syncCurrentKey()
         logAfter("switchTab current=${stateHolder.currentTabIndex}")
     }
 
     override fun resetTab(tabIndex: Int, resetRoot: Boolean) {
-        if (!stateHolder.isAttached) {
-            logger.debug("resetTab ignored state=detached tab=$tabIndex resetRoot=$resetRoot")
-            return
-        }
+        val state = stateHolder.requireState("resetTab")
         logBefore("resetTab tab=$tabIndex resetRoot=$resetRoot")
-        val removed = stateHolder.state.resetTab(tabIndex, resetRoot)
+        val removed = state.resetTab(tabIndex, resetRoot)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("resetTab removed=${removed.size}")
     }
 
     override fun resetCurrentTab(resetRoot: Boolean) {
-        if (!stateHolder.isAttached) {
-            logger.debug("resetCurrentTab ignored state=detached resetRoot=$resetRoot")
-            return
-        }
+        val state = stateHolder.requireState("resetCurrentTab")
         logBefore("resetCurrentTab resetRoot=$resetRoot")
-        val removed = stateHolder.state.resetCurrentTab(resetRoot)
+        val removed = state.resetCurrentTab(resetRoot)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("resetCurrentTab removed=${removed.size}")
     }
 
     override fun popToRoot(resetRoot: Boolean) {
+        stateHolder.requireState("popToRoot")
         popCurrentTabToRoot(resetRoot)
     }
 
     override fun popTabToRoot(tabIndex: Int, resetRoot: Boolean) {
+        stateHolder.requireState("popTabToRoot")
         resetTab(tabIndex, resetRoot)
     }
 
     override fun popCurrentTabToRoot(resetRoot: Boolean) {
-        if (!stateHolder.isAttached) {
-            logger.debug("popCurrentTabToRoot ignored state=detached resetRoot=$resetRoot")
-            return
-        }
+        val state = stateHolder.requireState("popCurrentTabToRoot")
         logBefore("popCurrentTabToRoot resetRoot=$resetRoot")
-        val removed = stateHolder.state.popCurrentStackToRoot(resetRoot)
+        val removed = state.popCurrentStackToRoot(resetRoot)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("popCurrentTabToRoot removed=${removed.size}")
     }
 
     override fun resetAllWithKeys(keys: List<RouterKey>) {
-        if (!stateHolder.isAttached) {
-            logger.debug("resetAllWithKeys ignored state=detached keys=${keys.map { it.shortName() }}")
-            return
-        }
+        val state = stateHolder.requireState("resetAllWithKeys")
         logBefore("resetAllWithKeys keys=${keys.map { it.shortName() }}")
-        val removed = stateHolder.state.resetAllWithKeys(keys)
+        val removed = state.resetAllWithKeys(keys)
         cleanupRemoved(removed)
         entryRegistry.clearAllTracking()
         syncCurrentKey()
@@ -235,24 +211,20 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun replaceCurrentScope(scope: StackScopeSpec) {
-        if (!stateHolder.isAttached) {
-            logger.debug("replaceCurrentScope redirected=setRootScope state=detached scope=${scope.describe()}")
-            setRootScope(scope)
-            return
-        }
+        val state = stateHolder.requireState("replaceCurrentScope")
         if (validateProviders) entryRegistry.validateScope(scope)
         logBefore("replaceCurrentScope scope=${scope.describe()}")
-        val removed = stateHolder.state.replaceCurrentScope(scope)
+        val removed = state.replaceCurrentScope(scope)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("replaceCurrentScope removed=${removed.size}")
     }
 
     override fun pushScope(scope: StackScopeSpec): StackScopeId {
-        check(stateHolder.isAttached) { "PerseusNavigationState not attached. Call pushScope after PerseusNavHost is composed." }
+        val state = stateHolder.requireState("pushScope")
         if (validateProviders) entryRegistry.validateScope(scope)
         logBefore("pushScope scope=${scope.describe()}")
-        val scopeId = stateHolder.state.pushScope(scope)
+        val scopeId = state.pushScope(scope)
         syncCurrentKey()
         logAfter("pushScope scopeId=${scopeId.value}")
         return scopeId
@@ -265,18 +237,16 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun removeScope(scopeId: StackScopeId) {
-        if (!stateHolder.isAttached) {
-            logger.debug("removeScope ignored state=detached scopeId=${scopeId.value}")
-            return
-        }
+        val state = stateHolder.requireState("removeScope")
         logBefore("removeScope scopeId=${scopeId.value}")
-        val removed = stateHolder.state.removeScope(scopeId)
+        val removed = state.removeScope(scopeId)
         cleanupRemoved(removed)
         syncCurrentKey()
         logAfter("removeScope removed=${removed.size}")
     }
 
     override fun <R : Any> removeScope(scopeId: StackScopeId, result: R) {
+        stateHolder.requireState("removeScope")
         logger.debug("removeScopeWithResult scopeId=${scopeId.value} result=${result::class.simpleName}")
         resultBus.send(scopeId.value, result)
         removeScope(scopeId)

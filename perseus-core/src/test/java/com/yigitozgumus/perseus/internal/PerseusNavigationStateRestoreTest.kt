@@ -1,6 +1,7 @@
 package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.NonRestorableKey
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
@@ -132,6 +133,160 @@ class PerseusNavigationStateRestoreTest {
         pushedEntryIds.forEach(::assertNoOwner)
     }
 
+    @Test
+    fun restoreClampsInvalidMultiStackIndexToFirstTab() {
+        val snapshot = PerseusNavigationState.Snapshot(
+            scopes = listOf(
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "root",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 1,
+                        rootRoutes = listOf(
+                            routeSnapshotFor(RestoreKey(10, "home")),
+                            routeSnapshotFor(RestoreKey(20, "search")),
+                        ),
+                        multiBackStacks = mapOf(
+                            0 to listOf(entrySnapshotFor("home-entry", RestoreKey(10, "home"))),
+                        ),
+                        currentStackIndex = 99,
+                    ),
+                )
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(snapshot)
+
+        assertEquals(0, restored.currentTabIndex)
+        assertEquals(listOf(RestoreKey(10, "home")), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
+    fun restoreDropsInvalidNonRootScope() {
+        val root = RestoreKey(1, "root")
+        val snapshot = PerseusNavigationState.Snapshot(
+            scopes = listOf(
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "root",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 0,
+                        singleBackStack = listOf(entrySnapshotFor("root-entry", root)),
+                    ),
+                ),
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "invalid-child",
+                    container = PerseusNavigationState.ContainerSnapshot(type = 0),
+                ),
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(snapshot)
+
+        assertEquals(listOf(root), restored.currentBackStack.map { it.routeKey() })
+        assertEquals("root", restored.currentScope.id.value)
+    }
+
+    @Test
+    fun restoreDropsMultiStackSnapshotWithEmptyRoots() {
+        val root = RestoreKey(1, "root")
+        val snapshot = PerseusNavigationState.Snapshot(
+            scopes = listOf(
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "root",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 0,
+                        singleBackStack = listOf(entrySnapshotFor("root-entry", root)),
+                    ),
+                ),
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "invalid-child",
+                    container = PerseusNavigationState.ContainerSnapshot(type = 1, rootRoutes = emptyList()),
+                ),
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(snapshot)
+
+        assertEquals(listOf(root), restored.currentBackStack.map { it.routeKey() })
+        assertEquals("root", restored.currentScope.id.value)
+    }
+
+    @Test
+    fun restoreRecreatesMissingCurrentTabStackFromRootKey() {
+        val tab0 = RestoreKey(10, "home")
+        val tab1 = RestoreKey(20, "search")
+        val snapshot = PerseusNavigationState.Snapshot(
+            scopes = listOf(
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "root",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 1,
+                        rootRoutes = listOf(routeSnapshotFor(tab0), routeSnapshotFor(tab1)),
+                        multiBackStacks = mapOf(0 to listOf(entrySnapshotFor("home-entry", tab0))),
+                        currentStackIndex = 1,
+                    ),
+                )
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(snapshot)
+
+        assertEquals(1, restored.currentTabIndex)
+        assertEquals(listOf(tab1), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
+    fun restoreDropsScopeWhenRootIsNonRestorable() {
+        val root = RestoreKey(1, "root")
+        val snapshot = PerseusNavigationState.Snapshot(
+            scopes = listOf(
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "root",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 0,
+                        singleBackStack = listOf(entrySnapshotFor("root-entry", root)),
+                    ),
+                ),
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "non-restorable-child",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 0,
+                        singleBackStack = listOf(
+                            entrySnapshotFor("flow-entry", NonRestorableRestoreKey("flow")),
+                            entrySnapshotFor("child-entry", RestoreKey(2, "child")),
+                        ),
+                    ),
+                ),
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(snapshot)
+
+        assertEquals("root", restored.currentScope.id.value)
+        assertEquals(listOf(root), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
+    fun restoreNeverReturnsEmptyCurrentBackStack() {
+        val tab0 = RestoreKey(10, "home")
+        val snapshot = PerseusNavigationState.Snapshot(
+            scopes = listOf(
+                PerseusNavigationState.ScopeSnapshot(
+                    id = "root",
+                    container = PerseusNavigationState.ContainerSnapshot(
+                        type = 1,
+                        rootRoutes = listOf(routeSnapshotFor(tab0)),
+                        multiBackStacks = mapOf(0 to emptyList()),
+                        currentStackIndex = 0,
+                    ),
+                )
+            )
+        )
+
+        val restored = PerseusNavigationState.fromSnapshot(snapshot)
+
+        assertEquals(listOf(tab0), restored.currentBackStack.map { it.routeKey() })
+    }
+
     private fun assertNoOwner(entryId: String) {
         try {
             PerseusViewModelStoreOwners.getOwner(entryId)
@@ -140,6 +295,19 @@ class PerseusNavigationStateRestoreTest {
             // Expected.
         }
     }
+
+    private fun routeSnapshotFor(key: RouterKey): PerseusNavigationState.RouteSnapshot {
+        val state = PerseusNavigationState.singleStack(key)
+        return state.toSnapshot().scopes.single().container.singleBackStack.single().route
+    }
+
+    private fun entrySnapshotFor(id: String, key: RouterKey): PerseusNavigationState.EntrySnapshot =
+        PerseusNavigationState.EntrySnapshot(
+            id = id,
+            route = routeSnapshotFor(key),
+            groupName = null,
+            correlationId = "correlation-$id",
+        )
 
     private fun navigatorFor(state: PerseusNavigationState): DefaultPerseusNavigator =
         navigatorFixture(state).navigator
@@ -177,3 +345,8 @@ private data class RestoreKey(
     val id: Int,
     val label: String,
 ) : RouterKey
+
+@Serializable
+private data class NonRestorableRestoreKey(
+    val label: String,
+) : NonRestorableKey

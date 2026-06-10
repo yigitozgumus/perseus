@@ -10,8 +10,9 @@ import com.yigitozgumus.perseus.key.RouterKey
  * The actual state is created via `rememberSaveable` in the host composable.
  * This holder stores a reference once [attach] is called.
  *
- * Calls to state transition methods before [attach] are buffered and
- * replayed when the state becomes available.
+ * Only root-scope replacement is buffered before [attach]. Route, tab,
+ * and pushed-scope operations must run after the host composable attaches
+ * the state, otherwise they fail with a clear lifecycle error.
  */
 internal class PerseusNavigationStateHolder {
 
@@ -23,9 +24,14 @@ internal class PerseusNavigationStateHolder {
     private var pending: Pending? = null
 
     val state: PerseusNavigationState
-        get() = _state ?: error("PerseusNavigationState not attached. Call attach() from host composable.")
+        get() = requireState("state")
 
     val isAttached: Boolean get() = _state != null
+
+    fun requireState(operationName: String): PerseusNavigationState = _state ?: error(
+        "PerseusNavigator.$operationName() called before PerseusNavHost attached navigation state. " +
+            "Only setRootScope()/replaceApp() are supported before host composition."
+    )
 
     fun attach(state: PerseusNavigationState) {
         _state = state
@@ -45,7 +51,7 @@ internal class PerseusNavigationStateHolder {
             emptyList()
         }
 
-    val currentBackStack: SnapshotStateList<RouterKey> get() = state.currentBackStack
+    val currentBackStack: SnapshotStateList<RouterKey> get() = requireState("currentBackStack").currentBackStack
     val currentTabIndex: Int get() = _state?.currentTabIndex ?: 0
     val topLevelRoutes: List<RouterKey> get() = _state?.topLevelRoutes ?: emptyList()
 }

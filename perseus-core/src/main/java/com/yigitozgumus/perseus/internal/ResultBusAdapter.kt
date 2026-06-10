@@ -60,6 +60,10 @@ internal class ResultBusAdapter {
         }
     }
 
+    fun clear(correlationId: String) {
+        streams.remove(correlationId)
+    }
+
     fun streamCount(): Int = streams.size
 
     private fun streamFor(correlationId: String): ResultStream =

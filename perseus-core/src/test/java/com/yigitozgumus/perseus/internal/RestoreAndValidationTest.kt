@@ -6,7 +6,10 @@ import com.yigitozgumus.perseus.NonRestorableKey
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
 import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
+import com.yigitozgumus.perseus.SceneResultCallback
+import com.yigitozgumus.perseus.key.DialogKey
 import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.provider.ComposeSceneProvider
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import kotlinx.coroutines.flow.first
@@ -79,6 +82,50 @@ class RestoreAndValidationTest {
     }
 
     @Test
+    fun validateProvidersRejectsSceneProviderForNonSceneKey() {
+        val registry = entryRegistry(
+            sceneProviders = listOf(sceneProviderFor<ValidationHome>()),
+        )
+
+        val error = runCatching { registry.validateProviderForKey(ValidationHome) }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+        assertTrue(error?.message.orEmpty().contains("Scene provider found for non-scene key"))
+    }
+
+    @Test
+    fun validateProvidersAcceptsSceneProviderForDialogKey() {
+        val registry = entryRegistry(
+            sceneProviders = listOf(sceneProviderFor<ValidationDialog>()),
+        )
+
+        registry.validateProviderForKey(ValidationDialog)
+    }
+
+    @Test
+    fun validateProvidersRejectsMultiStackRootsThatHideBottomNavigation() {
+        val registry = entryRegistry(
+            composeProviders = listOf(providerFor<ValidationHome>(), providerFor<ValidationDetail>()),
+        )
+
+        val error = runCatching {
+            registry.validateScope(MultiStackSpec(listOf(ValidationHome, ValidationDetail(1))))
+        }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+        assertTrue(error?.message.orEmpty().contains("Override RouterKey.hidesBottomNavigation to false for tab roots"))
+    }
+
+    @Test
+    fun validateProvidersAcceptsMultiStackRootsThatShowBottomNavigation() {
+        val registry = entryRegistry(
+            composeProviders = listOf(providerFor<ValidationTabHome>(), providerFor<ValidationTabSearch>()),
+        )
+
+        registry.validateScope(MultiStackSpec(listOf(ValidationTabHome, ValidationTabSearch)))
+    }
+
+    @Test
     fun fragmentProviderRequiresFragmentEntryFactory() {
         val resultBus = ResultBusAdapter()
         val viewModelStoreRegistry = PerseusViewModelStoreRegistry()
@@ -119,6 +166,29 @@ class RestoreAndValidationTest {
             override fun Content(key: K) = Unit
         }
 
+    private inline fun <reified K : RouterKey> sceneProviderFor(): ComposeSceneProvider<K> =
+        object : ComposeSceneProvider<K> {
+            override fun canProvide(key: RouterKey): Boolean = key is K
+
+            @Composable
+            override fun Content(key: K, onResult: SceneResultCallback, onDismiss: () -> Unit) = Unit
+        }
+
+    private fun entryRegistry(
+        composeProviders: List<ComposeScreenProvider<*>> = emptyList(),
+        fragmentProviders: List<FragmentProviderMarker> = emptyList(),
+        sceneProviders: List<ComposeSceneProvider<*>> = emptyList(),
+    ): PerseusEntryProviderRegistry {
+        val resultBus = ResultBusAdapter()
+        return PerseusEntryProviderRegistry(
+            composeProviders = composeProviders,
+            fragmentProviders = fragmentProviders,
+            sceneProviders = sceneProviders,
+            resultBus = resultBus,
+            viewModelStoreProvider = PerseusViewModelStoreRegistry(),
+        )
+    }
+
     private fun navigatorFixture(initialKey: RouterKey): DefaultPerseusNavigator {
         val state = PerseusNavigationState.singleStack(initialKey)
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
@@ -151,3 +221,16 @@ internal data class ValidationDetail(val id: Int) : RouterKey
 
 @Serializable
 internal data object ValidationPayment : NonRestorableKey
+
+@Serializable
+internal data object ValidationDialog : DialogKey
+
+@Serializable
+internal data object ValidationTabHome : RouterKey {
+    override val hidesBottomNavigation: Boolean = false
+}
+
+@Serializable
+internal data object ValidationTabSearch : RouterKey {
+    override val hidesBottomNavigation: Boolean = false
+}

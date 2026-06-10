@@ -342,7 +342,7 @@ val navigationOwner: PerseusNavigationOwner = PerseusNavigatorFactory.create(
     composeProviders = listOf(HomeProvider(), DetailProvider()),
     fragmentProviders = emptyList(),
     sceneProviders = emptyList(),
-    validateProviders = true, // optional startup validation
+    validateProviders = true, // recommended during development and in samples
 )
 ```
 
@@ -366,7 +366,7 @@ val scopeNavigator: PerseusScopeNavigator = navigationOwner.scopeNavigator
 
 ## Provider validation and missing-provider errors
 
-Pass `validateProviders = true` to validate initial root providers when the host starts.
+Pass `validateProviders = true` to validate initial root providers when the host starts. This is recommended during development because it catches missing providers, duplicate provider matches, invalid scene providers, and multi-stack tab roots that accidentally hide bottom navigation.
 
 ```kotlin
 PerseusNavigatorFactory.create(

@@ -1,6 +1,7 @@
 package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.fail
 import org.junit.Test
@@ -30,8 +31,42 @@ class PerseusViewModelStoreRegistryTest {
 
         registry.clear("entry-a")
 
+        assertNoRegisteredOwner("entry-a")
+    }
+
+    @Test
+    fun staleOwnerDoesNotRecreateStoreAfterClear() {
+        val registry = PerseusViewModelStoreRegistry()
+        val staleOwner = registry.getOwner("entry-a")
+        val staleStore = staleOwner.viewModelStore
+
+        registry.clear("entry-a")
+
+        assertSame(staleStore, staleOwner.viewModelStore)
+        assertNoRegisteredOwner("entry-a")
+
+        val replacementOwner = registry.getOwner("entry-a")
+        assertNotSame(staleStore, replacementOwner.viewModelStore)
+        assertSame(replacementOwner.viewModelStore, PerseusViewModelStoreOwners.getOwner("entry-a").viewModelStore)
+    }
+
+    @Test
+    fun retainOnlyClearsRemovedStoresAndUnregistersOwners() {
+        val registry = PerseusViewModelStoreRegistry()
+        val keptOwner = registry.getOwner("entry-a")
+        val removedOwner = registry.getOwner("entry-b")
+        val removedStore = removedOwner.viewModelStore
+
+        registry.retainOnly(setOf("entry-a"))
+
+        assertSame(keptOwner.viewModelStore, PerseusViewModelStoreOwners.getOwner("entry-a").viewModelStore)
+        assertSame(removedStore, removedOwner.viewModelStore)
+        assertNoRegisteredOwner("entry-b")
+    }
+
+    private fun assertNoRegisteredOwner(entryId: String) {
         try {
-            PerseusViewModelStoreOwners.getOwner("entry-a")
+            PerseusViewModelStoreOwners.getOwner(entryId)
             fail("Owner lookup should be removed when the entry store is cleared")
         } catch (_: IllegalStateException) {
             // Expected.

@@ -75,9 +75,18 @@ internal class PerseusEntryProviderRegistry(
     fun validateScope(scope: StackScopeSpec) {
         val keys = when (scope) {
             is SingleStackSpec -> listOf(scope.initialKey)
-            is MultiStackSpec -> scope.rootKeys
+            is MultiStackSpec -> scope.rootKeys.also { rootKeys -> validateMultiStackRootVisibility(rootKeys) }
         }
         keys.forEach(::validateProviderForKey)
+    }
+
+    private fun validateMultiStackRootVisibility(rootKeys: List<RouterKey>) {
+        val hiddenRoots = rootKeys.filter { it.hidesBottomNavigation }
+        require(hiddenRoots.isEmpty()) {
+            "MultiStackSpec root keys should show bottom navigation when provider validation is enabled. " +
+                "Override RouterKey.hidesBottomNavigation to false for tab roots: " +
+                hiddenRoots.joinToString { it.shortName() }
+        }
     }
 
     fun validateProviderForKey(key: RouterKey) {

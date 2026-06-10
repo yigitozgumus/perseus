@@ -25,9 +25,13 @@ public interface NavigationHandle {
     public val correlationId: String
 
     /**
-     * Observes results from this navigation session, filtered to type [R].
+     * Observes results from this navigation session.
      *
-     * @param R The expected result type.
+     * The requested type [R] must match the type sent by the child screen.
+     * Results are correlated by [correlationId], but they are not dynamically
+     * type-filtered at runtime.
+     *
+     * @param R The expected result type sent by the child screen.
      * @return A [Flow] emitting results of type [R] from this session only.
      */
     public fun <R : Any> observeResult(): Flow<R>

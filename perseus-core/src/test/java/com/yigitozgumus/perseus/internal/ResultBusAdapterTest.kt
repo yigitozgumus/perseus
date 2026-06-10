@@ -74,4 +74,16 @@ class ResultBusAdapterTest {
 
         assertEquals(0, bus.streamCount())
     }
+
+    @Test
+    fun unobservedResultStreamCanBeClearedExplicitly() {
+        val bus = ResultBusAdapter()
+
+        bus.send("correlation-a", "ready")
+        assertEquals(1, bus.streamCount())
+
+        bus.clear("correlation-a")
+
+        assertEquals(0, bus.streamCount())
+    }
 }

@@ -19,39 +19,31 @@ internal class PerseusViewModelStoreRegistry(
     private val logger: PerseusLogger = EmptyPerseusLogger,
 ) : PerseusViewModelStoreProvider {
 
-    private val stores = ConcurrentHashMap<String, ViewModelStore>()
+    private val owners = ConcurrentHashMap<String, StoreOwner>()
 
     override fun getOwner(entryId: String): ViewModelStoreOwner {
-        val existed = stores.containsKey(entryId)
-        stores.getOrPut(entryId) { ViewModelStore() }
-        logger.debug("viewModelStoreOwner entryId=$entryId reused=$existed activeStores=${stores.size}")
-        return StoreOwner(entryId, stores).also { owner ->
-            PerseusViewModelStoreOwners.register(entryId, owner)
-        }
+        val existed = owners.containsKey(entryId)
+        val owner = owners.getOrPut(entryId) { StoreOwner(ViewModelStore()) }
+        logger.debug("viewModelStoreOwner entryId=$entryId reused=$existed activeStores=${owners.size}")
+        PerseusViewModelStoreOwners.register(entryId, owner)
+        return owner
     }
 
     override fun clear(entryId: String) {
-        val removed = stores.remove(entryId)
-        removed?.clear()
+        val removed = owners.remove(entryId)
+        removed?.viewModelStore?.clear()
         PerseusViewModelStoreOwners.unregister(entryId)
-        logger.debug("viewModelStoreClear entryId=$entryId existed=${removed != null} activeStores=${stores.size}")
+        logger.debug("viewModelStoreClear entryId=$entryId existed=${removed != null} activeStores=${owners.size}")
     }
 
     override fun retainOnly(entryIds: Set<String>) {
-        val toRemove = stores.keys - entryIds
+        val toRemove = owners.keys - entryIds
         logger.debug("viewModelStoreRetainOnly keep=${entryIds.size} remove=${toRemove.size}")
         toRemove.forEach { clear(it) }
     }
 
-    /**
-     * Internal ViewModelStoreOwner backed by the registry.
-     * Each call to [viewModelStore] returns the same store for the given key.
-     */
+    /** Internal ViewModelStoreOwner with a fixed store instance. */
     private class StoreOwner(
-        private val entryId: String,
-        private val stores: ConcurrentHashMap<String, ViewModelStore>
-    ) : ViewModelStoreOwner {
-        override val viewModelStore: ViewModelStore
-            get() = stores[entryId] ?: ViewModelStore().also { stores[entryId] = it }
-    }
+        override val viewModelStore: ViewModelStore,
+    ) : ViewModelStoreOwner
 }

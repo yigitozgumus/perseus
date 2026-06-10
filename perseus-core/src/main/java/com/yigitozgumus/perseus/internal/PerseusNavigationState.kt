@@ -259,17 +259,21 @@ internal class PerseusNavigationState private constructor(
 
         fun fromSnapshot(snapshot: Snapshot): PerseusNavigationState {
             require(snapshot.scopes.isNotEmpty()) { "PerseusNavigationState snapshot requires at least one scope." }
-            val restorableScopes = snapshot.scopes.filterIndexed { index, scope ->
-                index == 0 || scope.restorePolicy != ScopeRestorePolicy.NeverRestore
+            val restoredScopes = snapshot.scopes
+                .filterIndexed { index, scope -> index == 0 || scope.restorePolicy != ScopeRestorePolicy.NeverRestore }
+                .mapNotNull(::restoreScopeOrNull)
+            require(restoredScopes.isNotEmpty()) {
+                "PerseusNavigationState snapshot does not contain a restorable scope."
             }
-            return PerseusNavigationState(
-                initialScopes = restorableScopes.map { scope ->
-                    StackScopeState(
-                        id = scope.id,
-                        container = restoreContainer(scope.container).dropNonRestorableEntries(),
-                        restorePolicy = scope.restorePolicy,
-                    )
-                }
+            return PerseusNavigationState(initialScopes = restoredScopes)
+        }
+
+        private fun restoreScopeOrNull(snapshot: ScopeSnapshot): StackScopeState? {
+            val container = restoreContainerOrNull(snapshot.container)?.dropNonRestorableEntries() ?: return null
+            return StackScopeState(
+                id = snapshot.id,
+                container = container,
+                restorePolicy = snapshot.restorePolicy,
             )
         }
 
@@ -298,20 +302,40 @@ internal class PerseusNavigationState private constructor(
             )
         }
 
-        private fun restoreContainer(snapshot: ContainerSnapshot): StackContainerState =
+        private fun restoreContainerOrNull(snapshot: ContainerSnapshot): StackContainerState? =
             when (snapshot.type) {
-                SINGLE_STACK_TYPE -> SingleStackState(
-                    snapshot.singleBackStack.map { restoreEntry(it) }.toMutableStateList()
-                )
-                MULTI_STACK_TYPE -> MultiStackState(
-                    rootKeys = snapshot.rootRoutes.map { restoreRoute(it) },
-                    backStacks = snapshot.multiBackStacks.mapValues { (_, v) ->
-                        v.map { restoreEntry(it) }.toMutableStateList()
-                    }.toMutableMap(),
-                    initialStackIndex = snapshot.currentStackIndex,
-                )
-                else -> error("Unknown stack container type: ${snapshot.type}")
+                SINGLE_STACK_TYPE -> restoreSingleStackOrNull(snapshot)
+                MULTI_STACK_TYPE -> restoreMultiStackOrNull(snapshot)
+                else -> null
             }
+
+        private fun restoreSingleStackOrNull(snapshot: ContainerSnapshot): StackContainerState? {
+            val restoredStack = snapshot.singleBackStack.map { restoreEntry(it) }
+            if (restoredStack.isEmpty()) return null
+            return SingleStackState(restoredStack.toMutableStateList())
+        }
+
+        private fun restoreMultiStackOrNull(snapshot: ContainerSnapshot): StackContainerState? {
+            val rootKeys = snapshot.rootRoutes.map { restoreRoute(it) }
+            if (rootKeys.isEmpty()) return null
+            val currentStackIndex = snapshot.currentStackIndex.takeIf { it in rootKeys.indices } ?: 0
+            val backStacks = snapshot.multiBackStacks
+                .filterKeys { it in rootKeys.indices }
+                .mapValues { (index, entries) ->
+                    entries.map { restoreEntry(it) }
+                        .ifEmpty { listOf(createInitialBackStackKey(rootKeys[index])) }
+                        .toMutableStateList()
+                }
+                .toMutableMap()
+            backStacks.getOrPut(currentStackIndex) {
+                listOf(createInitialBackStackKey(rootKeys[currentStackIndex])).toMutableStateList()
+            }
+            return MultiStackState(
+                rootKeys = rootKeys,
+                backStacks = backStacks,
+                initialStackIndex = currentStackIndex,
+            )
+        }
 
         private fun restoreEntry(snapshot: EntrySnapshot): RouterKey =
             PerseusBackStackKey(
@@ -359,17 +383,30 @@ internal sealed interface StackContainerState {
     fun allBackStackEntries(): List<RouterKey>
 }
 
-internal fun StackContainerState.dropNonRestorableEntries(): StackContainerState {
-    fun SnapshotStateList<RouterKey>.dropAfterFirstNonRestorable() {
+internal fun StackContainerState.dropNonRestorableEntries(): StackContainerState? {
+    fun SnapshotStateList<RouterKey>.dropAfterFirstNonRestorable(): Boolean {
         val index = indexOfFirst { it.routeKey() is NonRestorableKey }
-        if (index < 0) return
-        while (lastIndex >= index && size > 1) removeAt(lastIndex)
+        if (index < 0) return isNotEmpty()
+        if (index == 0) return false
+        while (lastIndex >= index) removeAt(lastIndex)
+        return isNotEmpty()
     }
-    when (this) {
-        is SingleStackState -> backStack.dropAfterFirstNonRestorable()
-        is MultiStackState -> backStacks.values.forEach { it.dropAfterFirstNonRestorable() }
+    return when (this) {
+        is SingleStackState -> if (backStack.dropAfterFirstNonRestorable()) this else null
+        is MultiStackState -> {
+            backStacks.entries.removeAll { (_, stack) -> !stack.dropAfterFirstNonRestorable() }
+            if (rootKeys.isNotEmpty()) {
+                val safeIndex = currentStackIndex.takeIf { it in rootKeys.indices } ?: 0
+                currentStackIndex = safeIndex
+                backStacks.getOrPut(safeIndex) {
+                    mutableListOf(createRootBackStackKey(rootKeys[safeIndex])).toMutableStateList()
+                }
+                this
+            } else {
+                null
+            }
+        }
     }
-    return this
 }
 
 internal data class SingleStackState(

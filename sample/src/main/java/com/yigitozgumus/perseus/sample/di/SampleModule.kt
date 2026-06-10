@@ -32,6 +32,7 @@ val infrastructureModule = module {
             fragmentProviders = listOf(ProfileFragmentProvider()),
             sceneProviders = emptyList(),
             fragmentEntryFactory = DefaultFragmentEntryFactory,
+            validateProviders = true,
             logger = AndroidPerseusLogger(tag = "Perseus", level = PerseusLogLevel.Debug)
         )
     }

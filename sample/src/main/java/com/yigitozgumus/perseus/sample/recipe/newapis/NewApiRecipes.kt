@@ -286,10 +286,14 @@ abstract class NewApiRecipeActivity(
 }
 
 @Serializable
-private data object NewHomeKey : RouterKey
+private data object NewHomeKey : RouterKey {
+    override val hidesBottomNavigation: Boolean = false
+}
 
 @Serializable
-private data object NewSearchKey : RouterKey
+private data object NewSearchKey : RouterKey {
+    override val hidesBottomNavigation: Boolean = false
+}
 
 @Serializable
 private data object NewSettingsKey : RouterKey
