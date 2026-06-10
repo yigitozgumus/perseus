@@ -1,13 +1,19 @@
 package com.yigitozgumus.perseus.interop
 
 import android.os.Bundle
+import android.view.View
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
-import androidx.fragment.compose.AndroidFragment
-import androidx.fragment.compose.rememberFragmentState
+import androidx.fragment.app.FragmentContainerView
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commitNow
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
@@ -64,12 +70,37 @@ public fun <K : RouterKey> FragmentEntry(
         }
     }
 
-    key(context.entryId) {
-        AndroidFragment(
-            clazz = fragmentClass,
-            modifier = modifier,
-            fragmentState = rememberFragmentState(),
-            arguments = arguments,
-        )
+    val fragmentSavedState = remember(context.entryId) { mutableStateOf<Fragment.SavedState?>(null) }
+    val containerId = remember(context.entryId) { View.generateViewId() }
+    val localView = LocalView.current
+    val localContext = LocalContext.current
+    val fragmentManager = remember(localView) { FragmentManager.findFragmentManager(localView) }
+
+    AndroidView(
+        modifier = modifier,
+        factory = { viewContext ->
+            FragmentContainerView(viewContext).apply { id = containerId }
+        },
+    )
+
+    DisposableEffect(fragmentManager, fragmentClass, context.entryId) {
+        val fragment = fragmentManager.findFragmentById(containerId)
+            ?: fragmentManager.fragmentFactory
+                .instantiate(localContext.classLoader, fragmentClass.name)
+                .apply {
+                    setInitialSavedState(fragmentSavedState.value)
+                    this.arguments = arguments
+                    fragmentManager.commitNow {
+                        setReorderingAllowed(true)
+                        add(containerId, this@apply, context.entryId)
+                    }
+                }
+
+        onDispose {
+            fragmentSavedState.value = fragmentManager.saveFragmentInstanceState(fragment)
+            if (!fragmentManager.isStateSaved) {
+                fragmentManager.commitNow { remove(fragment) }
+            }
+        }
     }
 }
