@@ -13,10 +13,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.fragment.app.FragmentActivity
 import com.yigitozgumus.perseus.MultiStackSpec
@@ -28,12 +24,9 @@ import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import com.yigitozgumus.perseus.sample.keys.SearchKey
 import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
-import org.koin.core.logger.Logger
 import org.koin.ksp.generated.com_yigitozgumus_perseus_sample_di_SampleModule
 import org.koin.ksp.generated.module
 
@@ -59,8 +52,6 @@ class SampleActivity : FragmentActivity(), KoinComponent {
         enableEdgeToEdge()
 
         setContent {
-            var selectedTab by rememberSaveable { mutableIntStateOf(0) }
-
             PerseusNavHost(
                 navigationOwner = navigationOwner,
                 initialScope = MultiStackSpec(listOf(HomeKey, SearchKey, ProfileKey)),
@@ -87,7 +78,6 @@ class SampleActivity : FragmentActivity(), KoinComponent {
                         )
                     }
                 },
-                onTabChanged = { selectedTab = it },
             )
         }
     }

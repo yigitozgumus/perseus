@@ -36,7 +36,7 @@ public fun <K : RouterKey> FragmentEntry(
     viewModelStoreProvider: PerseusViewModelStoreProvider,
     modifier: Modifier = Modifier,
 ) {
-    val fragmentTemplate = remember(key) { provider.provide(key) }
+    val fragmentTemplate = remember(context.entryId) { provider.provide(key) }
     val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
 
     val encodedKey = remember(key) { DefaultRouterKeyCodec.encode(key) }
@@ -64,7 +64,7 @@ public fun <K : RouterKey> FragmentEntry(
         }
     }
 
-    key(key) {
+    key(context.entryId) {
         AndroidFragment(
             clazz = fragmentClass,
             modifier = modifier,

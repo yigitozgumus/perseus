@@ -38,6 +38,19 @@ class NavigationApiTest {
     }
 
     @Test
+    fun popUntilKeyTypeRemovesTopMostMatchingEntryAndEntriesAboveIt() {
+        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
+
+        owner.navigator.navigateTo(NavigationDetail(1))
+        owner.navigator.navigateTo(NavigationSearch)
+        owner.navigator.navigateTo(NavigationDetail(2))
+        owner.navigator.navigateTo(NavigationCheckout)
+        owner.navigator.popUntilKeyType(NavigationDetail::class)
+
+        assertEquals(listOf(NavigationHome, NavigationDetail(1), NavigationSearch), owner.currentBackStack())
+    }
+
+    @Test
     fun rootBackCanBeBlockedOrLeftToHost() {
         val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
 

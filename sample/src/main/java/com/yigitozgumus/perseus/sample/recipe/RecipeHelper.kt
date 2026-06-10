@@ -3,7 +3,6 @@ package com.yigitozgumus.perseus.sample.recipe
 import com.yigitozgumus.perseus.AndroidPerseusLogger
 import com.yigitozgumus.perseus.PerseusLogLevel
 import com.yigitozgumus.perseus.PerseusNavigationOwner
-import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentEntryFactory
@@ -33,13 +32,3 @@ fun createNavigationOwner(
     }
     return app.koin.get()
 }
-
-fun createNavigator(
-    composeProviders: List<ComposeScreenProvider<*>> = emptyList(),
-    fragmentProviders: List<FragmentProviderMarker> = emptyList(),
-    fragmentEntryFactory: FragmentEntryFactory? = null,
-): PerseusNavigator = createNavigationOwner(
-    composeProviders = composeProviders,
-    fragmentProviders = fragmentProviders,
-    fragmentEntryFactory = fragmentEntryFactory,
-).navigator

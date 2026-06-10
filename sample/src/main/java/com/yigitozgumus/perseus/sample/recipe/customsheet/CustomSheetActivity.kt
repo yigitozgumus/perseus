@@ -14,10 +14,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -38,11 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
-import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
-import com.yigitozgumus.perseus.sample.keys.CustomSheetKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 
@@ -50,9 +46,8 @@ import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 class CustomSheetActivity : ComponentActivity() {
 
     private val navigationOwner: PerseusNavigationOwner = createNavigationOwner(
-        composeProviders = listOf(CustomHomeProvider(), CustomSheetProvider()),
+        composeProviders = listOf(CustomHomeProvider()),
     )
-    private val navigator: PerseusNavigator get() = navigationOwner.navigator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -140,16 +135,6 @@ class CustomSheetActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-    }
-
-    inner class CustomSheetProvider : ComposeScreenProvider<CustomSheetKey> {
-        override fun canProvide(key: RouterKey) = key is CustomSheetKey
-
-        @Composable
-        override fun Content(key: CustomSheetKey) {
-            // Not used in this recipe — sheet is rendered inline
-            Text("Custom Sheet Key (unused)")
         }
     }
 }

@@ -8,6 +8,7 @@ import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.RouterKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -75,6 +76,28 @@ class RestoreAndValidationTest {
 
         assertTrue(error is IllegalArgumentException)
         assertTrue(error?.message.orEmpty().contains("Multiple providers"))
+    }
+
+    @Test
+    fun fragmentProviderRequiresFragmentEntryFactory() {
+        val resultBus = ResultBusAdapter()
+        val viewModelStoreRegistry = PerseusViewModelStoreRegistry()
+        val registry = PerseusEntryProviderRegistry(
+            composeProviders = emptyList(),
+            fragmentProviders = listOf(object : FragmentProviderMarker {
+                override fun canProvide(key: RouterKey): Boolean = key is ValidationHome
+            }),
+            sceneProviders = emptyList(),
+            resultBus = resultBus,
+            viewModelStoreProvider = viewModelStoreRegistry,
+            fragmentEntryFactory = null,
+        )
+        val state = PerseusNavigationState.singleStack(ValidationHome)
+
+        val error = runCatching { registry.provide(state.currentBackStack.last()) }.exceptionOrNull()
+
+        assertTrue(error is IllegalArgumentException)
+        assertTrue(error?.message.orEmpty().contains("no fragmentEntryFactory"))
     }
 
     @Test

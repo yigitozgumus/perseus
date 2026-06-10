@@ -959,6 +959,11 @@ PerseusNavHost(
 
 Return `null` to fall back to the normal host transition.
 
+Fragment interop screens are hosted through `AndroidFragment`, so they do not
+reliably participate in Compose/NavDisplay scene transitions. Use Compose
+providers for screens where slide/tab scene animation is required, or animate the
+Fragment root view inside the Fragment.
+
 ---
 
 ## Hiding bottom navigation

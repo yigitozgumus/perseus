@@ -52,7 +52,7 @@ public interface PerseusNavigator {
     /** Pops all entries above and including [key] in the current stack, keeping the root entry. */
     public fun popUntilKey(key: RouterKey)
 
-    /** Pops all entries above and including the first entry whose route key is [K]. */
+    /** Pops all entries above and including the top-most entry whose route key is [K]. */
     public fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>)
 
     /**
