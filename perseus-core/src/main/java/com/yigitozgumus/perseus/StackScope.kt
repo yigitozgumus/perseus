@@ -1,6 +1,6 @@
 package com.yigitozgumus.perseus
 
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import java.util.UUID
 
 /** Durable identifier for a navigation stack scope. */
@@ -18,14 +18,14 @@ public sealed interface StackScopeSpec {
 
 /** A scope with one back stack. */
 public data class SingleStackSpec(
-    val initialKey: RouterKey,
+    val initialKey: NavigationKey,
     override val id: StackScopeId? = null,
     val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
 ) : StackScopeSpec
 
 /** A scope with multiple sibling back stacks. */
 public data class MultiStackSpec(
-    val rootKeys: List<RouterKey>,
+    val rootKeys: List<NavigationKey>,
     val initialStackIndex: Int = 0,
     override val id: StackScopeId? = null,
     val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
@@ -41,8 +41,8 @@ public data class StackScopeSnapshot(
     val id: StackScopeId,
     val kind: StackScopeKind,
     val currentStackIndex: Int?,
-    val rootKeys: List<RouterKey>,
-    val currentBackStack: List<RouterKey>,
+    val rootKeys: List<NavigationKey>,
+    val currentBackStack: List<NavigationKey>,
 )
 
 public enum class StackScopeKind {

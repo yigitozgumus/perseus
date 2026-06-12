@@ -7,7 +7,7 @@ app-level scope changes.
 
 Perseus is designed around three ideas:
 
-1. **Keys describe destinations** — screens are addressed by `RouterKey` objects.
+1. **Keys describe destinations** — screens are addressed by `NavigationKey` objects.
 2. **Providers render keys** — Compose or Fragment providers turn keys into UI.
 3. **Scopes own stacks** — a navigation scope can be a single stack or a multi-stack tab container.
 
@@ -48,16 +48,16 @@ Perseus is designed around three ideas:
 
 ## Core concepts
 
-### `RouterKey`
+### `NavigationKey`
 
-A `RouterKey` is the type-safe identity of a destination.
+A `NavigationKey` is the type-safe identity of a destination.
 
 ```kotlin
 @Serializable
-data object HomeKey : RouterKey
+data object HomeKey : NavigationKey
 
 @Serializable
-data class DetailKey(val itemId: Int) : RouterKey
+data class DetailKey(val itemId: Int) : NavigationKey
 ```
 
 Keys should be `@Serializable` so Perseus can restore navigation state after
@@ -70,7 +70,7 @@ A provider renders one key type.
 
 ```kotlin
 class HomeProvider : ComposeScreenProvider<HomeKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is HomeKey
+    override fun canProvide(key: NavigationKey): Boolean = key is HomeKey
 
     @Composable
     override fun Content(key: HomeKey) {
@@ -170,10 +170,10 @@ published version.
 
 ```kotlin
 @Serializable
-data object HomeKey : RouterKey
+data object HomeKey : NavigationKey
 
 @Serializable
-data class DetailKey(val itemId: Int) : RouterKey
+data class DetailKey(val itemId: Int) : NavigationKey
 ```
 
 ### 2. Create providers
@@ -182,7 +182,7 @@ data class DetailKey(val itemId: Int) : RouterKey
 class HomeProvider(
     private val navigator: PerseusNavigator,
 ) : ComposeScreenProvider<HomeKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is HomeKey
+    override fun canProvide(key: NavigationKey): Boolean = key is HomeKey
 
     @Composable
     override fun Content(key: HomeKey) {
@@ -195,7 +195,7 @@ class HomeProvider(
 class DetailProvider(
     private val navigator: PerseusNavigator,
 ) : ComposeScreenProvider<DetailKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is DetailKey
+    override fun canProvide(key: NavigationKey): Boolean = key is DetailKey
 
     @Composable
     override fun Content(key: DetailKey) {
@@ -241,16 +241,16 @@ setContent {
 
 ## Creating keys
 
-Keys are normal Kotlin objects/classes implementing `RouterKey`.
+Keys are normal Kotlin objects/classes implementing `NavigationKey`.
 
 ```kotlin
 @Serializable
-data object HomeKey : RouterKey
+data object HomeKey : NavigationKey
 
 @Serializable
 data class ProductKey(
     val productId: String,
-) : RouterKey
+) : NavigationKey
 ```
 
 Parcelable keys are also supported as a restore fallback:
@@ -259,7 +259,7 @@ Parcelable keys are also supported as a restore fallback:
 @Parcelize
 data class ProductKey(
     val productId: String,
-) : RouterKey, Parcelable
+) : NavigationKey, Parcelable
 ```
 
 `@Serializable` remains the recommended default because the saved payload is
@@ -268,17 +268,17 @@ Android navigation models incrementally.
 
 ### Bottom navigation visibility
 
-`RouterKey.hidesBottomNavigation` defaults to `true`. For tab roots, override it
+`NavigationKey.hidesBottomNavigation` defaults to `true`. For tab roots, override it
 to keep the bottom bar visible.
 
 ```kotlin
 @Serializable
-data object HomeKey : RouterKey {
+data object HomeKey : NavigationKey {
     override val hidesBottomNavigation: Boolean = false
 }
 
 @Serializable
-data class FullScreenDetailKey(val id: String) : RouterKey {
+data class FullScreenDetailKey(val id: String) : NavigationKey {
     override val hidesBottomNavigation: Boolean = true
 }
 ```
@@ -291,7 +291,7 @@ Implement `ComposeScreenProvider<K>` for each key type.
 
 ```kotlin
 class ProductProvider : ComposeScreenProvider<ProductKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is ProductKey
+    override fun canProvide(key: NavigationKey): Boolean = key is ProductKey
 
     @Composable
     override fun Content(key: ProductKey) {
@@ -724,14 +724,14 @@ Dialogs and bottom sheets are ordinary keys with marker interfaces.
 
 ```kotlin
 @Serializable
-data object ConfirmDeleteKey : RouterKey, DialogKey
+data object ConfirmDeleteKey : NavigationKey, DialogKey
 ```
 
 Render it with a normal Compose provider:
 
 ```kotlin
 class ConfirmDeleteProvider : ComposeScreenProvider<ConfirmDeleteKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is ConfirmDeleteKey
+    override fun canProvide(key: NavigationKey): Boolean = key is ConfirmDeleteKey
 
     @Composable
     override fun Content(key: ConfirmDeleteKey) {
@@ -768,7 +768,7 @@ navigator.navigateTo(ConfirmDeleteKey)
 
 ```kotlin
 @Serializable
-data object InfoSheetKey : RouterKey, BottomSheetKey {
+data object InfoSheetKey : NavigationKey, BottomSheetKey {
     override val isCancellable: Boolean = true
     override val isDraggable: Boolean = true
 }
@@ -787,7 +787,7 @@ For more complex scenes, use `ComposeSceneProvider<K>`:
 
 ```kotlin
 class InfoSheetProvider : ComposeSceneProvider<InfoSheetKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is InfoSheetKey
+    override fun canProvide(key: NavigationKey): Boolean = key is InfoSheetKey
 
     @Composable
     override fun Content(
@@ -816,7 +816,7 @@ Create a Fragment provider:
 
 ```kotlin
 class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
-    override fun canProvide(key: RouterKey): Boolean = key is ProfileKey
+    override fun canProvide(key: NavigationKey): Boolean = key is ProfileKey
 
     override fun provide(key: ProfileKey): Fragment = ProfileFragment()
 }
@@ -973,12 +973,12 @@ In a multi-stack scope, the host bottom bar is hidden when the current key has
 
 ```kotlin
 @Serializable
-data object HomeKey : RouterKey {
+data object HomeKey : NavigationKey {
     override val hidesBottomNavigation: Boolean = false
 }
 
 @Serializable
-data object FullScreenDetailKey : RouterKey {
+data object FullScreenDetailKey : NavigationKey {
     override val hidesBottomNavigation: Boolean = true
 }
 ```
@@ -1200,7 +1200,7 @@ The sample app contains focused recipes for Perseus features:
 | Result Passing | `NavigationHandle`, `LocalNavigationContext`, `sendResult` |
 | Dialog | `DialogKey` scenes |
 | Bottom Sheet | `BottomSheetKey` scenes |
-| Hide Bottom Bar | `RouterKey.hidesBottomNavigation` |
+| Hide Bottom Bar | `NavigationKey.hidesBottomNavigation` |
 | Custom Sheet | Custom sheet-style UI |
 | Animations | Host-level transitions |
 | Per-Transition | Per-navigation transitions |

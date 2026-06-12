@@ -4,7 +4,7 @@ import com.yigitozgumus.perseus.PerseusLogLevel
 import com.yigitozgumus.perseus.PerseusLogger
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.createTestPerseusNavigationOwner
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,7 +39,7 @@ class PerseusLoggingTest {
 }
 
 @Serializable
-private data object LoggingHome : RouterKey
+private data object LoggingHome : NavigationKey
 
 @Serializable
-private data object LoggingDetail : RouterKey
+private data object LoggingDetail : NavigationKey

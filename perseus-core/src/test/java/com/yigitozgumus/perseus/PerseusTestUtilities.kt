@@ -35,5 +35,5 @@ internal fun createTestPerseusNavigationOwner(
     )
 }
 
-internal fun PerseusNavigationOwner.currentBackStack(): List<com.yigitozgumus.perseus.key.RouterKey> =
+internal fun PerseusNavigationOwner.currentBackStack(): List<com.yigitozgumus.perseus.key.NavigationKey> =
     debugSnapshot().currentBackStack

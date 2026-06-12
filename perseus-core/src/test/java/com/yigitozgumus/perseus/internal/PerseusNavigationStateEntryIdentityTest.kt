@@ -1,6 +1,6 @@
 package com.yigitozgumus.perseus.internal
 
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -44,4 +44,4 @@ class PerseusNavigationStateEntryIdentityTest {
 }
 
 @Serializable
-private data object EntryIdentityKey : RouterKey
+private data object EntryIdentityKey : NavigationKey

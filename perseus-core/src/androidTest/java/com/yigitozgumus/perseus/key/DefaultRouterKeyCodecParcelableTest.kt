@@ -8,20 +8,20 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class DefaultRouterKeyCodecParcelableTest {
+class DefaultNavigationKeyCodecParcelableTest {
 
     @Test
-    fun parcelableRouterKeyCanRoundTripWithoutSerializable() {
+    fun parcelableNavigationKeyCanRoundTripWithoutSerializable() {
         val key = ParcelableOnlyKey(42)
 
-        val encoded = DefaultRouterKeyCodec.encode(key)
-        val decoded = DefaultRouterKeyCodec.decode(encoded)
+        val encoded = DefaultNavigationKeyCodec.encode(key)
+        val decoded = DefaultNavigationKeyCodec.decode(encoded)
 
         assertEquals(key, decoded)
     }
 }
 
-private data class ParcelableOnlyKey(val id: Int) : RouterKey, Parcelable {
+private data class ParcelableOnlyKey(val id: Int) : NavigationKey, Parcelable {
     constructor(parcel: Parcel) : this(parcel.readInt())
 
     override fun writeToParcel(dest: Parcel, flags: Int) {

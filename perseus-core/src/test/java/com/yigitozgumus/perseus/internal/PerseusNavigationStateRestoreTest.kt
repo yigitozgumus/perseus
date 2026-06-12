@@ -5,7 +5,7 @@ import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
 import com.yigitozgumus.perseus.key.GroupName
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -176,4 +176,4 @@ private object RestoreGroup : GroupName("restore-group")
 private data class RestoreKey(
     val id: Int,
     val label: String,
-) : RouterKey
+) : NavigationKey

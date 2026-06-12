@@ -17,7 +17,7 @@ import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.debug
 import com.yigitozgumus.perseus.info
 import com.yigitozgumus.perseus.key.GroupName
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +32,7 @@ internal class DefaultPerseusNavigator(
     private val logger: PerseusLogger = EmptyPerseusLogger,
 ) : PerseusNavigator, PerseusScopeNavigator {
 
-    private val _currentKey = MutableStateFlow<RouterKey?>(null)
+    private val _currentKey = MutableStateFlow<NavigationKey?>(null)
 
     init {
         entryRegistry.onPopCallback = { pop() }
@@ -44,10 +44,10 @@ internal class DefaultPerseusNavigator(
 
     override val currentTabIndex: Int get() = stateHolder.currentTabIndex
 
-    override val currentKey: StateFlow<RouterKey?> = _currentKey
+    override val currentKey: StateFlow<NavigationKey?> = _currentKey
 
     override fun navigateTo(
-        key: RouterKey,
+        key: NavigationKey,
         groupName: GroupName?,
         transition: ContentTransform?,
     ): NavigationHandle {
@@ -127,7 +127,7 @@ internal class DefaultPerseusNavigator(
         logAfter("popUntil removed=${removed.size}")
     }
 
-    override fun popUntilKey(key: RouterKey) {
+    override fun popUntilKey(key: NavigationKey) {
         if (!stateHolder.isAttached) {
             logger.debug("popUntilKey ignored state=detached key=${key.shortName()}")
             return
@@ -139,7 +139,7 @@ internal class DefaultPerseusNavigator(
         logAfter("popUntilKey removed=${removed.size}")
     }
 
-    override fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>) {
+    override fun <K : NavigationKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>) {
         if (!stateHolder.isAttached) {
             logger.debug("popUntilKeyType ignored state=detached keyClass=${keyClass.simpleName}")
             return
@@ -207,7 +207,7 @@ internal class DefaultPerseusNavigator(
         logAfter("popCurrentTabToRoot removed=${removed.size}")
     }
 
-    override fun resetAllWithKeys(keys: List<RouterKey>) {
+    override fun resetAllWithKeys(keys: List<NavigationKey>) {
         if (!stateHolder.isAttached) {
             logger.debug("resetAllWithKeys ignored state=detached keys=${keys.map { it.shortName() }}")
             return
@@ -301,7 +301,7 @@ internal class DefaultPerseusNavigator(
     private fun stackDescription(): String =
         if (stateHolder.isAttached) stateHolder.state.debugDescription() else "<detached>"
 
-    private fun RouterKey.shortName(): String =
+    private fun NavigationKey.shortName(): String =
         routeKey()::class.simpleName ?: keyClassName(routeKey())
 
     private fun StackScopeSpec.describe(): String = when (this) {
@@ -309,7 +309,7 @@ internal class DefaultPerseusNavigator(
         is com.yigitozgumus.perseus.MultiStackSpec -> "MultiStack(roots=${rootKeys.map { it.shortName() }}, initial=$initialStackIndex, id=${id?.value})"
     }
 
-    private fun cleanupRemoved(removed: List<RouterKey>) {
+    private fun cleanupRemoved(removed: List<NavigationKey>) {
         if (removed.isNotEmpty()) {
             logger.debug("cleanupRemoved entries=${removed.map { "${it.shortName()}#${it.backStackId().take(8)}" }}")
         }

@@ -16,8 +16,8 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commitNow
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
-import com.yigitozgumus.perseus.key.DefaultRouterKeyCodec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.DefaultNavigationKeyCodec
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /**
  * Composable that wraps an existing Fragment for use in Navigation3.
@@ -35,7 +35,7 @@ import com.yigitozgumus.perseus.key.RouterKey
  */
 @Suppress("UNCHECKED_CAST")
 @Composable
-public fun <K : RouterKey> FragmentEntry(
+public fun <K : NavigationKey> FragmentEntry(
     key: K,
     provider: ScreenProvider<K>,
     context: NavigationContext<K>,
@@ -45,7 +45,7 @@ public fun <K : RouterKey> FragmentEntry(
     val fragmentTemplate = remember(context.entryId) { provider.provide(key) }
     val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
 
-    val encodedKey = remember(key) { DefaultRouterKeyCodec.encode(key) }
+    val encodedKey = remember(key) { DefaultNavigationKeyCodec.encode(key) }
     remember(context.entryId) { viewModelStoreProvider.getOwner(context.entryId) }
 
     val arguments = remember(encodedKey, context) {

@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.yigitozgumus.perseus.StackScopeSnapshot
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +110,7 @@ fun StatePill(text: String) {
 }
 
 @Composable
-fun BackStackVisualizer(entries: List<RouterKey>) {
+fun BackStackVisualizer(entries: List<NavigationKey>) {
     RecipeSection(title = "Current back stack") {
         Text(entries.joinToString(" → ") { it.shortName() })
     }
@@ -132,4 +132,4 @@ fun ScopeVisualizer(scope: StackScopeSnapshot) {
     }
 }
 
-fun RouterKey.shortName(): String = this::class.simpleName ?: toString()
+fun NavigationKey.shortName(): String = this::class.simpleName ?: toString()

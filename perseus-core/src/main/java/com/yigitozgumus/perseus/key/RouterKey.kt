@@ -11,14 +11,14 @@ import androidx.navigation3.runtime.NavKey
  *
  * Usage:
  * ```kotlin
- * @Serializable data object HomeKey : RouterKey
- * @Serializable data class DetailKey(val id: Int) : RouterKey
- * @Serializable data object FullScreenKey : RouterKey {
+ * @Serializable data object HomeKey : NavigationKey
+ * @Serializable data class DetailKey(val id: Int) : NavigationKey
+ * @Serializable data object FullScreenKey : NavigationKey {
  *     override val hidesBottomNavigation: Boolean get() = true
  * }
  * ```
  */
-public interface RouterKey : NavKey {
+public interface NavigationKey : NavKey {
     /** Whether this screen hides the bottom navigation bar. Default is `true`. */
     public val hidesBottomNavigation: Boolean get() = true
 }

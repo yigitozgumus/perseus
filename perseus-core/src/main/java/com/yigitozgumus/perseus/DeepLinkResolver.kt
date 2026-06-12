@@ -1,7 +1,7 @@
 package com.yigitozgumus.perseus
 
 import android.net.Uri
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /** Resolves an external URI into a Perseus navigation target. */
 public fun interface DeepLinkResolver {
@@ -9,7 +9,7 @@ public fun interface DeepLinkResolver {
 }
 
 public sealed interface DeepLinkTarget {
-    public data class Key(val key: RouterKey) : DeepLinkTarget
+    public data class Key(val key: NavigationKey) : DeepLinkTarget
     public data class Scope(val scope: StackScopeSpec) : DeepLinkTarget
 }
 

@@ -15,7 +15,7 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
@@ -56,7 +56,7 @@ class ProcessDeathRestoreActivity : ComponentActivity() {
     }
 
     inner class LoginProvider : ComposeScreenProvider<LoginKey> {
-        override fun canProvide(key: RouterKey) = key is LoginKey
+        override fun canProvide(key: NavigationKey) = key is LoginKey
         @Composable override fun Content(key: LoginKey) {
             RecipeScaffold(title = "Process death restore", subtitle = "Cold start begins at Login") {
                 RecipeSection("Manual test", "Authenticate, push details, switch tabs, background the app, kill the process, then relaunch from recents. Saved NavHost state should restore the multi-stack scope.")
@@ -68,17 +68,17 @@ class ProcessDeathRestoreActivity : ComponentActivity() {
     }
 
     inner class HomeProvider : ComposeScreenProvider<HomeKey> {
-        override fun canProvide(key: RouterKey) = key is HomeKey
+        override fun canProvide(key: NavigationKey) = key is HomeKey
         @Composable override fun Content(key: HomeKey) = AuthContent("Home", 1)
     }
 
     inner class SearchProvider : ComposeScreenProvider<SearchKey> {
-        override fun canProvide(key: RouterKey) = key is SearchKey
+        override fun canProvide(key: NavigationKey) = key is SearchKey
         @Composable override fun Content(key: SearchKey) = AuthContent("Search", 10)
     }
 
     inner class AuthProvider : ComposeScreenProvider<RestoreAuthKey> {
-        override fun canProvide(key: RouterKey) = key is RestoreAuthKey
+        override fun canProvide(key: NavigationKey) = key is RestoreAuthKey
         @Composable override fun Content(key: RestoreAuthKey) = AuthContent("Auth", 20)
     }
 
@@ -91,7 +91,7 @@ class ProcessDeathRestoreActivity : ComponentActivity() {
     }
 
     inner class DetailProvider : ComposeScreenProvider<DetailKey> {
-        override fun canProvide(key: RouterKey) = key is DetailKey
+        override fun canProvide(key: NavigationKey) = key is DetailKey
         @Composable override fun Content(key: DetailKey) {
             RecipeScaffold(title = "Detail ${key.itemId}") {
                 ScopeVisualizer(scopeNavigator.currentScope)

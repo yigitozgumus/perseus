@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusNavigator
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.interop.ScreenProvider
 import com.yigitozgumus.perseus.getNavigationContext
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
@@ -21,7 +21,7 @@ import org.koin.core.parameter.parametersOf
 
 @Single
 class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
-    override fun canProvide(key: RouterKey) = key is ProfileKey
+    override fun canProvide(key: NavigationKey) = key is ProfileKey
 
     override fun provide(key: ProfileKey): Fragment = ProfileFragment()
 }

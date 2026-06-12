@@ -37,7 +37,7 @@ import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.handleDeepLink
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.perseusGraph
 import com.yigitozgumus.perseus.popUntilKeyType
 import com.yigitozgumus.perseus.sample.recipe.ui.BackStackVisualizer
@@ -286,19 +286,19 @@ abstract class NewApiRecipeActivity(
 }
 
 @Serializable
-private data object NewHomeKey : RouterKey
+private data object NewHomeKey : NavigationKey
 
 @Serializable
-private data object NewSearchKey : RouterKey
+private data object NewSearchKey : NavigationKey
 
 @Serializable
-private data object NewSettingsKey : RouterKey
+private data object NewSettingsKey : NavigationKey
 
 @Serializable
-private data object NewCheckoutKey : RouterKey
+private data object NewCheckoutKey : NavigationKey
 
 @Serializable
-private data class NewDetailKey(val id: Int) : RouterKey
+private data class NewDetailKey(val id: Int) : NavigationKey
 
 @Serializable
 private data object NewPaymentKey : NonRestorableKey

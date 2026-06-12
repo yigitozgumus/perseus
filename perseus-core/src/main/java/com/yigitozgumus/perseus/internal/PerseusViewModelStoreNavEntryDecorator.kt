@@ -6,12 +6,12 @@ import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.navigation3.runtime.NavEntryDecorator
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 @Composable
 internal fun rememberPerseusViewModelStoreNavEntryDecorator(
     viewModelStoreProvider: PerseusViewModelStoreProvider,
-): NavEntryDecorator<RouterKey> = remember(viewModelStoreProvider) {
+): NavEntryDecorator<NavigationKey> = remember(viewModelStoreProvider) {
     NavEntryDecorator(
         decorate = { entry ->
             val entryId = entry.contentKey as String

@@ -2,7 +2,7 @@ package com.yigitozgumus.perseus.provider
 
 import androidx.compose.runtime.Composable
 import com.yigitozgumus.perseus.SceneResultCallback
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /**
  * Provider for Compose-based scene content (dialogs and bottom sheets).
@@ -11,11 +11,11 @@ import com.yigitozgumus.perseus.key.RouterKey
  * For simpler scenes, implement [ComposeScreenProvider] for a [DialogKey] or
  * [BottomSheetKey] and use [LocalSceneActions] for dismiss and result passing.
  *
- * @param K The specific [RouterKey] type this provider handles.
+ * @param K The specific [NavigationKey] type this provider handles.
  */
-public interface ComposeSceneProvider<K : RouterKey> {
+public interface ComposeSceneProvider<K : NavigationKey> {
     /** Returns `true` if this provider can render the given [key]. */
-    public fun canProvide(key: RouterKey): Boolean
+    public fun canProvide(key: NavigationKey): Boolean
 
     /**
      * Renders the scene composable.

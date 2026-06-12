@@ -7,7 +7,7 @@ import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.createTestPerseusNavigationOwner
 import com.yigitozgumus.perseus.currentBackStack
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -98,13 +98,13 @@ class NavigationApiTest {
 }
 
 @Serializable
-private data object NavigationHome : RouterKey
+private data object NavigationHome : NavigationKey
 
 @Serializable
-private data object NavigationSearch : RouterKey
+private data object NavigationSearch : NavigationKey
 
 @Serializable
-private data object NavigationCheckout : RouterKey
+private data object NavigationCheckout : NavigationKey
 
 @Serializable
-private data class NavigationDetail(val id: Int) : RouterKey
+private data class NavigationDetail(val id: Int) : NavigationKey

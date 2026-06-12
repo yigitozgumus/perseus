@@ -1,6 +1,6 @@
 package com.yigitozgumus.perseus.provider
 
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /**
  * Marker interface implemented by fragment-based screen providers.
@@ -13,5 +13,5 @@ import com.yigitozgumus.perseus.key.RouterKey
  */
 public interface FragmentProviderMarker {
     /** Returns `true` if this provider can render the given [key]. */
-    public fun canProvide(key: RouterKey): Boolean
+    public fun canProvide(key: NavigationKey): Boolean
 }

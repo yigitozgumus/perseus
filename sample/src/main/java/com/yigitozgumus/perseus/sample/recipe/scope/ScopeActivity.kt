@@ -32,7 +32,7 @@ import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
@@ -81,7 +81,7 @@ class ScopeActivity : ComponentActivity() {
     }
 
     inner class LoginProvider : ComposeScreenProvider<LoginKey> {
-        override fun canProvide(key: RouterKey) = key is LoginKey
+        override fun canProvide(key: NavigationKey) = key is LoginKey
 
         @Composable
         override fun Content(key: LoginKey) {
@@ -100,7 +100,7 @@ class ScopeActivity : ComponentActivity() {
     }
 
     inner class HomeProvider : ComposeScreenProvider<HomeKey> {
-        override fun canProvide(key: RouterKey) = key is HomeKey
+        override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
         override fun Content(key: HomeKey) {
@@ -128,7 +128,7 @@ class ScopeActivity : ComponentActivity() {
     }
 
     inner class SearchProvider : ComposeScreenProvider<SearchKey> {
-        override fun canProvide(key: RouterKey) = key is SearchKey
+        override fun canProvide(key: NavigationKey) = key is SearchKey
 
         @Composable
         override fun Content(key: SearchKey) {
@@ -144,7 +144,7 @@ class ScopeActivity : ComponentActivity() {
     }
 
     inner class ScopeFlowProvider : ComposeScreenProvider<ScopeFlowKey> {
-        override fun canProvide(key: RouterKey) = key is ScopeFlowKey
+        override fun canProvide(key: NavigationKey) = key is ScopeFlowKey
 
         @Composable
         override fun Content(key: ScopeFlowKey) {
@@ -168,7 +168,7 @@ class ScopeActivity : ComponentActivity() {
     }
 
     inner class DetailProvider : ComposeScreenProvider<DetailKey> {
-        override fun canProvide(key: RouterKey) = key is DetailKey
+        override fun canProvide(key: NavigationKey) = key is DetailKey
 
         @Composable
         override fun Content(key: DetailKey) {

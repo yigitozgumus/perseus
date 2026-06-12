@@ -2,7 +2,7 @@ package com.yigitozgumus.perseus.internal
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import com.yigitozgumus.perseus.StackScopeSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /**
  * Bridge between DI-injected code and Composition-owned [PerseusNavigationState].
@@ -39,13 +39,13 @@ internal class PerseusNavigationStateHolder {
 
     fun detach() { _state = null }
 
-    fun setRootScope(spec: StackScopeSpec): List<RouterKey> =
+    fun setRootScope(spec: StackScopeSpec): List<NavigationKey> =
         _state?.setRootScope(spec) ?: run {
             pending = Pending.SetRootScope(spec)
             emptyList()
         }
 
-    val currentBackStack: SnapshotStateList<RouterKey> get() = state.currentBackStack
+    val currentBackStack: SnapshotStateList<NavigationKey> get() = state.currentBackStack
     val currentTabIndex: Int get() = _state?.currentTabIndex ?: 0
-    val topLevelRoutes: List<RouterKey> get() = _state?.topLevelRoutes ?: emptyList()
+    val topLevelRoutes: List<NavigationKey> get() = _state?.topLevelRoutes ?: emptyList()
 }

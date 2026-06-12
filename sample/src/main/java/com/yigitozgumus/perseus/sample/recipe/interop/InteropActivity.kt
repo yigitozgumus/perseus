@@ -31,7 +31,7 @@ import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
 import com.yigitozgumus.perseus.interop.ScreenProvider
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.sample.keys.FragmentScreenKey
@@ -61,7 +61,7 @@ class InteropActivity : FragmentActivity() {
     }
 
     inner class InteropHomeProvider : ComposeScreenProvider<HomeKey> {
-        override fun canProvide(key: RouterKey) = key is HomeKey
+        override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
         override fun Content(key: HomeKey) {
@@ -99,7 +99,7 @@ class InteropActivity : FragmentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SampleFragmentProvider : ScreenProvider<FragmentScreenKey> {
-    override fun canProvide(key: RouterKey) = key is FragmentScreenKey
+    override fun canProvide(key: NavigationKey) = key is FragmentScreenKey
     override fun provide(key: FragmentScreenKey): Fragment = InteropFragment()
 }
 

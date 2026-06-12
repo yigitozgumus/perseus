@@ -18,7 +18,7 @@ import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.LocalSceneActions
 import com.yigitozgumus.perseus.EmptyPerseusLogger
 import com.yigitozgumus.perseus.NavigationContext
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.PerseusLogger
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
 import com.yigitozgumus.perseus.StackScopeSpec
@@ -56,13 +56,13 @@ internal class PerseusEntryProviderRegistry(
     /** Pop callback set by the navigator for scene dismissal. */
     var onPopCallback: (() -> Unit)? = null
 
-    fun getGroupForKey(key: RouterKey): GroupName? = key.groupName()
-    fun clearTrackingForKey(key: RouterKey) {
+    fun getGroupForKey(key: NavigationKey): GroupName? = key.groupName()
+    fun clearTrackingForKey(key: NavigationKey) {
         logger.debug("clearTrackingForKey entryId=${key.backStackId()} key=${key.shortName()}")
         pendingTransitions.remove(key.backStackId())
     }
 
-    fun setPendingTransition(key: RouterKey, transition: ContentTransform) {
+    fun setPendingTransition(key: NavigationKey, transition: ContentTransform) {
         logger.debug("setPendingTransition entryId=${key.backStackId()} key=${key.shortName()} transition=${transition::class.simpleName}")
         pendingTransitions[key.backStackId()] = transition
     }
@@ -80,13 +80,13 @@ internal class PerseusEntryProviderRegistry(
         keys.forEach(::validateProviderForKey)
     }
 
-    fun validateProviderForKey(key: RouterKey) {
+    fun validateProviderForKey(key: NavigationKey) {
         val matches = providerMatchesFor(key)
         require(matches.isNotEmpty()) { missingProviderMessage(key) }
         require(matches.size == 1) {
             "Multiple providers found for $key (${key::class.qualifiedName}).\n\n" +
                 matches.joinToString(separator = "\n") { "- $it" } +
-                "\n\nOnly one provider should claim a RouterKey when provider validation is enabled."
+                "\n\nOnly one provider should claim a NavigationKey when provider validation is enabled."
         }
         if (matches.single().startsWith("Scene") && key !is DialogKey && key !is BottomSheetKey) {
             throw IllegalArgumentException(
@@ -96,16 +96,16 @@ internal class PerseusEntryProviderRegistry(
         }
     }
 
-    fun hasProviderFor(key: RouterKey): Boolean = providerMatchesFor(key).isNotEmpty()
+    fun hasProviderFor(key: NavigationKey): Boolean = providerMatchesFor(key).isNotEmpty()
 
-    private fun providerMatchesFor(key: RouterKey): List<String> = buildList {
+    private fun providerMatchesFor(key: NavigationKey): List<String> = buildList {
         composeProviders.filter { it.canProvide(key) }.forEach { add("Compose: ${providerName(it)}") }
         fragmentProviders.filter { it.canProvide(key) }.forEach { add("Fragment: ${providerName(it)}") }
         sceneProviders.filter { it.canProvide(key) }.forEach { add("Scene: ${providerName(it)}") }
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun provide(backStackKey: RouterKey): NavEntry<RouterKey> {
+    fun provide(backStackKey: NavigationKey): NavEntry<NavigationKey> {
         val key = backStackKey.routeKey()
         val entryId = backStackKey.backStackId()
         val metadata = computeAndCacheMetadata(backStackKey)
@@ -113,7 +113,7 @@ internal class PerseusEntryProviderRegistry(
         // 1. Compose screen provider
         composeProviders.find { it.canProvide(key) }?.let { foundProvider ->
             @Suppress("UNCHECKED_CAST")
-            val typed = foundProvider as ComposeScreenProvider<RouterKey>
+            val typed = foundProvider as ComposeScreenProvider<NavigationKey>
             val isScene = key is DialogKey || key is BottomSheetKey
             val navCtx = NavigationContext(
                 key = key,
@@ -144,7 +144,7 @@ internal class PerseusEntryProviderRegistry(
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
             logger.debug("provide Scene entryId=$entryId key=${key.shortName()} provider=${providerName(provider)}")
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
-                (provider as ComposeSceneProvider<RouterKey>).Content(
+                (provider as ComposeSceneProvider<NavigationKey>).Content(
                     key = key,
                     onResult = sceneCallback,
                     onDismiss = dismiss
@@ -173,7 +173,7 @@ internal class PerseusEntryProviderRegistry(
         throw IllegalArgumentException(missingProviderMessage(key))
     }
 
-    private fun missingProviderMessage(key: RouterKey): String = buildString {
+    private fun missingProviderMessage(key: NavigationKey): String = buildString {
         appendLine("No provider found for ${key} (${key::class.qualifiedName}).")
         appendLine()
         appendLine("Registered Compose providers:")
@@ -189,10 +189,10 @@ internal class PerseusEntryProviderRegistry(
     private fun providerName(provider: Any): String =
         provider::class.qualifiedName ?: provider::class.simpleName ?: provider.toString()
 
-    private fun RouterKey.shortName(): String =
+    private fun NavigationKey.shortName(): String =
         routeKey()::class.simpleName ?: keyClassName(routeKey())
 
-    private fun computeAndCacheMetadata(backStackKey: RouterKey): Map<String, Any> {
+    private fun computeAndCacheMetadata(backStackKey: NavigationKey): Map<String, Any> {
         val key = backStackKey.routeKey()
         val id = backStackKey.backStackId()
         val sceneMeta = when (key) {
@@ -221,7 +221,7 @@ internal class PerseusEntryProviderRegistry(
         return sceneMeta + groupMeta + transMeta
     }
 
-    private fun createSceneActions(backStackKey: RouterKey): SceneActions = object : SceneActions {
+    private fun createSceneActions(backStackKey: NavigationKey): SceneActions = object : SceneActions {
         override fun <R : Any> sendResult(result: R) {
             backStackKey.correlationId()?.let { resultBus.send(it, result) }
         }

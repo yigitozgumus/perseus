@@ -29,7 +29,7 @@ import com.yigitozgumus.perseus.internal.BottomSheetSceneStrategy
 import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationState
 import com.yigitozgumus.perseus.internal.rememberPerseusViewModelStoreNavEntryDecorator
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /** Default fade duration in milliseconds. */
 public const val DefaultTransitionDurationMs: Int = 200
@@ -72,13 +72,13 @@ public fun PerseusNavHost(
         onTabSelected: (Int) -> Unit,
     ) -> Unit = { _, _ -> },
     onTabChanged: (Int) -> Unit = {},
-    transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
+    transitionSpec: AnimatedContentTransitionScope<Scene<NavigationKey>>.() -> ContentTransform = {
         fastFadeTransition()
     },
-    popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform = {
+    popTransitionSpec: AnimatedContentTransitionScope<Scene<NavigationKey>>.() -> ContentTransform = {
         fastFadeTransition()
     },
-    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(progress: Int) -> ContentTransform = {
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavigationKey>>.(progress: Int) -> ContentTransform = {
         fastFadeTransition()
     },
     tabTransitionSpec: ((fromIndex: Int, toIndex: Int) -> ContentTransform?)? = null,
@@ -108,7 +108,7 @@ public fun PerseusNavHost(
 
     val sceneStrategies = remember {
         listOf(
-            BottomSheetSceneStrategy<RouterKey>(),
+            BottomSheetSceneStrategy<NavigationKey>(),
             DialogSceneStrategy(),
             SinglePaneSceneStrategy()
         )
@@ -153,14 +153,14 @@ private fun MultiStackHost(
     navigationState: PerseusNavigationState,
     entryRegistry: PerseusEntryProviderRegistry,
     viewModelStoreRegistry: PerseusViewModelStoreProvider,
-    sceneStrategies: List<SceneStrategy<RouterKey>>,
+    sceneStrategies: List<SceneStrategy<NavigationKey>>,
     navigator: PerseusNavigator,
     backBehavior: PerseusBackBehavior,
     bottomBar: @Composable (Int, (Int) -> Unit) -> Unit,
     onTabChanged: (Int) -> Unit,
-    transitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
-    popTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.() -> ContentTransform,
-    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<RouterKey>>.(Int) -> ContentTransform,
+    transitionSpec: AnimatedContentTransitionScope<Scene<NavigationKey>>.() -> ContentTransform,
+    popTransitionSpec: AnimatedContentTransitionScope<Scene<NavigationKey>>.() -> ContentTransform,
+    predictivePopTransitionSpec: AnimatedContentTransitionScope<Scene<NavigationKey>>.(Int) -> ContentTransform,
     tabTransitionSpec: ((fromIndex: Int, toIndex: Int) -> ContentTransform?)?,
     modifier: Modifier = Modifier,
 ) {

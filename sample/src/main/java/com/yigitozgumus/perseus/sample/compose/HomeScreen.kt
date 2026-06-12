@@ -23,7 +23,7 @@ import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.PerseusNavigator
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
@@ -33,7 +33,7 @@ import org.koin.core.annotation.Single
 @Single
 class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
 
-    override fun canProvide(key: RouterKey) = key is HomeKey
+    override fun canProvide(key: NavigationKey) = key is HomeKey
 
     @Composable
     override fun Content(key: HomeKey) {
@@ -51,7 +51,7 @@ class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
 @Single
 class DetailScreenProvider : ComposeScreenProvider<DetailKey> {
 
-    override fun canProvide(key: RouterKey) = key is DetailKey
+    override fun canProvide(key: NavigationKey) = key is DetailKey
 
     @Composable
     override fun Content(key: DetailKey) {

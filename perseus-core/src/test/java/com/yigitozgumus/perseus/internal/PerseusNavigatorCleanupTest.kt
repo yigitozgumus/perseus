@@ -3,7 +3,7 @@ package com.yigitozgumus.perseus.internal
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.SingleStackSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
@@ -42,7 +42,7 @@ class PerseusNavigatorCleanupTest {
         assertEquals(CleanupLogin, fixture.state.currentBackStack.single().routeKey())
     }
 
-    private fun navigatorFixture(initialKey: RouterKey): NavigatorFixture {
+    private fun navigatorFixture(initialKey: NavigationKey): NavigatorFixture {
         val state = PerseusNavigationState.singleStack(initialKey)
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
         val resultBus = ResultBusAdapter()
@@ -80,13 +80,13 @@ class PerseusNavigatorCleanupTest {
 }
 
 @Serializable
-private data object CleanupTab0 : RouterKey
+private data object CleanupTab0 : NavigationKey
 
 @Serializable
-private data object CleanupTab1 : RouterKey
+private data object CleanupTab1 : NavigationKey
 
 @Serializable
-private data object CleanupChild : RouterKey
+private data object CleanupChild : NavigationKey
 
 @Serializable
-private data object CleanupLogin : RouterKey
+private data object CleanupLogin : NavigationKey

@@ -2,13 +2,13 @@ package com.yigitozgumus.perseus
 
 import androidx.compose.animation.ContentTransform
 import com.yigitozgumus.perseus.key.GroupName
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Route and tab navigator for Perseus.
  *
- * All navigation is driven by [RouterKey] — fragments and composables are resolved
+ * All navigation is driven by [NavigationKey] — fragments and composables are resolved
  * via the entry provider registry, not passed directly.
  *
  * Scope/container ownership APIs live on [PerseusScopeNavigator] instead.
@@ -18,18 +18,18 @@ public interface PerseusNavigator {
     public val currentTabIndex: Int
 
     /** Current visible route key, or null before the host attaches navigation state. */
-    public val currentKey: StateFlow<RouterKey?>
+    public val currentKey: StateFlow<NavigationKey?>
 
     /**
      * Navigates to the screen identified by [key].
      *
-     * @param key The RouterKey identifying the target screen.
+     * @param key The NavigationKey identifying the target screen.
      * @param groupName Optional navigation group for [popUntil] clearing.
      * @param transition Optional [ContentTransform] for this navigation only.
      * @return A [NavigationHandle] for observing results from this navigation.
      */
     public fun navigateTo(
-        key: RouterKey,
+        key: NavigationKey,
         groupName: GroupName? = null,
         transition: ContentTransform? = null,
     ): NavigationHandle
@@ -50,10 +50,10 @@ public interface PerseusNavigator {
     public fun popUntil(groupName: GroupName)
 
     /** Pops all entries above and including [key] in the current stack, keeping the root entry. */
-    public fun popUntilKey(key: RouterKey)
+    public fun popUntilKey(key: NavigationKey)
 
     /** Pops all entries above and including the top-most entry whose route key is [K]. */
-    public fun <K : RouterKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>)
+    public fun <K : NavigationKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>)
 
     /**
      * Sends a result from a child screen back to its parent.
@@ -90,5 +90,5 @@ public interface PerseusNavigator {
      * Resets all stacks and navigation state with the given root keys.
      * Replaces Medusa's `resetWithFragmentProvider()`.
      */
-    public fun resetAllWithKeys(keys: List<RouterKey>)
+    public fun resetAllWithKeys(keys: List<NavigationKey>)
 }

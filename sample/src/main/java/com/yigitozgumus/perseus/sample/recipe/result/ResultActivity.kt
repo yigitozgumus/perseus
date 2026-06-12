@@ -26,7 +26,7 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ReceiverKey
 import com.yigitozgumus.perseus.sample.keys.SenderKey
@@ -88,7 +88,7 @@ class ResultActivity : ComponentActivity() {
     // -- Providers (inner classes → access navigator and state) --
 
     inner class SenderProvider : ComposeScreenProvider<SenderKey> {
-        override fun canProvide(key: RouterKey) = key is SenderKey
+        override fun canProvide(key: NavigationKey) = key is SenderKey
 
         @Composable
         override fun Content(key: SenderKey) {
@@ -128,7 +128,7 @@ class ResultActivity : ComponentActivity() {
     }
 
     inner class ReceiverProvider : ComposeScreenProvider<ReceiverKey> {
-        override fun canProvide(key: RouterKey) = key is ReceiverKey
+        override fun canProvide(key: NavigationKey) = key is ReceiverKey
 
         @Composable
         override fun Content(key: ReceiverKey) {

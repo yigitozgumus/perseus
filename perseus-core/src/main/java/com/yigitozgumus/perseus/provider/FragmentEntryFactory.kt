@@ -3,13 +3,13 @@ package com.yigitozgumus.perseus.provider
 import androidx.compose.runtime.Composable
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /**
  * Factory that creates Compose wrappers for Fragment-based screens.
  *
  * Called by the entry provider registry when a [FragmentProviderMarker]
- * matches a given [RouterKey]. Implementations create the composable
+ * matches a given [NavigationKey]. Implementations create the composable
  * wrapper that hosts the fragment within Navigation3's NavDisplay.
  *
  * The default implementation ([DefaultFragmentEntryFactory]) in the
@@ -27,8 +27,8 @@ public interface FragmentEntryFactory {
     @Composable
     public fun Create(
         provider: FragmentProviderMarker,
-        key: RouterKey,
-        context: NavigationContext<RouterKey>,
+        key: NavigationKey,
+        context: NavigationContext<NavigationKey>,
         viewModelStoreProvider: PerseusViewModelStoreProvider,
     )
 }

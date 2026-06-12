@@ -5,13 +5,13 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class DefaultRouterKeyCodecTest {
+class DefaultNavigationKeyCodecTest {
 
     @Test
     fun encodesAndDecodesDataObjectKeys() {
-        val encoded = DefaultRouterKeyCodec.encode(CodecObjectKey)
+        val encoded = DefaultNavigationKeyCodec.encode(CodecObjectKey)
 
-        val decoded = DefaultRouterKeyCodec.decode(encoded)
+        val decoded = DefaultNavigationKeyCodec.decode(encoded)
 
         assertEquals(CodecObjectKey, decoded)
     }
@@ -19,9 +19,9 @@ class DefaultRouterKeyCodecTest {
     @Test
     fun encodesAndDecodesDataClassKeysWithArguments() {
         val key = CodecDetailKey(itemId = 42, title = "Answer")
-        val encoded = DefaultRouterKeyCodec.encode(key)
+        val encoded = DefaultNavigationKeyCodec.encode(key)
 
-        val decoded = DefaultRouterKeyCodec.decode(encoded)
+        val decoded = DefaultNavigationKeyCodec.decode(encoded)
 
         assertEquals(key, decoded)
         assertTrue(decoded is CodecDetailKey)
@@ -29,10 +29,10 @@ class DefaultRouterKeyCodecTest {
 }
 
 @Serializable
-data object CodecObjectKey : RouterKey
+data object CodecObjectKey : NavigationKey
 
 @Serializable
 data class CodecDetailKey(
     val itemId: Int,
     val title: String,
-) : RouterKey
+) : NavigationKey

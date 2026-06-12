@@ -94,7 +94,7 @@ private val recipes = listOf(
     ),
     Recipe(
         "Hide Bottom Bar",
-        "RouterKey.hidesBottomNavigation in a multi-stack scope",
+        "NavigationKey.hidesBottomNavigation in a multi-stack scope",
         BottomNavHideActivity::class.java,
     ),
     Recipe(

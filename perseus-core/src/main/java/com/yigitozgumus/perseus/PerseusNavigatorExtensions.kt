@@ -1,7 +1,7 @@
 package com.yigitozgumus.perseus
 
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /** Reified convenience overload for [PerseusNavigator.popUntilKeyType]. */
-public inline fun <reified K : RouterKey> PerseusNavigator.popUntilKeyType(): Unit =
+public inline fun <reified K : NavigationKey> PerseusNavigator.popUntilKeyType(): Unit =
     popUntilKeyType(K::class)

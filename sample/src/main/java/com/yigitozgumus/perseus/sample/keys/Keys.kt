@@ -2,24 +2,24 @@ package com.yigitozgumus.perseus.sample.keys
 
 import com.yigitozgumus.perseus.key.BottomSheetKey
 import com.yigitozgumus.perseus.key.DialogKey
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 
 // Shared keys
-@Serializable data object HomeKey : RouterKey { override val hidesBottomNavigation: Boolean = false }
-@Serializable data class DetailKey(val itemId: Int) : RouterKey
-@Serializable data object SearchKey : RouterKey { override val hidesBottomNavigation: Boolean = false }
-@Serializable data object ProfileKey : RouterKey { override val hidesBottomNavigation: Boolean = false }
-@Serializable data object LoginKey : RouterKey
+@Serializable data object HomeKey : NavigationKey { override val hidesBottomNavigation: Boolean = false }
+@Serializable data class DetailKey(val itemId: Int) : NavigationKey
+@Serializable data object SearchKey : NavigationKey { override val hidesBottomNavigation: Boolean = false }
+@Serializable data object ProfileKey : NavigationKey { override val hidesBottomNavigation: Boolean = false }
+@Serializable data object LoginKey : NavigationKey
 
 // Recipe-specific keys
-@Serializable data object FragmentScreenKey : RouterKey
-@Serializable data object SenderKey : RouterKey
-@Serializable data object ReceiverKey : RouterKey
-@Serializable data object ConfirmDialogKey : RouterKey, DialogKey
-@Serializable data object InfoSheetKey : RouterKey, BottomSheetKey
-@Serializable data object ScopeFlowKey : RouterKey
-@Serializable data class CheckoutStepKey(val step: Int) : RouterKey
-@Serializable data class CounterKey(val label: String) : RouterKey
-@Serializable data object HiddenBottomBarKey : RouterKey
-@Serializable data object RestoreAuthKey : RouterKey
+@Serializable data object FragmentScreenKey : NavigationKey
+@Serializable data object SenderKey : NavigationKey
+@Serializable data object ReceiverKey : NavigationKey
+@Serializable data object ConfirmDialogKey : NavigationKey, DialogKey
+@Serializable data object InfoSheetKey : NavigationKey, BottomSheetKey
+@Serializable data object ScopeFlowKey : NavigationKey
+@Serializable data class CheckoutStepKey(val step: Int) : NavigationKey
+@Serializable data class CounterKey(val label: String) : NavigationKey
+@Serializable data object HiddenBottomBarKey : NavigationKey
+@Serializable data object RestoreAuthKey : NavigationKey

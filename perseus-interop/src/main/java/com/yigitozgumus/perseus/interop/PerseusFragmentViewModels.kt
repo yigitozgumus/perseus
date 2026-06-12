@@ -7,10 +7,10 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.getNavigationContext
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 
 /** Returns the [NavigationContext] attached by Perseus fragment interop. */
-public fun Fragment.requirePerseusNavigationContext(): NavigationContext<RouterKey> =
+public fun Fragment.requirePerseusNavigationContext(): NavigationContext<NavigationKey> =
     requireArguments().getNavigationContext()
 
 /** Returns the Perseus back-stack-entry scoped [ViewModelStoreOwner] for this Fragment entry. */

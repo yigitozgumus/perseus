@@ -1,7 +1,7 @@
 package com.yigitozgumus.perseus
 
 import androidx.compose.runtime.Composable
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 
 /** Result of the lightweight declarative graph builder. */
@@ -17,11 +17,11 @@ public class PerseusGraphBuilder internal constructor() {
     @PublishedApi
     internal val composeProviders: MutableList<ComposeScreenProvider<*>> = mutableListOf()
 
-    public inline fun <reified K : RouterKey> screen(
+    public inline fun <reified K : NavigationKey> screen(
         noinline content: @Composable (K) -> Unit,
     ): Unit {
         composeProviders += object : ComposeScreenProvider<K> {
-            override fun canProvide(key: RouterKey): Boolean = key is K
+            override fun canProvide(key: NavigationKey): Boolean = key is K
 
             @Composable
             override fun Content(key: K) {

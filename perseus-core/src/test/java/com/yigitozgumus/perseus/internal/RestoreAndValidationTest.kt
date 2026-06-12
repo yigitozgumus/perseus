@@ -6,7 +6,7 @@ import com.yigitozgumus.perseus.NonRestorableKey
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
 import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import kotlinx.coroutines.flow.first
@@ -85,7 +85,7 @@ class RestoreAndValidationTest {
         val registry = PerseusEntryProviderRegistry(
             composeProviders = emptyList(),
             fragmentProviders = listOf(object : FragmentProviderMarker {
-                override fun canProvide(key: RouterKey): Boolean = key is ValidationHome
+                override fun canProvide(key: NavigationKey): Boolean = key is ValidationHome
             }),
             sceneProviders = emptyList(),
             resultBus = resultBus,
@@ -111,15 +111,15 @@ class RestoreAndValidationTest {
         assertEquals("done", result)
     }
 
-    private inline fun <reified K : RouterKey> providerFor(): ComposeScreenProvider<K> =
+    private inline fun <reified K : NavigationKey> providerFor(): ComposeScreenProvider<K> =
         object : ComposeScreenProvider<K> {
-            override fun canProvide(key: RouterKey): Boolean = key is K
+            override fun canProvide(key: NavigationKey): Boolean = key is K
 
             @Composable
             override fun Content(key: K) = Unit
         }
 
-    private fun navigatorFixture(initialKey: RouterKey): DefaultPerseusNavigator {
+    private fun navigatorFixture(initialKey: NavigationKey): DefaultPerseusNavigator {
         val state = PerseusNavigationState.singleStack(initialKey)
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
         val resultBus = ResultBusAdapter()
@@ -141,13 +141,13 @@ class RestoreAndValidationTest {
 }
 
 @Serializable
-internal data object ValidationHome : RouterKey
+internal data object ValidationHome : NavigationKey
 
 @Serializable
-internal data object ValidationCheckout : RouterKey
+internal data object ValidationCheckout : NavigationKey
 
 @Serializable
-internal data class ValidationDetail(val id: Int) : RouterKey
+internal data class ValidationDetail(val id: Int) : NavigationKey
 
 @Serializable
 internal data object ValidationPayment : NonRestorableKey

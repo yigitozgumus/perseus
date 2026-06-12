@@ -33,7 +33,7 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.keys.ConfirmDialogKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
@@ -88,7 +88,7 @@ class DialogActivity : ComponentActivity() {
     }
 
     inner class DialogHomeProvider : ComposeScreenProvider<HomeKey> {
-        override fun canProvide(key: RouterKey) = key is HomeKey
+        override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
         override fun Content(key: HomeKey) {
@@ -126,7 +126,7 @@ class DialogActivity : ComponentActivity() {
     }
 
     inner class ConfirmDialogProvider : ComposeScreenProvider<ConfirmDialogKey> {
-        override fun canProvide(key: RouterKey) = key is ConfirmDialogKey
+        override fun canProvide(key: NavigationKey) = key is ConfirmDialogKey
 
         @Composable
         override fun Content(key: ConfirmDialogKey) {

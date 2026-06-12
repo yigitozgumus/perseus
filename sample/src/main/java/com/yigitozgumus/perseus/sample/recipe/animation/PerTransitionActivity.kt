@@ -31,16 +31,16 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 import kotlinx.serialization.Serializable
 
 // Per-transition demo keys
-@Serializable data object ScreenA : RouterKey
-@Serializable data object ScreenB : RouterKey
-@Serializable data object ScreenC : RouterKey
-@Serializable data object ScreenD : RouterKey
+@Serializable data object ScreenA : NavigationKey
+@Serializable data object ScreenB : NavigationKey
+@Serializable data object ScreenC : NavigationKey
+@Serializable data object ScreenD : NavigationKey
 
 @OptIn(ExperimentalMaterial3Api::class)
 class PerTransitionActivity : ComponentActivity() {
@@ -86,7 +86,7 @@ class PerTransitionActivity : ComponentActivity() {
     // -- Providers --
 
     inner class ScreenProviderA : ComposeScreenProvider<ScreenA> {
-        override fun canProvide(key: RouterKey) = key is ScreenA
+        override fun canProvide(key: NavigationKey) = key is ScreenA
         @Composable
         override fun Content(key: ScreenA) = ColoredScreen(
             "Screen A", "Slide from right →", Color(0xFFE3F2FD),
@@ -98,7 +98,7 @@ class PerTransitionActivity : ComponentActivity() {
     }
 
     inner class ScreenProviderB : ComposeScreenProvider<ScreenB> {
-        override fun canProvide(key: RouterKey) = key is ScreenB
+        override fun canProvide(key: NavigationKey) = key is ScreenB
         @Composable
         override fun Content(key: ScreenB) = ColoredScreen(
             "Screen B", "Scale up →", Color(0xFFFCE4EC),
@@ -110,7 +110,7 @@ class PerTransitionActivity : ComponentActivity() {
     }
 
     inner class ScreenProviderC : ComposeScreenProvider<ScreenC> {
-        override fun canProvide(key: RouterKey) = key is ScreenC
+        override fun canProvide(key: NavigationKey) = key is ScreenC
         @Composable
         override fun Content(key: ScreenC) = ColoredScreen(
             "Screen C", "Fade only →", Color(0xFFE8F5E9),
@@ -122,7 +122,7 @@ class PerTransitionActivity : ComponentActivity() {
     }
 
     inner class ScreenProviderD : ComposeScreenProvider<ScreenD> {
-        override fun canProvide(key: RouterKey) = key is ScreenD
+        override fun canProvide(key: NavigationKey) = key is ScreenD
         @Composable
         override fun Content(key: ScreenD) = ColoredScreen(
             "Screen D", "Last screen", Color(0xFFFFF3E0),

@@ -4,7 +4,7 @@ import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
-import com.yigitozgumus.perseus.key.RouterKey
+import com.yigitozgumus.perseus.key.NavigationKey
 import kotlinx.serialization.Serializable
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -54,7 +54,7 @@ class PerseusNavigatorScopeTest {
         pushedEntryIds.forEach(::assertNoOwner)
     }
 
-    private fun navigatorFixture(initialKey: RouterKey): NavigatorFixture {
+    private fun navigatorFixture(initialKey: NavigationKey): NavigatorFixture {
         val state = PerseusNavigationState.singleStack(initialKey)
         val stateHolder = PerseusNavigationStateHolder().also { it.attach(state) }
         val resultBus = ResultBusAdapter()
@@ -92,16 +92,16 @@ class PerseusNavigatorScopeTest {
 }
 
 @Serializable
-private data object ScopeLogin : RouterKey
+private data object ScopeLogin : NavigationKey
 
 @Serializable
-private data object ScopeHome : RouterKey
+private data object ScopeHome : NavigationKey
 
 @Serializable
-private data object ScopeSearch : RouterKey
+private data object ScopeSearch : NavigationKey
 
 @Serializable
-private data object ScopeCheckout : RouterKey
+private data object ScopeCheckout : NavigationKey
 
 @Serializable
-private data object ScopeChild : RouterKey
+private data object ScopeChild : NavigationKey

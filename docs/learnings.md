@@ -3,7 +3,7 @@
 ## Session 0: Pre-implementation Research (2026-06-06)
 
 ### Sources Analyzed
-- **navigation-router** (`~/code/navigation-router`): User's prior implementation attempt with api/impl modules, embedded Koin, Parcelable-based RouterKey, custom NavigationResultBus
+- **navigation-router** (`~/code/navigation-router`): User's prior implementation attempt with api/impl modules, embedded Koin, Parcelable-based NavigationKey, custom NavigationResultBus
 - **nav3-recipes** (`~/code/nav3-recipes`): Official Android Navigation3 recipe collection using `1.2.0-alpha02`, Koin/Hilt modular patterns, interop, multiple stacks, result passing
 - **Medusa** (`~/code/medusa`): Trendyol's Fragment-based navigation library. The API Perseus must be a drop-in replacement for.
 - **Perseus** (`/Users/yigitozgumus/code/Perseus`): Fresh Android project with just a Hello World Compose activity
@@ -57,7 +57,7 @@ Medusa (`com.trendyol:medusa:0.13.0`) is a pure Fragment-based navigation librar
 
 ### Key Design Decisions
 
-1. **RouterKey extends NavKey (Serializable, not Parcelable)**
+1. **NavigationKey extends NavKey (Serializable, not Parcelable)**
    - Reasoning: nav3 natively uses `NavKey` (Serializable). Bridging means keys must be `@Serializable`. This is a breaking change from navigation-router's Parcelable approach but necessary for nav3 compatibility.
    - Impact: Existing Parcelable key classes will need migration. `@Serializable` requires all constructor params to be serializable.
 
@@ -67,19 +67,19 @@ Medusa (`com.trendyol:medusa:0.13.0`) is a pure Fragment-based navigation librar
    - Watch out: ResultEventBus is scoped to NavEntry lifecycle. If a Fragment ViewModel outlives the NavEntry, results may be lost. We need to document this.
 
 3. **DI-agnostic core with pluggable integrations**
-   - Core takes simple `(RouterKey) -> NavEntry<RouterKey>` lambda
+   - Core takes simple `(NavigationKey) -> NavEntry<NavigationKey>` lambda
    - Koin integration uses `koin-compose-navigation3` for auto-discovery
    - Hilt integration follows nav3-recipes `@IntoSet EntryProviderInstaller` pattern
    - This mirrors how nav3-recipes handles both Koin and Hilt modular patterns
 
 ### Medusa → Perseus Design Implications
 
-12. **Key-based vs Fragment-based routing**: Medusa consumers create Fragment instances and pass them to `start()`. Perseus consumers define RouterKey + ScreenProvider. This is a paradigm shift:
+12. **Key-based vs Fragment-based routing**: Medusa consumers create Fragment instances and pass them to `start()`. Perseus consumers define NavigationKey + ScreenProvider. This is a paradigm shift:
     - **Before (Medusa)**: `navigator.start(MyFragment.newInstance(args), groupName = "flow1")`
     - **After (Perseus)**: `navigator.navigateTo(MyKey(args), groupName = FlowGroup)`
     - This decouples navigation from Fragment creation and enables Compose screens
 
-13. **Tab initialisation**: Medusa uses `List<() -> Fragment>` — factory lambdas. Perseus uses `List<RouterKey>` — the entry provider registry resolves keys to fragments/composables when needed.
+13. **Tab initialisation**: Medusa uses `List<() -> Fragment>` — factory lambdas. Perseus uses `List<NavigationKey>` — the entry provider registry resolves keys to fragments/composables when needed.
 
 14. **Saved state**: Medusa manually serializes to Bundle via FragmentStackStateMapper. Perseus uses Compose's `rememberSaveable` + `Saver` which automatically handles process death. This is more robust and Compose-native.
 
@@ -113,11 +113,11 @@ Medusa (`com.trendyol:medusa:0.13.0`) is a pure Fragment-based navigation librar
 
 | Aspect | navigation-router | Perseus (Target) |
 |--------|-------------------|------------------|
-| Key type | Parcelable (RouterKey) | Serializable (RouterKey : NavKey) |
+| Key type | Parcelable (NavigationKey) | Serializable (NavigationKey : NavKey) |
 | DI | Embedded Koin (`@Single`, KSP) | DI-agnostic + Koin/Hilt modules |
 | Result bus | Custom SharedFlow (NavigationResultBus) | nav3 ResultEventBus + NavigationHandle adapter |
 | Fragment interop | AndroidFragment + rememberFragmentState + key() {} | Same approach, simplified |
-| Bottom sheet | Custom Compose Foundation impl | Same, adapted for RouterKey |
+| Bottom sheet | Custom Compose Foundation impl | Same, adapted for NavigationKey |
 | State holder | TPayNavigationStateHolder (DI bridge) | Same pattern, renamed |
 | Group tracking | ConcurrentHashMap in EntryProviderRegistry | NavEntry metadata (cleaner) |
 | NavEntry ViewModel scoping | Manual NavEntryViewModelStoreRegistry | rememberViewModelStoreNavEntryDecorator from lifecycle |
@@ -125,18 +125,18 @@ Medusa (`com.trendyol:medusa:0.13.0`) is a pure Fragment-based navigation librar
 ### Potential Issues Identified
 
 8. **Group tracking through NavEntry metadata**
-   - navigation-router tracks groups via `ConcurrentHashMap<RouterKey, GroupName>` in the registry
+   - navigation-router tracks groups via `ConcurrentHashMap<NavigationKey, GroupName>` in the registry
    - Alternative: Store group as NavEntry metadata. This survives composition better and doesn't need manual cleanup
    - **ACTION**: Implement group tracking via metadata, not side maps
 
 9. **Fragment argument passing**
    - `AndroidFragment` composable takes `arguments: Bundle` parameter
-   - Need to pass RouterKey + NavigationContext to fragment via arguments
+   - Need to pass NavigationKey + NavigationContext to fragment via arguments
    - Extract via extension functions on Bundle (like `getNavigationContext()`)
 
 10. **Process death survival**
     - `rememberSaveable` + `Saver` for PerseusNavigationState
-    - All RouterKeys must be Serializable for this to work
+    - All NavigationKeys must be Serializable for this to work
     - SnapshotStateList needs to be reconstructed from saved list
 
 11. **Transition animations**
@@ -145,12 +145,12 @@ Medusa (`com.trendyol:medusa:0.13.0`) is a pure Fragment-based navigation librar
     - We should provide sensible defaults but allow customization
 
 12. **ViewModel lifetime in Fragment interop (CRITICAL)**
-    - **The problem**: When a Fragment's view is destroyed (another screen pushed on top, or tab switched), the Fragment's default `ViewModelStore` is cleared. This means the ViewModel is destroyed even though the RouterKey is still in the stack.
+    - **The problem**: When a Fragment's view is destroyed (another screen pushed on top, or tab switched), the Fragment's default `ViewModelStore` is cleared. This means the ViewModel is destroyed even though the NavigationKey is still in the stack.
     - **Example**: User is on `[HomeFragment → DetailFragment]` in Tab A. They switch to Tab B. Tab A's DetailFragment view is destroyed → its ViewModel is cleared. When they switch back to Tab A, a new ViewModel is created — losing all state.
     - **Expected behavior**: DetailFragment's ViewModel should live as long as `DetailKey` is in the back stack, not as long as the Fragment's view exists.
-    - **The solution**: `NavEntryViewModelStoreProvider` — each RouterKey gets its own ViewModelStore that is independent of any Fragment's lifecycle. The store is created when the key enters the stack and cleared when the key is popped.
-    - **Implementation from navigation-router**: `NavEntryViewModelStoreRegistry` uses `ConcurrentHashMap<RouterKey, ViewModelStore>`. `getOrCreateStore(key)` returns the store; `clear(key)` removes and clears it.
-    - **Fragment usage**: Fragments use `perseusScopedViewModel()` delegate instead of `viewModels()`. This delegate reads the RouterKey from fragment arguments, looks up the NavEntry-scoped ViewModelStoreOwner from `PerseusViewModelStoreProvider`, and scopes the ViewModel there.
+    - **The solution**: `NavEntryViewModelStoreProvider` — each NavigationKey gets its own ViewModelStore that is independent of any Fragment's lifecycle. The store is created when the key enters the stack and cleared when the key is popped.
+    - **Implementation from navigation-router**: `NavEntryViewModelStoreRegistry` uses `ConcurrentHashMap<NavigationKey, ViewModelStore>`. `getOrCreateStore(key)` returns the store; `clear(key)` removes and clears it.
+    - **Fragment usage**: Fragments use `perseusScopedViewModel()` delegate instead of `viewModels()`. This delegate reads the NavigationKey from fragment arguments, looks up the NavEntry-scoped ViewModelStoreOwner from `PerseusViewModelStoreProvider`, and scopes the ViewModel there.
     - **In Compose**: Nav3's `rememberViewModelStoreNavEntryDecorator()` already handles this — each NavEntry gets its own store. No extra work needed for Compose screens.
     - **Cleanup timing**: When `pop()` or `popUntil()` or `resetTab()` removes a key from the stack, `NavEntryViewModelStoreProvider.clear(key)` must be called. This is the ONLY time the store is cleared.
     - **Testing required**:
