@@ -845,6 +845,18 @@ class ProfileFragment : Fragment() {
 }
 ```
 
+For Compose destinations using Koin, `koinViewModel()` works with Perseus automatically because
+`PerseusNavHost` provides the entry-scoped `LocalViewModelStoreOwner`:
+
+```kotlin
+@Composable
+override fun Content(key: DetailKey) {
+    val viewModel = koinViewModel<DetailViewModel>(
+        parameters = { parametersOf(key) },
+    )
+}
+```
+
 For entry-scoped Fragment ViewModels, use Perseus' entry owner.
 
 ```kotlin
@@ -852,11 +864,14 @@ private val viewModel by perseusScopedViewModel<MyViewModel>()
 ```
 
 If your ViewModel uses Koin constructor injection, keep Koin responsible for
-creation and pass Perseus' owner to Koin's Fragment delegate:
+creation and pass Perseus' owner to Koin's Fragment delegate. Plain
+`by viewModel()` is Fragment-scoped; the `ownerProducer` is what makes it
+Perseus-entry-scoped.
 
 ```kotlin
 private val viewModel by viewModel<MyViewModel>(
     ownerProducer = { requirePerseusViewModelStoreOwner() },
+    parameters = { parametersOf(key) },
 )
 ```
 
