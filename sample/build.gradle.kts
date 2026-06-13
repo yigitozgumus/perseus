@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
 
     // Koin (for sample DI)
+    implementation(libs.koin.android)
     implementation(libs.koin.compose.viewmodel)
     implementation(libs.koin.navigation3)
     implementation(libs.koin.annotations)

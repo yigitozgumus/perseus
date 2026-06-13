@@ -3,14 +3,18 @@ package com.yigitozgumus.perseus.sample.compose
 import androidx.lifecycle.ViewModel
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusNavigator
-import com.yigitozgumus.perseus.key.NavigationKey
+import com.yigitozgumus.perseus.sample.keys.DetailKey
+import java.util.UUID
 
 class DetailViewModel(
-    private val navigator: PerseusNavigator
+    private val navigator: PerseusNavigator,
+    private val key: DetailKey,
 ) : ViewModel() {
 
-    fun sendResult(context: NavigationContext<*>, itemId: Int) {
-        navigator.sendResult(context, "Selected item $itemId")
+    val instanceId: String = UUID.randomUUID().toString().take(8)
+
+    fun sendResult(context: NavigationContext<*>) {
+        navigator.sendResult(context, "Selected item ${key.itemId}")
         navigator.pop()
     }
 }

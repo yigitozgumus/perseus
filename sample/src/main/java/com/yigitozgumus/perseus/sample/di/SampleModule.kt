@@ -14,6 +14,10 @@ import com.yigitozgumus.perseus.sample.compose.HomeViewModel
 import com.yigitozgumus.perseus.sample.compose.LoginScreenProvider
 import com.yigitozgumus.perseus.sample.compose.SearchScreenProvider
 import com.yigitozgumus.perseus.sample.fragment.ProfileFragmentProvider
+import com.yigitozgumus.perseus.sample.fragment.ProfileViewModel
+import com.yigitozgumus.perseus.sample.keys.DetailKey
+import com.yigitozgumus.perseus.sample.keys.ProfileKey
+import org.koin.core.module.dsl.viewModel
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.dsl.module
@@ -39,6 +43,11 @@ val infrastructureModule = module {
     single<PerseusNavigator> { get<PerseusNavigationOwner>().navigator }
     single<PerseusScopeNavigator> { get<PerseusNavigationOwner>().scopeNavigator }
 
-    factory { HomeViewModel(get()) }
-    factory { DetailViewModel(get()) }
+    // Compose sample: koinViewModel() reads Perseus' entry-scoped LocalViewModelStoreOwner.
+    viewModel { HomeViewModel(get()) }
+    viewModel { (key: DetailKey) -> DetailViewModel(get(), key) }
+
+    // Fragment sample: by viewModel(ownerProducer = { requirePerseusViewModelStoreOwner() })
+    // points Koin at the same Perseus entry-scoped owner.
+    viewModel { (key: ProfileKey) -> ProfileViewModel(get(), key) }
 }

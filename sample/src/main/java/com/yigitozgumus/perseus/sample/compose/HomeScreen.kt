@@ -29,6 +29,7 @@ import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.Single
+import org.koin.core.parameter.parametersOf
 
 @Single
 class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
@@ -55,12 +56,18 @@ class DetailScreenProvider : ComposeScreenProvider<DetailKey> {
 
     @Composable
     override fun Content(key: DetailKey) {
-        val viewModel = koinViewModel<DetailViewModel>()
+        // Perseus provides the entry-scoped LocalViewModelStoreOwner.
+        // Koin uses that owner automatically, while parametersOf(key) shows
+        // how to pass the NavigationKey into a Koin-created ViewModel.
+        val viewModel = koinViewModel<DetailViewModel>(
+            parameters = { parametersOf(key) },
+        )
         val navContext = LocalNavigationContext.current
         DetailScreen(
             itemId = key.itemId,
+            viewModelInstanceId = viewModel.instanceId,
             onSendResult = {
-                navContext?.let { viewModel.sendResult(it, key.itemId) }
+                navContext?.let { viewModel.sendResult(it) }
             }
         )
     }
@@ -124,6 +131,7 @@ fun HomeScreen(
 @Composable
 fun DetailScreen(
     itemId: Int,
+    viewModelInstanceId: String? = null,
     onSendResult: () -> Unit = {}
 ) {
     Column(
@@ -142,6 +150,13 @@ fun DetailScreen(
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(top = 8.dp)
         )
+        if (viewModelInstanceId != null) {
+            Text(
+                text = "Koin ViewModel id: $viewModelInstanceId",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
         Spacer(modifier = Modifier.height(24.dp))
         Button(onClick = onSendResult) {
             Text("Send Result & Go Back")
