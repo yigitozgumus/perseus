@@ -110,7 +110,9 @@ public fun PerseusNavHost(
     }
 
     val navigationState = when (restorePolicy) {
-        PerseusRestorePolicy.RestoreSavedState -> rememberSaveable(saver = PerseusNavigationState.Saver) {
+        PerseusRestorePolicy.RestoreSavedState -> rememberSaveable(
+            saver = remember(initialScope) { PerseusNavigationState.saver(initialScope) },
+        ) {
             PerseusNavigationState.fromSpec(initialScope)
         }
         PerseusRestorePolicy.AlwaysUseInitialScope -> remember(initialScope) {

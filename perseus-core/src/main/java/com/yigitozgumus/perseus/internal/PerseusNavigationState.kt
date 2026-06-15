@@ -387,8 +387,25 @@ internal class PerseusNavigationState private constructor(
             ignoreUnknownKeys = true
         }
 
+        fun encodeForSavedState(state: PerseusNavigationState): String =
+            SnapshotJson.encodeToString(state.toSnapshot())
+
+        fun saver(fallbackScope: StackScopeSpec): Saver<PerseusNavigationState, String> = Saver(
+            save = { encodeForSavedState(it) },
+            restore = { encoded ->
+                runCatching {
+                    val snapshot: Snapshot = SnapshotJson.decodeFromString(encoded)
+                    if (snapshot.scopes.firstOrNull()?.restorePolicy == ScopeRestorePolicy.NeverRestore) {
+                        fromSpec(fallbackScope)
+                    } else {
+                        fromSnapshot(snapshot)
+                    }
+                }.getOrElse { fromSpec(fallbackScope) }
+            }
+        )
+
         val Saver: Saver<PerseusNavigationState, String> = Saver(
-            save = { SnapshotJson.encodeToString(it.toSnapshot()) },
+            save = { encodeForSavedState(it) },
             restore = { fromSnapshot(SnapshotJson.decodeFromString(it)) }
         )
     }
