@@ -33,6 +33,9 @@ navigator.navigateTo(DetailKey(42))
 navigator.pop()
 ```
 
+!!! tip "Start with keys"
+    If your destinations can be represented as serializable Kotlin objects, Perseus can route and restore them.
+
 ## Start here
 
 - [Getting started](getting-started.md) — install Perseus and host your first stack.

@@ -97,8 +97,8 @@ dependencies {
 For this branch before tagging a release, use JitPack's branch snapshot version:
 
 ```kotlin
-implementation("com.github.yigitozgumus.perseus:perseus-core:v5-SNAPSHOT")
-implementation("com.github.yigitozgumus.perseus:perseus-interop:v5-SNAPSHOT")
+implementation("com.github.yigitozgumus.perseus:perseus-core:v6-SNAPSHOT")
+implementation("com.github.yigitozgumus.perseus:perseus-interop:v6-SNAPSHOT")
 ```
 
 For an app module in this project:
