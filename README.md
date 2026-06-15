@@ -493,7 +493,7 @@ if (navigator.canGoBack()) {
 }
 ```
 
-Common stack helpers:
+Common stack helpers and launch options:
 
 ```kotlin
 navigator.popToRoot()
@@ -501,6 +501,20 @@ navigator.popCurrentTabToRoot()
 navigator.popTabToRoot(tabIndex = 1)
 navigator.popUntilKey(DetailKey(42))
 navigator.popUntilKeyType<DetailKey>()
+
+navigator.navigateTo(DetailKey(42), launchMode = LaunchMode.SingleTop)
+navigator.navigateTo(HomeKey, popUpTo = PopUpTo.Root)
+navigator.replaceWith(DetailKey(43))
+```
+
+Call Perseus navigator APIs from the main thread. If navigation is triggered
+from background work, hop to the main dispatcher before mutating navigation
+state:
+
+```kotlin
+viewModelScope.launch(Dispatchers.Main.immediate) {
+    navigator.navigateTo(DetailKey(42))
+}
 ```
 
 ---
@@ -656,15 +670,27 @@ when (scope.kind) {
 
 ## Returning results
 
-`navigateTo(...)` returns a `NavigationHandle`. Observe typed results from it.
+`navigateTo(...)` returns a `NavigationHandle`. Await or observe typed completion from it.
 
 ```kotlin
 val handle = navigator.navigateTo(PickerKey)
 
-handle.observeResult<PickerResult>()
-    .onEach { result ->
+when (val result = handle.awaitResult<PickerResult>()) {
+    is PerseusResult.Success -> {
         // Handle the result for this exact navigation session.
+        val value = result.value
     }
+    PerseusResult.Cancelled -> {
+        // The destination was popped or removed without sending a result.
+    }
+}
+```
+
+For Flow-based code:
+
+```kotlin
+handle.resultFlow<PickerResult>()
+    .onEach { result -> /* Success or Cancelled */ }
     .launchIn(viewModelScope)
 ```
 
@@ -689,7 +715,9 @@ fun PickerScreen(navigator: PerseusNavigator) {
 ```
 
 Results are scoped by a correlation ID. If two parents open the same destination,
-each parent only receives results from its own navigation session.
+each parent only receives results from its own navigation session. Result delivery
+is one-shot: the first success or cancellation wins, wrong result types fail with
+a clear mismatch error, and removed entries complete as `PerseusResult.Cancelled`.
 
 Pushed scopes can also return results; see [Scope navigation](#scope-navigation-replacing-or-stacking-app-surfaces).
 
@@ -759,8 +787,8 @@ Open it and observe the result:
 
 ```kotlin
 navigator.navigateTo(ConfirmDeleteKey)
-    .observeResult<ConfirmResult>()
-    .onEach { result -> /* ... */ }
+    .resultFlow<ConfirmResult>()
+    .onEach { result -> /* Success or Cancelled */ }
     .launchIn(viewModelScope)
 ```
 
@@ -837,11 +865,8 @@ Read the key/context inside a Fragment:
 
 ```kotlin
 class ProfileFragment : Fragment() {
-    private val context: NavigationContext<ProfileKey> by lazy {
-        requireArguments().getNavigationContext<ProfileKey>()
-    }
-
-    private val key: ProfileKey get() = context.key
+    private val context by lazy { requirePerseusNavigationContext() }
+    private val key by lazy { requirePerseusKey<ProfileKey>() }
 }
 ```
 
@@ -860,7 +885,7 @@ override fun Content(key: DetailKey) {
 For entry-scoped Fragment ViewModels, use Perseus' entry owner.
 
 ```kotlin
-private val viewModel by perseusScopedViewModel<MyViewModel>()
+private val viewModel by perseusViewModels<MyViewModel>()
 ```
 
 If your ViewModel uses Koin constructor injection, keep Koin responsible for
@@ -1244,6 +1269,14 @@ Generate Dokka HTML documentation for the public library modules:
 ```
 
 Generated documentation is written under each module's `build/dokka/` directory.
+
+### Versioning and API policy
+
+- Releases use semantic versioning after `1.0.0`.
+- Before `1.0.0`, minor versions may include source or binary breaking API changes.
+- Prefer additive APIs; deprecate old APIs before removal when practical.
+- Experimental APIs should be documented as experimental in KDoc and release notes.
+- Public changes should be recorded in `CHANGELOG.md`.
 
 ### Verification
 

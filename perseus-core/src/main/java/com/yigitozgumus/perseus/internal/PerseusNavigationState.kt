@@ -79,6 +79,43 @@ internal class PerseusNavigationState private constructor(
 
     fun navigateTo(key: NavigationKey) { currentBackStack.add(asBackStackKey(key)) }
 
+    fun replaceCurrent(key: NavigationKey): NavigationKey? {
+        val bs = currentBackStack
+        if (bs.isEmpty()) return null
+        val removed = bs.removeAt(bs.lastIndex)
+        bs.add(asBackStackKey(key))
+        return removed
+    }
+
+    fun popUpToRoot(): List<NavigationKey> {
+        val bs = currentBackStack
+        val removed = bs.drop(1)
+        while (bs.size > 1) bs.removeAt(bs.lastIndex)
+        return removed
+    }
+
+    fun popUpToKey(key: NavigationKey, inclusive: Boolean): List<NavigationKey> =
+        popUpTo(inclusive) { it.routeKey() == key }
+
+    fun popUpToKeyType(
+        keyClass: kotlin.reflect.KClass<out NavigationKey>,
+        inclusive: Boolean,
+    ): List<NavigationKey> = popUpTo(inclusive) { keyClass.isInstance(it.routeKey()) }
+
+    private fun popUpTo(
+        inclusive: Boolean,
+        predicate: (NavigationKey) -> Boolean,
+    ): List<NavigationKey> {
+        val bs = currentBackStack
+        val index = bs.indexOfLast { predicate(it) }
+        if (index < 0) return emptyList()
+        val firstRemovedIndex = maxOf(1, if (inclusive) index else index + 1)
+        if (firstRemovedIndex > bs.lastIndex) return emptyList()
+        val removed = bs.subList(firstRemovedIndex, bs.size).toList()
+        repeat(removed.size) { bs.removeAt(bs.lastIndex) }
+        return removed
+    }
+
     fun goBack(): NavigationKey? {
         val bs = currentBackStack
         if (bs.size <= 1) return null

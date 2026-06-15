@@ -25,9 +25,11 @@ import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusResult
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.resultFlow
 import com.yigitozgumus.perseus.sample.keys.ReceiverKey
 import com.yigitozgumus.perseus.sample.keys.SenderKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
@@ -78,8 +80,8 @@ class ResultActivity : ComponentActivity() {
 
         fun observe(handle: com.yigitozgumus.perseus.NavigationHandle, scope: CoroutineScope) {
             scope.launch {
-                handle.observeResult<String>().collect { result ->
-                    _lastResult.value = result
+                handle.resultFlow<String>().collect { result ->
+                    if (result is PerseusResult.Success) _lastResult.value = result.value
                 }
             }
         }

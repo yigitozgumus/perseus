@@ -26,9 +26,20 @@ public interface PerseusNavigator {
      * @param key The NavigationKey identifying the target screen.
      * @param groupName Optional navigation group for [popUntil] clearing.
      * @param transition Optional [ContentTransform] for this navigation only.
+     * @param launchMode Controls whether an existing top entry can be reused.
+     * @param popUpTo Entries to remove before adding [key].
      * @return A [NavigationHandle] for observing results from this navigation.
      */
     public fun navigateTo(
+        key: NavigationKey,
+        groupName: GroupName? = null,
+        transition: ContentTransform? = null,
+        launchMode: LaunchMode = LaunchMode.Standard,
+        popUpTo: PopUpTo? = null,
+    ): NavigationHandle
+
+    /** Replaces the current entry with [key]. */
+    public fun replaceWith(
         key: NavigationKey,
         groupName: GroupName? = null,
         transition: ContentTransform? = null,

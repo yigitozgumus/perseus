@@ -13,6 +13,10 @@ import com.yigitozgumus.perseus.key.NavigationKey
 public fun Fragment.requirePerseusNavigationContext(): NavigationContext<NavigationKey> =
     requireArguments().getNavigationContext()
 
+/** Returns the typed Perseus key attached to this Fragment entry. */
+public inline fun <reified K : NavigationKey> Fragment.requirePerseusKey(): K =
+    requireArguments().getNavigationContext<K>().key
+
 /** Returns the Perseus back-stack-entry scoped [ViewModelStoreOwner] for this Fragment entry. */
 public fun Fragment.requirePerseusViewModelStoreOwner(): ViewModelStoreOwner {
     val context = requirePerseusNavigationContext()
@@ -33,3 +37,8 @@ public inline fun <reified VM : ViewModel> Fragment.perseusScopedViewModel(
     val factory = factoryProducer?.invoke() ?: defaultViewModelProviderFactory
     ViewModelProvider(owner, factory)[VM::class.java]
 }
+
+/** Alias for [perseusScopedViewModel] matching common Fragment ViewModel naming. */
+public inline fun <reified VM : ViewModel> Fragment.perseusViewModels(
+    noinline factoryProducer: (() -> ViewModelProvider.Factory)? = null,
+): Lazy<VM> = perseusScopedViewModel(factoryProducer)

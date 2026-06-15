@@ -31,11 +31,13 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
+import com.yigitozgumus.perseus.PerseusResult
 import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.RootBackBehavior
 import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.TabBackBehavior
+import com.yigitozgumus.perseus.awaitResult
 import com.yigitozgumus.perseus.handleDeepLink
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.perseusGraph
@@ -46,7 +48,6 @@ import com.yigitozgumus.perseus.sample.recipe.ui.RecipeScaffold
 import com.yigitozgumus.perseus.sample.recipe.ui.RecipeSection
 import com.yigitozgumus.perseus.sample.recipe.ui.ScopeVisualizer
 import com.yigitozgumus.perseus.sample.recipe.ui.SecondaryRecipeButton
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -170,7 +171,10 @@ abstract class NewApiRecipeActivity(
                     )
                 )
                 coroutineScope.launch {
-                    scopeResultText = handle.observeResult<String>().first()
+                    scopeResultText = when (val result = handle.awaitResult<String>()) {
+                        is PerseusResult.Success -> result.value
+                        PerseusResult.Cancelled -> "Cancelled"
+                    }
                 }
             }
             SecondaryRecipeButton("replaceApp(Settings)") {

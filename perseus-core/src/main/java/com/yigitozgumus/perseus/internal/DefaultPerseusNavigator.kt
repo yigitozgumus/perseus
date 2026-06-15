@@ -2,11 +2,14 @@ package com.yigitozgumus.perseus.internal
 
 import androidx.compose.animation.ContentTransform
 import com.yigitozgumus.perseus.EmptyPerseusLogger
+import com.yigitozgumus.perseus.LaunchMode
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.NavigationHandle
 import com.yigitozgumus.perseus.PerseusBackBehavior
 import com.yigitozgumus.perseus.PerseusLogger
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusResult
+import com.yigitozgumus.perseus.PopUpTo
 import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.RootBackBehavior
 import com.yigitozgumus.perseus.ScopeNavigationHandle
@@ -18,6 +21,7 @@ import com.yigitozgumus.perseus.debug
 import com.yigitozgumus.perseus.info
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.NavigationKey
+import kotlin.reflect.KClass
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,9 +54,27 @@ internal class DefaultPerseusNavigator(
         key: NavigationKey,
         groupName: GroupName?,
         transition: ContentTransform?,
+        launchMode: LaunchMode,
+        popUpTo: PopUpTo?,
     ): NavigationHandle {
+        MainThreadGuard.checkMainThread()
         if (validateProviders) entryRegistry.validateProviderForKey(key)
-        logBefore("navigateTo key=${key.shortName()} group=${groupName?.name} transition=${transition != null}")
+        logBefore(
+            "navigateTo key=${key.shortName()} group=${groupName?.name} " +
+                "transition=${transition != null} launchMode=$launchMode popUpTo=$popUpTo"
+        )
+
+        val removed = applyPopUpTo(popUpTo)
+        cleanupRemoved(removed)
+
+        val singleTopEntry = stateHolder.state.currentBackStack.lastOrNull()
+            ?.takeIf { launchMode == LaunchMode.SingleTop && it.routeKey() == key }
+        if (singleTopEntry != null) {
+            syncCurrentKey()
+            logAfter("navigateTo reusedSingleTop entryId=${singleTopEntry.backStackId()} removed=${removed.size}")
+            return resultBus.createHandle(singleTopEntry.correlationId() ?: UUID.randomUUID().toString())
+        }
+
         val correlationId = UUID.randomUUID().toString()
         val backStackKey = stateHolder.state.createBackStackKey(
             key = key,
@@ -64,11 +86,33 @@ internal class DefaultPerseusNavigator(
 
         stateHolder.state.navigateTo(backStackKey)
         syncCurrentKey()
-        logAfter("navigateTo entryId=${backStackKey.backStackId()} correlationId=$correlationId")
+        logAfter("navigateTo entryId=${backStackKey.backStackId()} correlationId=$correlationId removed=${removed.size}")
+        return resultBus.createHandle(correlationId)
+    }
+
+    override fun replaceWith(
+        key: NavigationKey,
+        groupName: GroupName?,
+        transition: ContentTransform?,
+    ): NavigationHandle {
+        MainThreadGuard.checkMainThread()
+        if (validateProviders) entryRegistry.validateProviderForKey(key)
+        logBefore("replaceWith key=${key.shortName()} group=${groupName?.name} transition=${transition != null}")
+        val correlationId = UUID.randomUUID().toString()
+        val backStackKey = stateHolder.state.createBackStackKey(
+            key = key,
+            groupName = groupName,
+            correlationId = correlationId,
+        )
+        if (transition != null) entryRegistry.setPendingTransition(backStackKey, transition)
+        cleanupRemoved(listOfNotNull(stateHolder.state.replaceCurrent(backStackKey)))
+        syncCurrentKey()
+        logAfter("replaceWith entryId=${backStackKey.backStackId()} correlationId=$correlationId")
         return resultBus.createHandle(correlationId)
     }
 
     override fun pop() {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("pop ignored state=detached")
             return
@@ -80,6 +124,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun handleBack(behavior: PerseusBackBehavior): Boolean {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("handleBack ignored state=detached")
             return false
@@ -114,6 +159,7 @@ internal class DefaultPerseusNavigator(
     override fun canGoBack(): Boolean = stateHolder.currentBackStack.size > 1
 
     override fun popUntil(groupName: GroupName) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("popUntil ignored state=detached group=${groupName.name}")
             return
@@ -128,6 +174,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun popUntilKey(key: NavigationKey) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("popUntilKey ignored state=detached key=${key.shortName()}")
             return
@@ -140,6 +187,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun <K : NavigationKey> popUntilKeyType(keyClass: kotlin.reflect.KClass<K>) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("popUntilKeyType ignored state=detached keyClass=${keyClass.simpleName}")
             return
@@ -152,11 +200,13 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun <R : Any> sendResult(context: NavigationContext<*>, result: R) {
+        MainThreadGuard.checkMainThread()
         logger.debug("sendResult correlationId=${context.correlationId} result=${result::class.simpleName}")
         resultBus.send(context.correlationId, result)
     }
 
     override fun switchTab(tabIndex: Int) {
+        MainThreadGuard.checkMainThread()
         logBefore("switchTab from=${stateHolder.currentTabIndex} to=$tabIndex")
         stateHolder.state.switchTab(tabIndex)
         syncCurrentKey()
@@ -164,6 +214,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun resetTab(tabIndex: Int, resetRoot: Boolean) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("resetTab ignored state=detached tab=$tabIndex resetRoot=$resetRoot")
             return
@@ -176,6 +227,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun resetCurrentTab(resetRoot: Boolean) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("resetCurrentTab ignored state=detached resetRoot=$resetRoot")
             return
@@ -188,14 +240,17 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun popToRoot(resetRoot: Boolean) {
+        MainThreadGuard.checkMainThread()
         popCurrentTabToRoot(resetRoot)
     }
 
     override fun popTabToRoot(tabIndex: Int, resetRoot: Boolean) {
+        MainThreadGuard.checkMainThread()
         resetTab(tabIndex, resetRoot)
     }
 
     override fun popCurrentTabToRoot(resetRoot: Boolean) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("popCurrentTabToRoot ignored state=detached resetRoot=$resetRoot")
             return
@@ -208,6 +263,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun resetAllWithKeys(keys: List<NavigationKey>) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("resetAllWithKeys ignored state=detached keys=${keys.map { it.shortName() }}")
             return
@@ -221,6 +277,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun setRootScope(scope: StackScopeSpec) {
+        MainThreadGuard.checkMainThread()
         if (validateProviders) entryRegistry.validateScope(scope)
         logBefore("setRootScope scope=${scope.describe()}")
         val removed = stateHolder.setRootScope(scope)
@@ -235,6 +292,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun replaceCurrentScope(scope: StackScopeSpec) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("replaceCurrentScope redirected=setRootScope state=detached scope=${scope.describe()}")
             setRootScope(scope)
@@ -249,6 +307,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun pushScope(scope: StackScopeSpec): StackScopeId {
+        MainThreadGuard.checkMainThread()
         check(stateHolder.isAttached) { "PerseusNavigationState not attached. Call pushScope after PerseusNavHost is composed." }
         if (validateProviders) entryRegistry.validateScope(scope)
         logBefore("pushScope scope=${scope.describe()}")
@@ -265,6 +324,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun removeScope(scopeId: StackScopeId) {
+        MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("removeScope ignored state=detached scopeId=${scopeId.value}")
             return
@@ -277,6 +337,7 @@ internal class DefaultPerseusNavigator(
     }
 
     override fun <R : Any> removeScope(scopeId: StackScopeId, result: R) {
+        MainThreadGuard.checkMainThread()
         logger.debug("removeScopeWithResult scopeId=${scopeId.value} result=${result::class.simpleName}")
         resultBus.send(scopeId.value, result)
         removeScope(scopeId)
@@ -309,11 +370,19 @@ internal class DefaultPerseusNavigator(
         is com.yigitozgumus.perseus.MultiStackSpec -> "MultiStack(roots=${rootKeys.map { it.shortName() }}, initial=$initialStackIndex, id=${id?.value})"
     }
 
+    private fun applyPopUpTo(popUpTo: PopUpTo?): List<NavigationKey> = when (popUpTo) {
+        null -> emptyList()
+        PopUpTo.Root -> stateHolder.state.popUpToRoot()
+        is PopUpTo.Key -> stateHolder.state.popUpToKey(popUpTo.key, popUpTo.inclusive)
+        is PopUpTo.KeyType -> stateHolder.state.popUpToKeyType(popUpTo.keyClass, popUpTo.inclusive)
+    }
+
     private fun cleanupRemoved(removed: List<NavigationKey>) {
         if (removed.isNotEmpty()) {
             logger.debug("cleanupRemoved entries=${removed.map { "${it.shortName()}#${it.backStackId().take(8)}" }}")
         }
         removed.forEach { key ->
+            key.correlationId()?.let(resultBus::cancel)
             entryRegistry.clearTrackingForKey(key)
             viewModelStoreRegistry.clear(key.backStackId())
         }
@@ -324,6 +393,17 @@ internal class DefaultPerseusNavigator(
         private val delegate: NavigationHandle,
     ) : ScopeNavigationHandle {
         override val correlationId: String get() = delegate.correlationId
+        override suspend fun <T : Any> awaitResult(type: KClass<T>): PerseusResult<T> =
+            delegate.awaitResult(type)
+
+        override fun <T : Any> resultFlow(type: KClass<T>): Flow<PerseusResult<T>> =
+            delegate.resultFlow(type)
+
+        @Deprecated(
+            message = "Use awaitResult(type) or resultFlow(type) for typed success/cancellation handling.",
+            replaceWith = ReplaceWith("resultFlow(R::class)"),
+        )
+        @Suppress("DEPRECATION")
         override fun <R : Any> observeResult(): Flow<R> = delegate.observeResult()
     }
 }
