@@ -20,3 +20,7 @@ Perseus follows semantic versioning once a stable `1.0.0` API is published. Befo
 ### Changed
 
 - Deprecated `NavigationHandle.observeResult()` in favor of typed result completion APIs.
+
+### Fixed
+
+- Back behavior policies now install a host-level back handler at stack roots, so root blocking and tab-root switching work even when `NavDisplay` has no entry to pop.

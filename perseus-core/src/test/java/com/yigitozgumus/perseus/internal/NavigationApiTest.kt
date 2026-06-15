@@ -11,6 +11,7 @@ import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.createTestPerseusNavigationOwner
 import com.yigitozgumus.perseus.currentBackStack
 import com.yigitozgumus.perseus.key.NavigationKey
+import com.yigitozgumus.perseus.shouldInstallPerseusBackHandler
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.serialization.Serializable
@@ -140,6 +141,50 @@ class NavigationApiTest {
         owner.navigator.pop()
 
         assertEquals(PerseusResult.Cancelled, withTimeout(1_000) { handle.awaitResult(NavigationResult::class) })
+    }
+
+    @Test
+    fun hostBackHandlerInstallsOnlyForRootBackPoliciesThatConsume() {
+        assertFalse(
+            shouldInstallPerseusBackHandler(
+                currentBackStackSize = 2,
+                isMultiStack = false,
+                currentTabIndex = 0,
+                behavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block),
+            )
+        )
+        assertTrue(
+            shouldInstallPerseusBackHandler(
+                currentBackStackSize = 1,
+                isMultiStack = false,
+                currentTabIndex = 0,
+                behavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block),
+            )
+        )
+        assertFalse(
+            shouldInstallPerseusBackHandler(
+                currentBackStackSize = 1,
+                isMultiStack = false,
+                currentTabIndex = 0,
+                behavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.ExitHost),
+            )
+        )
+        assertTrue(
+            shouldInstallPerseusBackHandler(
+                currentBackStackSize = 1,
+                isMultiStack = true,
+                currentTabIndex = 1,
+                behavior = PerseusBackBehavior(tabBackBehavior = TabBackBehavior.SwitchToInitialTab),
+            )
+        )
+        assertTrue(
+            shouldInstallPerseusBackHandler(
+                currentBackStackSize = 1,
+                isMultiStack = true,
+                currentTabIndex = 0,
+                behavior = PerseusBackBehavior(tabBackBehavior = TabBackBehavior.ResetCurrentTab),
+            )
+        )
     }
 
     @Test

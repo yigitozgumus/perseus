@@ -81,6 +81,7 @@ dependencies {
     api(libs.androidx.navigation3.ui)
     api(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.kotlinx.serialization.json)
 

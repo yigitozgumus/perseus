@@ -1,5 +1,6 @@
 package com.yigitozgumus.perseus
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.core.tween
@@ -115,6 +116,17 @@ public fun PerseusNavHost(
     }
 
     if (!navigationState.isMultiStack) {
+        BackHandler(
+            enabled = shouldInstallPerseusBackHandler(
+                currentBackStackSize = navigationState.currentBackStack.size,
+                isMultiStack = false,
+                currentTabIndex = navigationState.currentTabIndex,
+                behavior = backBehavior,
+            ),
+        ) {
+            navigator.handleBack(backBehavior)
+        }
+
         NavDisplay(
             backStack = navigationState.currentBackStack,
             onBack = { navigator.handleBack(backBehavior) },
@@ -183,6 +195,17 @@ private fun MultiStackHost(
     val backStack = navigationState.currentBackStack
     if (backStack.isEmpty()) return
 
+    BackHandler(
+        enabled = shouldInstallPerseusBackHandler(
+            currentBackStackSize = backStack.size,
+            isMultiStack = navigationState.isMultiStack,
+            currentTabIndex = navigationState.currentTabIndex,
+            behavior = backBehavior,
+        ),
+    ) {
+        navigator.handleBack(backBehavior)
+    }
+
     Column(modifier = modifier.fillMaxSize()) {
         Box(modifier = Modifier.weight(1f)) {
             NavDisplay(
@@ -211,4 +234,21 @@ private fun MultiStackHost(
             }
         }
     }
+}
+
+internal fun shouldInstallPerseusBackHandler(
+    currentBackStackSize: Int,
+    isMultiStack: Boolean,
+    currentTabIndex: Int,
+    behavior: PerseusBackBehavior,
+): Boolean {
+    if (currentBackStackSize > 1) return false
+    if (isMultiStack) {
+        when (behavior.tabBackBehavior) {
+            TabBackBehavior.StayOnCurrentTab -> Unit
+            TabBackBehavior.SwitchToInitialTab -> if (currentTabIndex != 0) return true
+            TabBackBehavior.ResetCurrentTab -> return true
+        }
+    }
+    return behavior.rootBackBehavior == RootBackBehavior.Block
 }
