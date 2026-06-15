@@ -1,5 +1,8 @@
 package com.yigitozgumus.perseus
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.ContentTransform
@@ -20,6 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.scene.Scene
@@ -89,6 +96,18 @@ public fun PerseusNavHost(
     val stateHolder = impl.stateHolder
     val entryRegistry = impl.entryRegistry
     val viewModelStoreRegistry = impl.viewModelStoreRegistry
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val context = LocalContext.current
+
+    DisposableEffect(lifecycleOwner, context, viewModelStoreRegistry) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_DESTROY && context.findActivity()?.isChangingConfigurations != true) {
+                viewModelStoreRegistry.retainOnly(emptySet())
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val navigationState = when (restorePolicy) {
         PerseusRestorePolicy.RestoreSavedState -> rememberSaveable(saver = PerseusNavigationState.Saver) {
@@ -236,6 +255,12 @@ private fun MultiStackHost(
             }
         }
     }
+}
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 internal fun shouldInstallPerseusBackHandler(
