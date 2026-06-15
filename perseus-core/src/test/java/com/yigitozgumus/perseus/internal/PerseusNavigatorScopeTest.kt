@@ -1,7 +1,9 @@
 package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.PerseusBackBehavior
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
+import com.yigitozgumus.perseus.RootBackBehavior
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
 import com.yigitozgumus.perseus.key.NavigationKey
@@ -35,6 +37,23 @@ class PerseusNavigatorScopeTest {
         assertEquals(StackScopeKind.SingleStack, fixture.navigator.currentScope.kind)
         assertNull(fixture.navigator.currentScope.currentStackIndex)
         assertEquals(listOf(ScopeLogin), fixture.navigator.currentScope.currentBackStack)
+    }
+
+    @Test
+    fun currentScopeSnapshotIncludesScopeBackBehavior() {
+        val fixture = navigatorFixture(ScopeLogin)
+
+        fixture.navigator.replaceCurrentScope(
+            SingleStackSpec(
+                ScopeHome,
+                backBehavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block),
+            )
+        )
+
+        assertEquals(
+            PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block),
+            fixture.navigator.currentScope.backBehavior,
+        )
     }
 
     @Test

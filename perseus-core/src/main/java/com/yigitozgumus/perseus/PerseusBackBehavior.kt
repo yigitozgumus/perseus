@@ -1,11 +1,15 @@
 package com.yigitozgumus.perseus
 
+import kotlinx.serialization.Serializable
+
 /** Configures what Perseus should do when back is pressed at stack/tab roots. */
+@Serializable
 public data class PerseusBackBehavior(
     val rootBackBehavior: RootBackBehavior = RootBackBehavior.ExitHost,
     val tabBackBehavior: TabBackBehavior = TabBackBehavior.StayOnCurrentTab,
 )
 
+@Serializable
 public enum class RootBackBehavior {
     /** Do not consume the root back press; let the host/activity handle it. */
     ExitHost,
@@ -14,6 +18,7 @@ public enum class RootBackBehavior {
     Block,
 }
 
+@Serializable
 public enum class TabBackBehavior {
     /** At a tab root, keep the current tab selected. */
     StayOnCurrentTab,

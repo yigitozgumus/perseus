@@ -123,13 +123,14 @@ internal class DefaultPerseusNavigator(
         logAfter("pop")
     }
 
-    override fun handleBack(behavior: PerseusBackBehavior): Boolean {
+    override fun handleBack(behavior: PerseusBackBehavior?): Boolean {
         MainThreadGuard.checkMainThread()
         if (!stateHolder.isAttached) {
             logger.debug("handleBack ignored state=detached")
             return false
         }
-        logBefore("handleBack tab=${behavior.tabBackBehavior} root=${behavior.rootBackBehavior}")
+        val resolvedBehavior = behavior ?: stateHolder.state.currentBackBehavior
+        logBefore("handleBack tab=${resolvedBehavior.tabBackBehavior} root=${resolvedBehavior.rootBackBehavior}")
         if (canGoBack()) {
             pop()
             logAfter("handleBack consumed=pop")
@@ -137,7 +138,7 @@ internal class DefaultPerseusNavigator(
         }
         val state = stateHolder.state
         if (state.isMultiStack) {
-            when (behavior.tabBackBehavior) {
+            when (resolvedBehavior.tabBackBehavior) {
                 TabBackBehavior.StayOnCurrentTab -> Unit
                 TabBackBehavior.SwitchToInitialTab -> if (state.currentTabIndex != 0) {
                     switchTab(0)
@@ -151,7 +152,7 @@ internal class DefaultPerseusNavigator(
                 }
             }
         }
-        val consumed = behavior.rootBackBehavior == RootBackBehavior.Block
+        val consumed = resolvedBehavior.rootBackBehavior == RootBackBehavior.Block
         logAfter("handleBack consumed=$consumed")
         return consumed
     }

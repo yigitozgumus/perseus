@@ -9,6 +9,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.NonRestorableKey
+import com.yigitozgumus.perseus.PerseusBackBehavior
 import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeId
@@ -65,6 +66,9 @@ internal class PerseusNavigationState private constructor(
 
     val currentScope: StackScopeSnapshot
         get() = currentScopeState.toSnapshot()
+
+    val currentBackBehavior: PerseusBackBehavior
+        get() = currentScopeState.backBehavior
 
     fun createBackStackKey(
         key: NavigationKey,
@@ -233,6 +237,7 @@ internal class PerseusNavigationState private constructor(
         val id: String,
         val container: ContainerSnapshot,
         val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
+        val backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
     )
 
     @Serializable
@@ -280,6 +285,7 @@ internal class PerseusNavigationState private constructor(
                 id = scope.id,
                 container = containerSnapshot(scope.container),
                 restorePolicy = scope.restorePolicy,
+                backBehavior = scope.backBehavior,
             )
         }
     )
@@ -305,6 +311,7 @@ internal class PerseusNavigationState private constructor(
                         id = scope.id,
                         container = restoreContainer(scope.container).dropNonRestorableEntries(),
                         restorePolicy = scope.restorePolicy,
+                        backBehavior = scope.backBehavior,
                     )
                 }
             )
@@ -318,6 +325,7 @@ internal class PerseusNavigationState private constructor(
                     is SingleStackSpec -> spec.restorePolicy
                     is MultiStackSpec -> spec.restorePolicy
                 },
+                backBehavior = spec.backBehavior,
                 container = when (spec) {
                     is SingleStackSpec -> SingleStackState(
                         listOf(createInitialBackStackKey(spec.initialKey)).toMutableStateList()
@@ -390,6 +398,7 @@ internal data class StackScopeState(
     val id: String,
     val container: StackContainerState,
     val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
+    val backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
 )
 
 internal sealed interface StackContainerState {
@@ -497,6 +506,7 @@ private fun StackScopeState.toSnapshot(): StackScopeSnapshot =
             currentStackIndex = null,
             rootKeys = listOfNotNull(container.backStack.firstOrNull()?.routeKey()),
             currentBackStack = container.backStack.map { it.routeKey() },
+            backBehavior = backBehavior,
         )
         is MultiStackState -> StackScopeSnapshot(
             id = StackScopeId(id),
@@ -504,6 +514,7 @@ private fun StackScopeState.toSnapshot(): StackScopeSnapshot =
             currentStackIndex = container.currentStackIndex,
             rootKeys = container.rootKeys,
             currentBackStack = container.getOrCreateStack(container.currentStackIndex).map { it.routeKey() },
+            backBehavior = backBehavior,
         )
     }
 

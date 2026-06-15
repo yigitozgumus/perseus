@@ -1,7 +1,9 @@
 package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.PerseusBackBehavior
 import com.yigitozgumus.perseus.PerseusViewModelStoreOwners
+import com.yigitozgumus.perseus.RootBackBehavior
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
 import com.yigitozgumus.perseus.key.GroupName
@@ -94,6 +96,20 @@ class PerseusNavigationStateRestoreTest {
 
         assertEquals(StackScopeKind.SingleStack, restored.currentScope.kind)
         assertEquals(listOf(flow, child), restored.currentBackStack.map { it.routeKey() })
+    }
+
+    @Test
+    fun snapshotRestoresScopeBackBehavior() {
+        val root = RestoreKey(id = 1, label = "root")
+        val flow = RestoreKey(id = 2, label = "flow")
+        val behavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block)
+        val state = PerseusNavigationState.fromSpec(SingleStackSpec(root))
+        state.pushScope(SingleStackSpec(flow, backBehavior = behavior))
+
+        val restored = PerseusNavigationState.fromSnapshot(state.toSnapshot())
+
+        assertEquals(behavior, restored.currentBackBehavior)
+        assertEquals(behavior, restored.currentScope.backBehavior)
     }
 
     @Test

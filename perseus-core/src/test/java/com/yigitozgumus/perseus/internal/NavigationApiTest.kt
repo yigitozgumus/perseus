@@ -58,19 +58,36 @@ class NavigationApiTest {
 
     @Test
     fun rootBackCanBeBlockedOrLeftToHost() {
-        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
+        val owner = createTestPerseusNavigationOwner(
+            SingleStackSpec(
+                NavigationHome,
+                backBehavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block),
+            )
+        )
 
-        assertTrue(owner.navigator.handleBack(PerseusBackBehavior(rootBackBehavior = RootBackBehavior.Block)))
-        assertFalse(owner.navigator.handleBack(PerseusBackBehavior(rootBackBehavior = RootBackBehavior.ExitHost)))
+        assertTrue(owner.navigator.handleBack())
+
+        owner.scopeNavigator.replaceCurrentScope(
+            SingleStackSpec(
+                NavigationHome,
+                backBehavior = PerseusBackBehavior(rootBackBehavior = RootBackBehavior.ExitHost),
+            )
+        )
+
+        assertFalse(owner.navigator.handleBack())
     }
 
     @Test
     fun backAtNonInitialTabRootCanSwitchToInitialTab() {
-        val owner = createTestPerseusNavigationOwner(MultiStackSpec(listOf(NavigationHome, NavigationSearch), initialStackIndex = 1))
-
-        val consumed = owner.navigator.handleBack(
-            PerseusBackBehavior(tabBackBehavior = TabBackBehavior.SwitchToInitialTab)
+        val owner = createTestPerseusNavigationOwner(
+            MultiStackSpec(
+                listOf(NavigationHome, NavigationSearch),
+                initialStackIndex = 1,
+                backBehavior = PerseusBackBehavior(tabBackBehavior = TabBackBehavior.SwitchToInitialTab),
+            )
         )
+
+        val consumed = owner.navigator.handleBack()
 
         assertTrue(consumed)
         assertEquals(0, owner.navigator.currentTabIndex)
