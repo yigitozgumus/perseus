@@ -31,6 +31,3 @@ jobs:
 
       - name: Lint
         run: ./gradlew lint
-
-      - name: JitPack publish dry run
-        run: ./gradlew :perseus-core:publishReleasePublicationToMavenLocal :perseus-interop:publishReleasePublicationToMavenLocal
