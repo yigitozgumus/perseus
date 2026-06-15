@@ -30,10 +30,10 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
-import com.yigitozgumus.perseus.interop.ScreenProvider
+import com.yigitozgumus.perseus.interop.ScreenProvider as FragmentScreenProvider
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.FragmentScreenKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
@@ -98,7 +98,7 @@ class InteropActivity : FragmentActivity() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-class SampleFragmentProvider : ScreenProvider<FragmentScreenKey> {
+class SampleFragmentProvider : FragmentScreenProvider<FragmentScreenKey> {
     override fun canProvide(key: NavigationKey) = key is FragmentScreenKey
     override fun provide(key: FragmentScreenKey): Fragment = InteropFragment()
 }
