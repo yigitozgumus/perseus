@@ -48,8 +48,12 @@ public interface PerseusNavigator {
     /** Pops the current screen from the back stack. */
     public fun pop()
 
-    /** Handles a back press according to [behavior]. Returns true when consumed. */
-    public fun handleBack(behavior: PerseusBackBehavior = PerseusBackBehavior()): Boolean
+    /**
+     * Handles a back press according to the current scope's back behavior.
+     * Pass [behavior] to override the scope policy for this call only.
+     * Returns true when consumed.
+     */
+    public fun handleBack(behavior: PerseusBackBehavior? = null): Boolean
 
     /** Returns true if the back stack has more than one entry. */
     public fun canGoBack(): Boolean

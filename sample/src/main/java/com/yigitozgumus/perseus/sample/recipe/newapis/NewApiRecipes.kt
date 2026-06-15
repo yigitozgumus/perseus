@@ -105,12 +105,12 @@ abstract class NewApiRecipeActivity(
                 initialScope = MultiStackSpec(
                     rootKeys = listOf(NewHomeKey, NewSearchKey),
                     restorePolicy = ScopeRestorePolicy.RestoreSavedState,
+                    backBehavior = PerseusBackBehavior(
+                        rootBackBehavior = RootBackBehavior.ExitHost,
+                        tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
+                    ),
                 ),
                 modifier = Modifier.fillMaxSize(),
-                backBehavior = PerseusBackBehavior(
-                    rootBackBehavior = RootBackBehavior.ExitHost,
-                    tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
-                ),
                 tabTransitionSpec = { _, _ -> fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
                 bottomBar = { selected, onTabSelected ->
                     NavigationBar {

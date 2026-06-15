@@ -450,15 +450,17 @@ PerseusNavHost(
 
 ## Back behavior policy
 
-`PerseusNavHost` can consume root back presses and apply tab-root behavior.
+Each scope configures how Perseus consumes root back presses and applies tab-root behavior.
 
 ```kotlin
 PerseusNavHost(
     navigationOwner = navigationOwner,
-    initialScope = MultiStackSpec(listOf(HomeKey, SearchKey)),
-    backBehavior = PerseusBackBehavior(
-        rootBackBehavior = RootBackBehavior.Block,
-        tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
+    initialScope = MultiStackSpec(
+        listOf(HomeKey, SearchKey),
+        backBehavior = PerseusBackBehavior(
+            rootBackBehavior = RootBackBehavior.Block,
+            tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
+        ),
     ),
 )
 ```
@@ -471,10 +473,10 @@ Options:
 - `TabBackBehavior.SwitchToInitialTab` — at a non-initial tab root, switch to tab `0`.
 - `TabBackBehavior.ResetCurrentTab` — at a tab root, recreate/reset the current tab root.
 
-You can also call it directly from custom back handling:
+You can also call it directly from custom back handling. By default it uses the current scope policy; pass a behavior only for a one-off override:
 
 ```kotlin
-val consumed = navigator.handleBack(PerseusBackBehavior())
+val consumed = navigator.handleBack()
 ```
 
 ---

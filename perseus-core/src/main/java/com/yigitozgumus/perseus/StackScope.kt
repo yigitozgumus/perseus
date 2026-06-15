@@ -14,6 +14,7 @@ public value class StackScopeId(public val value: String) {
 /** Describes a stack scope to create or replace. */
 public sealed interface StackScopeSpec {
     public val id: StackScopeId?
+    public val backBehavior: PerseusBackBehavior
 }
 
 /** A scope with one back stack. */
@@ -21,6 +22,7 @@ public data class SingleStackSpec(
     val initialKey: NavigationKey,
     override val id: StackScopeId? = null,
     val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
+    override val backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
 ) : StackScopeSpec
 
 /** A scope with multiple sibling back stacks. */
@@ -29,6 +31,7 @@ public data class MultiStackSpec(
     val initialStackIndex: Int = 0,
     override val id: StackScopeId? = null,
     val restorePolicy: ScopeRestorePolicy = ScopeRestorePolicy.RestoreSavedState,
+    override val backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
 ) : StackScopeSpec {
     init {
         require(rootKeys.isNotEmpty()) { "MultiStackSpec requires at least one root key." }
@@ -43,6 +46,7 @@ public data class StackScopeSnapshot(
     val currentStackIndex: Int?,
     val rootKeys: List<NavigationKey>,
     val currentBackStack: List<NavigationKey>,
+    val backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
 )
 
 public enum class StackScopeKind {

@@ -53,6 +53,7 @@ public fun AnimatedContentTransitionScope<*>.fastFadeTransition(
  * @param initialScope The initial stack scope to show before any root scope replacement.
  * @param modifier Compose modifier for the host container.
  * @param restorePolicy Controls whether saved navigation state is restored or ignored.
+ * Back behavior is configured by [initialScope] and by later scope replacements.
  * @param bottomBar Slot for the bottom navigation bar (multi-stack mode).
  *   Receives the current tab index and a callback for tab selection.
  * @param onTabChanged Notified when the selected tab changes (for UI state).
@@ -67,7 +68,6 @@ public fun PerseusNavHost(
     initialScope: StackScopeSpec,
     modifier: Modifier = Modifier,
     restorePolicy: PerseusRestorePolicy = PerseusRestorePolicy.RestoreSavedState,
-    backBehavior: PerseusBackBehavior = PerseusBackBehavior(),
     bottomBar: @Composable (
         selectedIndex: Int,
         onTabSelected: (Int) -> Unit,
@@ -115,6 +115,8 @@ public fun PerseusNavHost(
         )
     }
 
+    val backBehavior = navigationState.currentBackBehavior
+
     if (!navigationState.isMultiStack) {
         BackHandler(
             enabled = shouldInstallPerseusBackHandler(
@@ -124,12 +126,12 @@ public fun PerseusNavHost(
                 behavior = backBehavior,
             ),
         ) {
-            navigator.handleBack(backBehavior)
+            navigator.handleBack()
         }
 
         NavDisplay(
             backStack = navigationState.currentBackStack,
-            onBack = { navigator.handleBack(backBehavior) },
+            onBack = { navigator.handleBack() },
             modifier = modifier.fillMaxSize(),
             sceneStrategies = sceneStrategies,
             transitionSpec = transitionSpec,
@@ -203,7 +205,7 @@ private fun MultiStackHost(
             behavior = backBehavior,
         ),
     ) {
-        navigator.handleBack(backBehavior)
+        navigator.handleBack()
     }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -211,7 +213,7 @@ private fun MultiStackHost(
             NavDisplay(
                 backStack = backStack,
                 modifier = Modifier.fillMaxSize(),
-                onBack = { navigator.handleBack(backBehavior) },
+                onBack = { navigator.handleBack() },
                 sceneStrategies = sceneStrategies,
                 transitionSpec = { pendingTabTransition ?: transitionSpec() },
                 popTransitionSpec = popTransitionSpec,
