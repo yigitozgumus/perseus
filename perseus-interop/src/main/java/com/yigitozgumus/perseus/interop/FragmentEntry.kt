@@ -56,7 +56,7 @@ public fun <K : NavigationKey> FragmentEntry(
         }
     }
 
-    val fragmentSavedState = remember(context.entryId) { mutableStateOf<Fragment.SavedState?>(null) }
+    val fragmentSavedState = rememberSaveable(context.entryId) { mutableStateOf<Fragment.SavedState?>(null) }
     val containerId = rememberSaveable(context.entryId) { View.generateViewId() }
     val localView = LocalView.current
     val fragmentManager = remember(localView) { FragmentManager.findFragmentManager(localView) }
@@ -73,9 +73,16 @@ public fun <K : NavigationKey> FragmentEntry(
             ?: fragmentTemplate.apply {
                 setInitialSavedState(fragmentSavedState.value)
                 this.arguments = arguments
-                fragmentManager.commitNow {
-                    setReorderingAllowed(true)
-                    add(containerId, this@apply, context.entryId)
+                if (fragmentManager.isStateSaved) {
+                    fragmentManager.commit(allowStateLoss = true) {
+                        setReorderingAllowed(true)
+                        add(containerId, this@apply, context.entryId)
+                    }
+                } else {
+                    fragmentManager.commitNow {
+                        setReorderingAllowed(true)
+                        add(containerId, this@apply, context.entryId)
+                    }
                 }
             }
 
