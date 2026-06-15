@@ -747,27 +747,6 @@ Pushed scopes can also return results; see [Scope navigation](#scope-navigation-
 
 ---
 
-## Deep links
-
-Perseus provides small helpers for mapping URIs to keys or scopes.
-
-```kotlin
-val resolver = DeepLinkResolver { uri ->
-    when (uri.host) {
-        "detail" -> DeepLinkTarget.Key(DetailKey(uri.lastPathSegment!!.toInt()))
-        "home" -> DeepLinkTarget.Scope(MultiStackSpec(listOf(HomeKey, SearchKey)))
-        else -> null
-    }
-}
-
-navigator.handleDeepLink(uri, resolver)      // navigates to key targets
-scopeNavigator.handleDeepLink(uri, resolver) // replaces root for scope targets
-```
-
-The resolver is intentionally app-owned so URL parsing, authentication, and routing policy stay outside Perseus.
-
----
-
 ## Dialogs and bottom sheets
 
 Dialogs and bottom sheets are ordinary keys with marker interfaces.
