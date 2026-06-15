@@ -2,6 +2,10 @@
 
 Type-safe AndroidX Navigation 3 routing for Jetpack Compose and Fragment interop.
 
+[![Maven Central](https://img.shields.io/maven-central/v/com.yigitozgumus.perseus/perseus-core?label=Maven%20Central)](https://central.sonatype.com/artifact/com.yigitozgumus.perseus/perseus-core)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.21-purple.svg?logo=kotlin)](https://kotlinlang.org)
+
 Perseus routes with serializable keys, resolves those keys through providers, and models app surfaces as single-stack or multi-stack scopes.
 
 ## Documentation
