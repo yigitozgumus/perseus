@@ -39,11 +39,11 @@ dependencies {
 }
 ```
 
-For this branch before tagging a release:
+For the current `main` branch before tagging a release:
 
 ```kotlin
-implementation("com.github.yigitozgumus.perseus:perseus-core:v6-SNAPSHOT")
-implementation("com.github.yigitozgumus.perseus:perseus-interop:v6-SNAPSHOT")
+implementation("com.github.yigitozgumus.perseus:perseus-core:main-SNAPSHOT")
+implementation("com.github.yigitozgumus.perseus:perseus-interop:main-SNAPSHOT")
 ```
 
 ## Quick start
