@@ -8,12 +8,12 @@ import com.yigitozgumus.perseus.key.NavigationKey
  * Provider for Compose-based scene content (dialogs and bottom sheets).
  *
  * Use this for complex scenes that need explicit result and dismiss callbacks.
- * For simpler scenes, implement [ComposeScreenProvider] for a [DialogKey] or
+ * For simpler scenes, implement [ScreenProvider] for a [DialogKey] or
  * [BottomSheetKey] and use [LocalSceneActions] for dismiss and result passing.
  *
  * @param K The specific [NavigationKey] type this provider handles.
  */
-public interface ComposeSceneProvider<K : NavigationKey> {
+public interface SceneProvider<K : NavigationKey> {
     /** Returns `true` if this provider can render the given [key]. */
     public fun canProvide(key: NavigationKey): Boolean
 

@@ -32,9 +32,11 @@ import com.yigitozgumus.perseus.NavigationHandle
 import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusResult
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
+import com.yigitozgumus.perseus.resultFlow
 import com.yigitozgumus.perseus.sample.keys.ConfirmDialogKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
@@ -82,12 +84,14 @@ class DialogActivity : ComponentActivity() {
 
         fun observe(handle: NavigationHandle, scope: CoroutineScope) {
             scope.launch {
-                handle.observeResult<String>().collect { _lastResult.value = it }
+                handle.resultFlow<String>().collect { result ->
+                    if (result is PerseusResult.Success) _lastResult.value = result.value
+                }
             }
         }
     }
 
-    inner class DialogHomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class DialogHomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
@@ -125,7 +129,7 @@ class DialogActivity : ComponentActivity() {
         }
     }
 
-    inner class ConfirmDialogProvider : ComposeScreenProvider<ConfirmDialogKey> {
+    inner class ConfirmDialogProvider : ScreenProvider<ConfirmDialogKey> {
         override fun canProvide(key: NavigationKey) = key is ConfirmDialogKey
 
         @Composable

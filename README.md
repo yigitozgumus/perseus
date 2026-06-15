@@ -64,12 +64,12 @@ Keys should be `@Serializable` so Perseus can restore navigation state after
 process death. If you already have Android `Parcelable` keys, Perseus can also
 restore those as a fallback without requiring a kotlinx.serialization migration.
 
-### `ComposeScreenProvider`
+### `ScreenProvider`
 
 A provider renders one key type.
 
 ```kotlin
-class HomeProvider : ComposeScreenProvider<HomeKey> {
+class HomeProvider : ScreenProvider<HomeKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is HomeKey
 
     @Composable
@@ -123,7 +123,29 @@ scopeNavigator.removeScope(flow)
 
 ## Installation
 
-Perseus currently lives in this repository as Android library modules.
+Perseus is published through JitPack from Git tags, branches, or commits.
+
+```kotlin
+repositories {
+    google()
+    mavenCentral()
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.yigitozgumus.perseus:perseus-core:<version>")
+
+    // Optional: Fragment interop support
+    implementation("com.github.yigitozgumus.perseus:perseus-interop:<version>")
+}
+```
+
+For this branch before tagging a release, use JitPack's branch snapshot version:
+
+```kotlin
+implementation("com.github.yigitozgumus.perseus:perseus-core:v5-SNAPSHOT")
+implementation("com.github.yigitozgumus.perseus:perseus-interop:v5-SNAPSHOT")
+```
 
 For an app module in this project:
 
@@ -159,8 +181,8 @@ dependencies {
 }
 ```
 
-If Perseus is published later, replace the snapshot coordinates with the
-published version.
+The repository includes `jitpack.yml`; JitPack builds the release publications
+with `publishReleasePublicationToMavenLocal` for both library modules.
 
 ---
 
@@ -181,7 +203,7 @@ data class DetailKey(val itemId: Int) : NavigationKey
 ```kotlin
 class HomeProvider(
     private val navigator: PerseusNavigator,
-) : ComposeScreenProvider<HomeKey> {
+) : ScreenProvider<HomeKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is HomeKey
 
     @Composable
@@ -194,7 +216,7 @@ class HomeProvider(
 
 class DetailProvider(
     private val navigator: PerseusNavigator,
-) : ComposeScreenProvider<DetailKey> {
+) : ScreenProvider<DetailKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is DetailKey
 
     @Composable
@@ -287,10 +309,10 @@ data class FullScreenDetailKey(val id: String) : NavigationKey {
 
 ## Rendering Compose screens
 
-Implement `ComposeScreenProvider<K>` for each key type.
+Implement `ScreenProvider<K>` for each key type.
 
 ```kotlin
-class ProductProvider : ComposeScreenProvider<ProductKey> {
+class ProductProvider : ScreenProvider<ProductKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is ProductKey
 
     @Composable
@@ -493,7 +515,7 @@ if (navigator.canGoBack()) {
 }
 ```
 
-Common stack helpers:
+Common stack helpers and launch options:
 
 ```kotlin
 navigator.popToRoot()
@@ -501,6 +523,20 @@ navigator.popCurrentTabToRoot()
 navigator.popTabToRoot(tabIndex = 1)
 navigator.popUntilKey(DetailKey(42))
 navigator.popUntilKeyType<DetailKey>()
+
+navigator.navigateTo(DetailKey(42), launchMode = LaunchMode.SingleTop)
+navigator.navigateTo(HomeKey, popUpTo = PopUpTo.Root)
+navigator.replaceWith(DetailKey(43))
+```
+
+Call Perseus navigator APIs from the main thread. If navigation is triggered
+from background work, hop to the main dispatcher before mutating navigation
+state:
+
+```kotlin
+viewModelScope.launch(Dispatchers.Main.immediate) {
+    navigator.navigateTo(DetailKey(42))
+}
 ```
 
 ---
@@ -656,15 +692,27 @@ when (scope.kind) {
 
 ## Returning results
 
-`navigateTo(...)` returns a `NavigationHandle`. Observe typed results from it.
+`navigateTo(...)` returns a `NavigationHandle`. Await or observe typed completion from it.
 
 ```kotlin
 val handle = navigator.navigateTo(PickerKey)
 
-handle.observeResult<PickerResult>()
-    .onEach { result ->
+when (val result = handle.awaitResult<PickerResult>()) {
+    is PerseusResult.Success -> {
         // Handle the result for this exact navigation session.
+        val value = result.value
     }
+    PerseusResult.Cancelled -> {
+        // The destination was popped or removed without sending a result.
+    }
+}
+```
+
+For Flow-based code:
+
+```kotlin
+handle.resultFlow<PickerResult>()
+    .onEach { result -> /* Success or Cancelled */ }
     .launchIn(viewModelScope)
 ```
 
@@ -689,7 +737,9 @@ fun PickerScreen(navigator: PerseusNavigator) {
 ```
 
 Results are scoped by a correlation ID. If two parents open the same destination,
-each parent only receives results from its own navigation session.
+each parent only receives results from its own navigation session. Result delivery
+is one-shot: the first success or cancellation wins, wrong result types fail with
+a clear mismatch error, and removed entries complete as `PerseusResult.Cancelled`.
 
 Pushed scopes can also return results; see [Scope navigation](#scope-navigation-replacing-or-stacking-app-surfaces).
 
@@ -730,7 +780,7 @@ data object ConfirmDeleteKey : NavigationKey, DialogKey
 Render it with a normal Compose provider:
 
 ```kotlin
-class ConfirmDeleteProvider : ComposeScreenProvider<ConfirmDeleteKey> {
+class ConfirmDeleteProvider : ScreenProvider<ConfirmDeleteKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is ConfirmDeleteKey
 
     @Composable
@@ -759,8 +809,8 @@ Open it and observe the result:
 
 ```kotlin
 navigator.navigateTo(ConfirmDeleteKey)
-    .observeResult<ConfirmResult>()
-    .onEach { result -> /* ... */ }
+    .resultFlow<ConfirmResult>()
+    .onEach { result -> /* Success or Cancelled */ }
     .launchIn(viewModelScope)
 ```
 
@@ -783,10 +833,10 @@ Button(onClick = { actions.dismiss() }) {
 }
 ```
 
-For more complex scenes, use `ComposeSceneProvider<K>`:
+For more complex scenes, use `SceneProvider<K>`:
 
 ```kotlin
-class InfoSheetProvider : ComposeSceneProvider<InfoSheetKey> {
+class InfoSheetProvider : SceneProvider<InfoSheetKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is InfoSheetKey
 
     @Composable
@@ -837,11 +887,8 @@ Read the key/context inside a Fragment:
 
 ```kotlin
 class ProfileFragment : Fragment() {
-    private val context: NavigationContext<ProfileKey> by lazy {
-        requireArguments().getNavigationContext<ProfileKey>()
-    }
-
-    private val key: ProfileKey get() = context.key
+    private val context by lazy { requirePerseusNavigationContext() }
+    private val key by lazy { requirePerseusKey<ProfileKey>() }
 }
 ```
 
@@ -860,7 +907,7 @@ override fun Content(key: DetailKey) {
 For entry-scoped Fragment ViewModels, use Perseus' entry owner.
 
 ```kotlin
-private val viewModel by perseusScopedViewModel<MyViewModel>()
+private val viewModel by perseusViewModels<MyViewModel>()
 ```
 
 If your ViewModel uses Koin constructor injection, keep Koin responsible for
@@ -1244,6 +1291,14 @@ Generate Dokka HTML documentation for the public library modules:
 ```
 
 Generated documentation is written under each module's `build/dokka/` directory.
+
+### Versioning and API policy
+
+- Releases use semantic versioning after `1.0.0`.
+- Before `1.0.0`, minor versions may include source or binary breaking API changes.
+- Prefer additive APIs; deprecate old APIs before removal when practical.
+- Experimental APIs should be documented as experimental in KDoc and release notes.
+- Public changes should be recorded in `CHANGELOG.md`.
 
 ### Verification
 

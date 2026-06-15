@@ -31,11 +31,13 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
+import com.yigitozgumus.perseus.PerseusResult
 import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.RootBackBehavior
 import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.TabBackBehavior
+import com.yigitozgumus.perseus.awaitResult
 import com.yigitozgumus.perseus.handleDeepLink
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.perseusGraph
@@ -46,7 +48,6 @@ import com.yigitozgumus.perseus.sample.recipe.ui.RecipeScaffold
 import com.yigitozgumus.perseus.sample.recipe.ui.RecipeSection
 import com.yigitozgumus.perseus.sample.recipe.ui.ScopeVisualizer
 import com.yigitozgumus.perseus.sample.recipe.ui.SecondaryRecipeButton
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -107,7 +108,7 @@ abstract class NewApiRecipeActivity(
                 ),
                 modifier = Modifier.fillMaxSize(),
                 backBehavior = PerseusBackBehavior(
-                    rootBackBehavior = RootBackBehavior.Block,
+                    rootBackBehavior = RootBackBehavior.ExitHost,
                     tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
                 ),
                 tabTransitionSpec = { _, _ -> fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
@@ -146,7 +147,7 @@ abstract class NewApiRecipeActivity(
             ScopeVisualizer(navigationOwner.debugSnapshot())
             RecipeSection(
                 title = "Configured behavior",
-                body = "Root back is blocked. Back at the Search tab root switches back to Home.",
+                body = "Root back exits this sample. Back at the Search tab root switches back to Home.",
             )
             RecipeButton("Push detail, then back pops") { navigator.navigateTo(NewDetailKey(1)) }
             SecondaryRecipeButton("Switch to Search tab") { navigator.switchTab(1) }
@@ -170,7 +171,10 @@ abstract class NewApiRecipeActivity(
                     )
                 )
                 coroutineScope.launch {
-                    scopeResultText = handle.observeResult<String>().first()
+                    scopeResultText = when (val result = handle.awaitResult<String>()) {
+                        is PerseusResult.Success -> result.value
+                        PerseusResult.Cancelled -> "Cancelled"
+                    }
                 }
             }
             SecondaryRecipeButton("replaceApp(Settings)") {

@@ -4,14 +4,14 @@ import com.yigitozgumus.perseus.AndroidPerseusLogger
 import com.yigitozgumus.perseus.PerseusLogLevel
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigatorFactory
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentEntryFactory
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 
 fun createNavigationOwner(
-    composeProviders: List<ComposeScreenProvider<*>> = emptyList(),
+    composeProviders: List<ScreenProvider<*>> = emptyList(),
     fragmentProviders: List<FragmentProviderMarker> = emptyList(),
     fragmentEntryFactory: FragmentEntryFactory? = null,
 ): PerseusNavigationOwner {

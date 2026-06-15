@@ -34,7 +34,7 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
@@ -70,7 +70,7 @@ class AnimationActivity : ComponentActivity() {
         }
     }
 
-    inner class AnimHomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class AnimHomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
@@ -122,7 +122,7 @@ class AnimationActivity : ComponentActivity() {
         }
     }
 
-    inner class AnimDetailProvider : ComposeScreenProvider<DetailKey> {
+    inner class AnimDetailProvider : ScreenProvider<DetailKey> {
         override fun canProvide(key: NavigationKey) = key is DetailKey
 
         @Composable

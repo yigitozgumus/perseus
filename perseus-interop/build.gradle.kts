@@ -49,6 +49,28 @@ publishing {
             afterEvaluate {
                 from(components["release"])
             }
+            pom {
+                name.set("Perseus Fragment Interop")
+                description.set("Fragment interop support for Perseus navigation.")
+                url.set("https://github.com/yigitozgumus/Perseus")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("yigitozgumus")
+                        name.set("Yigit Ozgumus")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/yigitozgumus/Perseus.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/yigitozgumus/Perseus.git")
+                    url.set("https://github.com/yigitozgumus/Perseus")
+                }
+            }
         }
     }
 }

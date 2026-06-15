@@ -8,8 +8,8 @@ import androidx.compose.animation.ContentTransform
 import androidx.navigation3.scene.DialogSceneStrategy
 import androidx.navigation3.ui.NavDisplay
 import com.yigitozgumus.perseus.key.BottomSheetKey
-import com.yigitozgumus.perseus.provider.ComposeSceneProvider
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.SceneProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentEntryFactory
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.key.DialogKey
@@ -33,8 +33,8 @@ import java.util.concurrent.ConcurrentHashMap
  * Registry that provides [NavEntry] instances for both Compose screens and Fragment screens.
  *
  * Resolution priority:
- * 1. Compose screen provider ([ComposeScreenProvider])
- * 2. Compose scene provider ([ComposeSceneProvider]) — for dialogs/bottom sheets
+ * 1. Compose screen provider ([ScreenProvider])
+ * 2. Compose scene provider ([SceneProvider]) — for dialogs/bottom sheets
  * 3. Fragment screen provider ([ScreenProvider]) — wrapped via [FragmentEntry]
  *
  * Also tracks:
@@ -42,9 +42,9 @@ import java.util.concurrent.ConcurrentHashMap
  * - Correlation IDs for result routing
  */
 internal class PerseusEntryProviderRegistry(
-    private val composeProviders: List<ComposeScreenProvider<*>>,
+    private val composeProviders: List<ScreenProvider<*>>,
     private val fragmentProviders: List<FragmentProviderMarker>,
-    private val sceneProviders: List<ComposeSceneProvider<*>>,
+    private val sceneProviders: List<SceneProvider<*>>,
     private val resultBus: ResultBusAdapter,
     private val viewModelStoreProvider: PerseusViewModelStoreProvider,
     private val fragmentEntryFactory: FragmentEntryFactory? = null,
@@ -113,7 +113,7 @@ internal class PerseusEntryProviderRegistry(
         // 1. Compose screen provider
         composeProviders.find { it.canProvide(key) }?.let { foundProvider ->
             @Suppress("UNCHECKED_CAST")
-            val typed = foundProvider as ComposeScreenProvider<NavigationKey>
+            val typed = foundProvider as ScreenProvider<NavigationKey>
             val isScene = key is DialogKey || key is BottomSheetKey
             val navCtx = NavigationContext(
                 key = key,
@@ -144,7 +144,7 @@ internal class PerseusEntryProviderRegistry(
             val dismiss: () -> Unit = { onPopCallback?.invoke() ?: Unit }
             logger.debug("provide Scene entryId=$entryId key=${key.shortName()} provider=${providerName(provider)}")
             return NavEntry(key = backStackKey, contentKey = entryId, metadata = metadata) {
-                (provider as ComposeSceneProvider<NavigationKey>).Content(
+                (provider as SceneProvider<NavigationKey>).Content(
                     key = key,
                     onResult = sceneCallback,
                     onDismiss = dismiss

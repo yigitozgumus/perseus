@@ -2,8 +2,9 @@ package com.yigitozgumus.perseus.sample.compose
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yigitozgumus.perseus.NavigationHandle
 import com.yigitozgumus.perseus.PerseusNavigator
+import com.yigitozgumus.perseus.PerseusResult
+import com.yigitozgumus.perseus.resultFlow
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,8 +22,8 @@ class HomeViewModel(
     fun navigateToDetail(itemId: Int) {
         val handle = navigator.navigateTo(DetailKey(itemId))
         viewModelScope.launch {
-            handle.observeResult<String>().collect { result ->
-                _lastResult.value = result
+            handle.resultFlow<String>().collect { result ->
+                if (result is PerseusResult.Success) _lastResult.value = result.value
             }
         }
     }
@@ -30,8 +31,8 @@ class HomeViewModel(
     fun navigateToProfile() {
         val handle = navigator.navigateTo(ProfileKey)
         viewModelScope.launch {
-            handle.observeResult<String>().collect { result ->
-                _lastResult.value = result
+            handle.resultFlow<String>().collect { result ->
+                if (result is PerseusResult.Success) _lastResult.value = result.value
             }
         }
     }

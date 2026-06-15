@@ -49,6 +49,28 @@ publishing {
             afterEvaluate {
                 from(components["release"])
             }
+            pom {
+                name.set("Perseus Core")
+                description.set("Type-safe AndroidX Navigation 3 routing for Compose apps.")
+                url.set("https://github.com/yigitozgumus/Perseus")
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("yigitozgumus")
+                        name.set("Yigit Ozgumus")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/yigitozgumus/Perseus.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/yigitozgumus/Perseus.git")
+                    url.set("https://github.com/yigitozgumus/Perseus")
+                }
+            }
         }
     }
 }
@@ -59,6 +81,7 @@ dependencies {
     api(libs.androidx.navigation3.ui)
     api(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.kotlinx.serialization.json)
 

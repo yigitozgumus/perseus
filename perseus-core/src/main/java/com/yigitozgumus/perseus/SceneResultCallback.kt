@@ -3,7 +3,7 @@ package com.yigitozgumus.perseus
 /**
  * Callback interface for scene results (dialogs and bottom sheets).
  *
- * Used by [ComposeSceneProvider] implementations to send results
+ * Used by [SceneProvider] implementations to send results
  * back to the navigation system.
  */
 public interface SceneResultCallback {

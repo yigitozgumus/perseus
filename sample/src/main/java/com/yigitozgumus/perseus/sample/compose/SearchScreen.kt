@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.SearchKey
 import org.koin.core.annotation.Single
@@ -28,7 +28,7 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 @Single
-class SearchScreenProvider : ComposeScreenProvider<SearchKey>, KoinComponent {
+class SearchScreenProvider : ScreenProvider<SearchKey>, KoinComponent {
     private val navigator: PerseusNavigator by inject()
 
     override fun canProvide(key: NavigationKey) = key is SearchKey

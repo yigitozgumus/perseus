@@ -16,7 +16,7 @@ import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.LoginKey
@@ -55,7 +55,7 @@ class ProcessDeathRestoreActivity : ComponentActivity() {
         }
     }
 
-    inner class LoginProvider : ComposeScreenProvider<LoginKey> {
+    inner class LoginProvider : ScreenProvider<LoginKey> {
         override fun canProvide(key: NavigationKey) = key is LoginKey
         @Composable override fun Content(key: LoginKey) {
             RecipeScaffold(title = "Process death restore", subtitle = "Cold start begins at Login") {
@@ -67,17 +67,17 @@ class ProcessDeathRestoreActivity : ComponentActivity() {
         }
     }
 
-    inner class HomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class HomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
         @Composable override fun Content(key: HomeKey) = AuthContent("Home", 1)
     }
 
-    inner class SearchProvider : ComposeScreenProvider<SearchKey> {
+    inner class SearchProvider : ScreenProvider<SearchKey> {
         override fun canProvide(key: NavigationKey) = key is SearchKey
         @Composable override fun Content(key: SearchKey) = AuthContent("Search", 10)
     }
 
-    inner class AuthProvider : ComposeScreenProvider<RestoreAuthKey> {
+    inner class AuthProvider : ScreenProvider<RestoreAuthKey> {
         override fun canProvide(key: NavigationKey) = key is RestoreAuthKey
         @Composable override fun Content(key: RestoreAuthKey) = AuthContent("Auth", 20)
     }
@@ -90,7 +90,7 @@ class ProcessDeathRestoreActivity : ComponentActivity() {
         }
     }
 
-    inner class DetailProvider : ComposeScreenProvider<DetailKey> {
+    inner class DetailProvider : ScreenProvider<DetailKey> {
         override fun canProvide(key: NavigationKey) = key is DetailKey
         @Composable override fun Content(key: DetailKey) {
             RecipeScaffold(title = "Detail ${key.itemId}") {

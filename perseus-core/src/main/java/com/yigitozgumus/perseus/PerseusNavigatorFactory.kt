@@ -5,8 +5,8 @@ import com.yigitozgumus.perseus.internal.PerseusEntryProviderRegistry
 import com.yigitozgumus.perseus.internal.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.internal.PerseusViewModelStoreRegistry
 import com.yigitozgumus.perseus.internal.ResultBusAdapter
-import com.yigitozgumus.perseus.provider.ComposeSceneProvider
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.SceneProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentEntryFactory
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 
@@ -42,9 +42,9 @@ public object PerseusNavigatorFactory {
      * @return A configured [PerseusNavigationOwner] ready for host and navigator use.
      */
     public fun create(
-        composeProviders: List<ComposeScreenProvider<*>>,
+        composeProviders: List<ScreenProvider<*>>,
         fragmentProviders: List<FragmentProviderMarker>,
-        sceneProviders: List<ComposeSceneProvider<*>>,
+        sceneProviders: List<SceneProvider<*>>,
         fragmentEntryFactory: FragmentEntryFactory? = null,
         validateProviders: Boolean = false,
         logger: PerseusLogger = EmptyPerseusLogger,

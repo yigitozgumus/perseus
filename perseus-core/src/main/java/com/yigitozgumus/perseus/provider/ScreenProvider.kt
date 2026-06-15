@@ -12,7 +12,7 @@ import com.yigitozgumus.perseus.key.NavigationKey
  *
  * @param K The specific [NavigationKey] type this provider handles.
  */
-public interface ComposeScreenProvider<K : NavigationKey> {
+public interface ScreenProvider<K : NavigationKey> {
     /** Returns `true` if this provider can render the given [key]. */
     public fun canProvide(key: NavigationKey): Boolean
 
