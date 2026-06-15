@@ -108,7 +108,7 @@ abstract class NewApiRecipeActivity(
                 ),
                 modifier = Modifier.fillMaxSize(),
                 backBehavior = PerseusBackBehavior(
-                    rootBackBehavior = RootBackBehavior.Block,
+                    rootBackBehavior = RootBackBehavior.ExitHost,
                     tabBackBehavior = TabBackBehavior.SwitchToInitialTab,
                 ),
                 tabTransitionSpec = { _, _ -> fadeIn(tween(220)) togetherWith fadeOut(tween(220)) },
@@ -147,7 +147,7 @@ abstract class NewApiRecipeActivity(
             ScopeVisualizer(navigationOwner.debugSnapshot())
             RecipeSection(
                 title = "Configured behavior",
-                body = "Root back is blocked. Back at the Search tab root switches back to Home.",
+                body = "Root back exits this sample. Back at the Search tab root switches back to Home.",
             )
             RecipeButton("Push detail, then back pops") { navigator.navigateTo(NewDetailKey(1)) }
             SecondaryRecipeButton("Switch to Search tab") { navigator.switchTab(1) }
