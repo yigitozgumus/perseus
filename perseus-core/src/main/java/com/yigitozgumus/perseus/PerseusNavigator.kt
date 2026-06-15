@@ -89,17 +89,8 @@ public interface PerseusNavigator {
      */
     public fun resetTab(tabIndex: Int, resetRoot: Boolean = false)
 
-    /** Resets the current tab to its root. */
+    /** Resets the current stack to its root. */
     public fun resetCurrentTab(resetRoot: Boolean = false)
-
-    /** Alias for [resetCurrentTab] that reads like common navigation APIs. */
-    public fun popToRoot(resetRoot: Boolean = false)
-
-    /** Alias for [resetTab] that reads like common navigation APIs. */
-    public fun popTabToRoot(tabIndex: Int, resetRoot: Boolean = false)
-
-    /** Alias for [resetCurrentTab] that reads like common navigation APIs. */
-    public fun popCurrentTabToRoot(resetRoot: Boolean = false)
 
     /**
      * Resets all stacks and navigation state with the given root keys.

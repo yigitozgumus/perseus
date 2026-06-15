@@ -47,6 +47,28 @@ class RestoreAndValidationTest {
     }
 
     @Test
+    fun saverFallsBackToInitialScopeWhenSnapshotCannotDecode() {
+        val restored = PerseusNavigationState.saver(SingleStackSpec(ValidationHome)).restore("not-json")
+
+        assertEquals(listOf(ValidationHome), restored?.currentBackStack?.map { it.routeKey() })
+    }
+
+    @Test
+    fun rootNeverRestoreFallsBackToInitialScope() {
+        val state = PerseusNavigationState.fromSpec(
+            SingleStackSpec(
+                initialKey = ValidationCheckout,
+                restorePolicy = ScopeRestorePolicy.NeverRestore,
+            )
+        )
+
+        val restored = PerseusNavigationState.saver(SingleStackSpec(ValidationHome))
+            .restore(PerseusNavigationState.encodeForSavedState(state))
+
+        assertEquals(listOf(ValidationHome), restored?.currentBackStack?.map { it.routeKey() })
+    }
+
+    @Test
     fun validateProvidersRejectsMissingNavigationProvider() {
         val owner = PerseusNavigatorFactory.create(
             composeProviders = listOf(providerFor<ValidationHome>()),

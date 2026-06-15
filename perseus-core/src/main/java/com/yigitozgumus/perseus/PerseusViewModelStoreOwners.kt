@@ -3,7 +3,7 @@ package com.yigitozgumus.perseus
 import androidx.lifecycle.ViewModelStoreOwner
 import java.util.concurrent.ConcurrentHashMap
 
-/** Lookup for Perseus-managed entry-scoped [ViewModelStoreOwner]s. */
+/** Lookup for Perseus-managed entry-scoped [ViewModelStoreOwner]s. Intended for Perseus infrastructure. */
 public object PerseusViewModelStoreOwners {
     private val owners = ConcurrentHashMap<String, ViewModelStoreOwner>()
 

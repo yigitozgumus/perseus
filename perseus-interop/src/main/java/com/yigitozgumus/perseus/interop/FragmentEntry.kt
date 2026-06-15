@@ -6,13 +6,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentContainerView
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.commit
 import androidx.fragment.app.commitNow
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusViewModelStoreProvider
@@ -22,7 +23,7 @@ import com.yigitozgumus.perseus.key.NavigationKey
 /**
  * Composable that wraps an existing Fragment for use in Navigation3.
  *
- * Enables incremental migration: existing [ScreenProvider] implementations
+ * Enables incremental migration: existing [FragmentScreenProvider] implementations
  * continue to work while new screens can be pure Compose.
  *
  * The [NavigationContext] is stored in fragment arguments as:
@@ -33,47 +34,31 @@ import com.yigitozgumus.perseus.key.NavigationKey
  *
  * Use [getNavigationContext] in the fragment to retrieve the key.
  */
-@Suppress("UNCHECKED_CAST")
 @Composable
 public fun <K : NavigationKey> FragmentEntry(
     key: K,
-    provider: ScreenProvider<K>,
+    provider: FragmentScreenProvider<K>,
     context: NavigationContext<K>,
     viewModelStoreProvider: PerseusViewModelStoreProvider,
     modifier: Modifier = Modifier,
 ) {
     val fragmentTemplate = remember(context.entryId) { provider.provide(key) }
-    val fragmentClass = fragmentTemplate::class.java as Class<out Fragment>
-
     val encodedKey = remember(key) { DefaultNavigationKeyCodec.encode(key) }
     remember(context.entryId) { viewModelStoreProvider.getOwner(context.entryId) }
 
     val arguments = remember(encodedKey, context) {
         Bundle().apply {
             fragmentTemplate.arguments?.let { putAll(it) }
-            putString(
-                NavigationContext.KEY_CLASS_ENTRY,
-                encodedKey.className,
-            )
-            putString(
-                NavigationContext.KEY_PAYLOAD_ENTRY,
-                encodedKey.payload,
-            )
-            putString(
-                NavigationContext.ENTRY_ID_ENTRY,
-                context.entryId,
-            )
-            putString(
-                NavigationContext.CORRELATION_ID_ENTRY,
-                context.correlationId,
-            )
+            putString(NavigationContext.KEY_CLASS_ENTRY, encodedKey.className)
+            putString(NavigationContext.KEY_PAYLOAD_ENTRY, encodedKey.payload)
+            putString(NavigationContext.ENTRY_ID_ENTRY, context.entryId)
+            putString(NavigationContext.CORRELATION_ID_ENTRY, context.correlationId)
         }
     }
 
-    val fragmentSavedState = remember(context.entryId) { mutableStateOf<Fragment.SavedState?>(null) }
-    val containerId = remember(context.entryId) { View.generateViewId() }
+    val fragmentSavedState = rememberSaveable(context.entryId) { mutableStateOf<Fragment.SavedState?>(null) }
+    val containerId = rememberSaveable(context.entryId) { View.generateViewId() }
     val localView = LocalView.current
-    val localContext = LocalContext.current
     val fragmentManager = remember(localView) { FragmentManager.findFragmentManager(localView) }
 
     AndroidView(
@@ -83,23 +68,30 @@ public fun <K : NavigationKey> FragmentEntry(
         },
     )
 
-    DisposableEffect(fragmentManager, fragmentClass, context.entryId) {
+    DisposableEffect(fragmentManager, context.entryId) {
         val fragment = fragmentManager.findFragmentById(containerId)
-            ?: fragmentManager.fragmentFactory
-                .instantiate(localContext.classLoader, fragmentClass.name)
-                .apply {
-                    setInitialSavedState(fragmentSavedState.value)
-                    this.arguments = arguments
+            ?: fragmentTemplate.apply {
+                setInitialSavedState(fragmentSavedState.value)
+                this.arguments = arguments
+                if (fragmentManager.isStateSaved) {
+                    fragmentManager.commit(allowStateLoss = true) {
+                        setReorderingAllowed(true)
+                        add(containerId, this@apply, context.entryId)
+                    }
+                } else {
                     fragmentManager.commitNow {
                         setReorderingAllowed(true)
                         add(containerId, this@apply, context.entryId)
                     }
                 }
+            }
 
         onDispose {
             fragmentSavedState.value = fragmentManager.saveFragmentInstanceState(fragment)
-            if (!fragmentManager.isStateSaved) {
-                fragmentManager.commitNow { remove(fragment) }
+            if (fragment.isAdded) {
+                fragmentManager.commit(allowStateLoss = fragmentManager.isStateSaved) {
+                    remove(fragment)
+                }
             }
         }
     }

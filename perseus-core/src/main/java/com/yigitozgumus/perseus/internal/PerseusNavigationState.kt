@@ -28,7 +28,7 @@ import kotlinx.serialization.json.Json
 /**
  * Navigation state that survives process death via [Saver].
  *
- * Created in composition via `rememberSaveable(saver = PerseusNavigationState.Saver)`.
+ * Created in composition via `rememberSaveable(saver = PerseusNavigationState.saver(initialScope))`.
  * All mutation methods operate on Compose-managed [SnapshotStateList]s.
  *
  * ## Process Death
@@ -387,10 +387,23 @@ internal class PerseusNavigationState private constructor(
             ignoreUnknownKeys = true
         }
 
-        val Saver: Saver<PerseusNavigationState, String> = Saver(
-            save = { SnapshotJson.encodeToString(it.toSnapshot()) },
-            restore = { fromSnapshot(SnapshotJson.decodeFromString(it)) }
+        fun encodeForSavedState(state: PerseusNavigationState): String =
+            SnapshotJson.encodeToString(state.toSnapshot())
+
+        fun saver(fallbackScope: StackScopeSpec): Saver<PerseusNavigationState, String> = Saver(
+            save = { encodeForSavedState(it) },
+            restore = { encoded ->
+                runCatching {
+                    val snapshot: Snapshot = SnapshotJson.decodeFromString(encoded)
+                    if (snapshot.scopes.firstOrNull()?.restorePolicy == ScopeRestorePolicy.NeverRestore) {
+                        fromSpec(fallbackScope)
+                    } else {
+                        fromSnapshot(snapshot)
+                    }
+                }.getOrElse { fromSpec(fallbackScope) }
+            }
         )
+
     }
 }
 

@@ -30,7 +30,7 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
-import com.yigitozgumus.perseus.interop.ScreenProvider as FragmentScreenProvider
+import com.yigitozgumus.perseus.interop.FragmentScreenProvider
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.provider.ScreenProvider

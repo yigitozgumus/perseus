@@ -234,33 +234,10 @@ internal class DefaultPerseusNavigator(
             return
         }
         logBefore("resetCurrentTab resetRoot=$resetRoot")
-        val removed = stateHolder.state.resetCurrentTab(resetRoot)
-        cleanupRemoved(removed)
-        syncCurrentKey()
-        logAfter("resetCurrentTab removed=${removed.size}")
-    }
-
-    override fun popToRoot(resetRoot: Boolean) {
-        MainThreadGuard.checkMainThread()
-        popCurrentTabToRoot(resetRoot)
-    }
-
-    override fun popTabToRoot(tabIndex: Int, resetRoot: Boolean) {
-        MainThreadGuard.checkMainThread()
-        resetTab(tabIndex, resetRoot)
-    }
-
-    override fun popCurrentTabToRoot(resetRoot: Boolean) {
-        MainThreadGuard.checkMainThread()
-        if (!stateHolder.isAttached) {
-            logger.debug("popCurrentTabToRoot ignored state=detached resetRoot=$resetRoot")
-            return
-        }
-        logBefore("popCurrentTabToRoot resetRoot=$resetRoot")
         val removed = stateHolder.state.popCurrentStackToRoot(resetRoot)
         cleanupRemoved(removed)
         syncCurrentKey()
-        logAfter("popCurrentTabToRoot removed=${removed.size}")
+        logAfter("resetCurrentTab removed=${removed.size}")
     }
 
     override fun resetAllWithKeys(keys: List<NavigationKey>) {

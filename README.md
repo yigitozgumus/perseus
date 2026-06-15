@@ -30,7 +30,6 @@ Perseus is designed around three ideas:
 - [Tabs with `MultiStackSpec`](#tabs-with-multistackspec)
 - [Scope navigation: replacing or stacking app surfaces](#scope-navigation-replacing-or-stacking-app-surfaces)
 - [Returning results](#returning-results)
-- [Deep links](#deep-links)
 - [Dialogs and bottom sheets](#dialogs-and-bottom-sheets)
 - [Fragment interop](#fragment-interop)
 - [Transitions](#transitions)
@@ -309,7 +308,7 @@ data class FullScreenDetailKey(val id: String) : NavigationKey {
 
 ## Rendering Compose screens
 
-Implement `ScreenProvider<K>` for each key type.
+Implement `ScreenProvider<K>` for each Compose key type.
 
 ```kotlin
 class ProductProvider : ScreenProvider<ProductKey> {
@@ -747,27 +746,6 @@ Pushed scopes can also return results; see [Scope navigation](#scope-navigation-
 
 ---
 
-## Deep links
-
-Perseus provides small helpers for mapping URIs to keys or scopes.
-
-```kotlin
-val resolver = DeepLinkResolver { uri ->
-    when (uri.host) {
-        "detail" -> DeepLinkTarget.Key(DetailKey(uri.lastPathSegment!!.toInt()))
-        "home" -> DeepLinkTarget.Scope(MultiStackSpec(listOf(HomeKey, SearchKey)))
-        else -> null
-    }
-}
-
-navigator.handleDeepLink(uri, resolver)      // navigates to key targets
-scopeNavigator.handleDeepLink(uri, resolver) // replaces root for scope targets
-```
-
-The resolver is intentionally app-owned so URL parsing, authentication, and routing policy stay outside Perseus.
-
----
-
 ## Dialogs and bottom sheets
 
 Dialogs and bottom sheets are ordinary keys with marker interfaces.
@@ -867,7 +845,7 @@ implementation(project(":perseus-interop"))
 Create a Fragment provider:
 
 ```kotlin
-class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
+class ProfileFragmentProvider : FragmentScreenProvider<ProfileKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is ProfileKey
 
     override fun provide(key: ProfileKey): Fragment = ProfileFragment()
@@ -1274,7 +1252,7 @@ The sample app contains focused recipes for Perseus features:
 | ViewModel Lifetime | Entry-scoped ViewModel stores |
 | Back Behavior Policy | Root and tab back behavior controls |
 | Scope Results | `pushScopeForResult` and `removeScope(result)` |
-| Navigation Helpers | Deep links, pop helpers, graph builder, and provider validation |
+| Navigation Helpers | Pop helpers, graph builder, and provider validation |
 | Restore Guards | `NonRestorableKey` and `ScopeRestorePolicy` |
 | Full Demo | Multi-feature sample |
 

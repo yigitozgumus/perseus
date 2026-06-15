@@ -1,6 +1,5 @@
 package com.yigitozgumus.perseus.sample.recipe.newapis
 
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -21,8 +20,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.yigitozgumus.perseus.AndroidPerseusLogger
-import com.yigitozgumus.perseus.DeepLinkResolver
-import com.yigitozgumus.perseus.DeepLinkTarget
 import com.yigitozgumus.perseus.MultiStackSpec
 import com.yigitozgumus.perseus.NonRestorableKey
 import com.yigitozgumus.perseus.PerseusBackBehavior
@@ -38,9 +35,10 @@ import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.awaitResult
-import com.yigitozgumus.perseus.handleDeepLink
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.perseusGraph
+import com.yigitozgumus.perseus.popCurrentTabToRoot
+import com.yigitozgumus.perseus.popToRoot
 import com.yigitozgumus.perseus.popUntilKeyType
 import com.yigitozgumus.perseus.sample.recipe.ui.BackStackVisualizer
 import com.yigitozgumus.perseus.sample.recipe.ui.RecipeButton
@@ -87,14 +85,6 @@ abstract class NewApiRecipeActivity(
     )
     private val navigator: PerseusNavigator get() = navigationOwner.navigator
     private val scopeNavigator: PerseusScopeNavigator get() = navigationOwner.scopeNavigator
-
-    private val deepLinkResolver = DeepLinkResolver { uri ->
-        when (uri.host) {
-            "detail" -> DeepLinkTarget.Key(NewDetailKey(uri.lastPathSegment?.toIntOrNull() ?: 0))
-            "settings" -> DeepLinkTarget.Scope(SingleStackSpec(NewSettingsKey))
-            else -> null
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -187,7 +177,7 @@ abstract class NewApiRecipeActivity(
     private fun NavigationHelpersContent() {
         RecipeScaffold(
             title = "Navigation helpers",
-            subtitle = "Graph registration, deep links, pop helpers, provider validation",
+            subtitle = "Graph registration, pop helpers, provider validation",
         ) {
             BackStackVisualizer(navigationOwner.debugSnapshot().currentBackStack)
             RecipeSection(
@@ -195,11 +185,11 @@ abstract class NewApiRecipeActivity(
                 body = "This sample registers screens with perseusGraph { screen<Key> { ... } } and enables validateProviders.",
             )
             RecipeButton("Push detail flow") { navigator.navigateTo(NewDetailKey(1)) }
-            SecondaryRecipeButton("Open deep link: detail/42") {
-                navigator.handleDeepLink(Uri.parse("perseus://detail/42"), deepLinkResolver)
+            SecondaryRecipeButton("Open detail 42") {
+                navigator.navigateTo(NewDetailKey(42))
             }
-            SecondaryRecipeButton("Scope deep link: settings") {
-                scopeNavigator.handleDeepLink(Uri.parse("perseus://settings"), deepLinkResolver)
+            SecondaryRecipeButton("Replace app with settings") {
+                scopeNavigator.replaceApp(SingleStackSpec(NewSettingsKey))
             }
         }
     }
@@ -242,7 +232,7 @@ abstract class NewApiRecipeActivity(
         RecipeScaffold(title = "Settings app scope") {
             ScopeVisualizer(navigationOwner.debugSnapshot())
             RecipeSection(
-                title = "replaceApp / deep link target",
+                title = "replaceApp target",
                 body = "This single-stack root replaced the tabbed app scope.",
             )
             RecipeButton("Restore tabbed app") {
