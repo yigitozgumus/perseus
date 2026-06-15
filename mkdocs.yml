@@ -40,14 +40,14 @@ theme:
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: amber
+      primary: white
+      accent: deep purple
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
+      primary: black
       accent: amber
       toggle:
         icon: material/weather-sunny
@@ -58,15 +58,22 @@ theme:
   features:
     - content.code.copy
     - content.code.select
+    - content.action.edit
+    - content.action.view
+    - content.tabs.link
     - navigation.footer
     - navigation.indexes
     - navigation.sections
+    - navigation.tabs
     - navigation.top
     - navigation.tracking
     - search.highlight
     - search.share
     - search.suggest
     - toc.follow
+
+extra_css:
+  - stylesheets/extra.css
 
 extra:
   social:
