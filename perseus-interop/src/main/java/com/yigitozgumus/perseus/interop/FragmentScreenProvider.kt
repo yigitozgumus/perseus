@@ -13,7 +13,7 @@ import com.yigitozgumus.perseus.provider.FragmentProviderMarker
  *
  * Example:
  * ```kotlin
- * class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
+ * class ProfileFragmentProvider : FragmentScreenProvider<ProfileKey> {
  *     override fun canProvide(key: NavigationKey) = key is ProfileKey
  *     override fun provide(key: ProfileKey): Fragment = ProfileFragment()
  * }
@@ -21,7 +21,7 @@ import com.yigitozgumus.perseus.provider.FragmentProviderMarker
  *
  * @param K The specific [NavigationKey] type this provider handles.
  */
-public interface ScreenProvider<K : NavigationKey> : FragmentProviderMarker {
+public interface FragmentScreenProvider<K : NavigationKey> : FragmentProviderMarker {
     /** Returns `true` if this provider can render the given [key]. */
     public override fun canProvide(key: NavigationKey): Boolean
 

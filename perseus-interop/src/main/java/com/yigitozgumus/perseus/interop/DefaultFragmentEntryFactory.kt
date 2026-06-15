@@ -24,7 +24,7 @@ public object DefaultFragmentEntryFactory : FragmentEntryFactory {
     ) {
         FragmentEntry(
             key = key,
-            provider = provider as ScreenProvider<NavigationKey>,
+            provider = provider as FragmentScreenProvider<NavigationKey>,
             context = context,
             viewModelStoreProvider = viewModelStoreProvider,
         )

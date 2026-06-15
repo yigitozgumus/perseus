@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModel
 import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.getNavigationContext
-import com.yigitozgumus.perseus.interop.ScreenProvider
+import com.yigitozgumus.perseus.interop.FragmentScreenProvider
 import com.yigitozgumus.perseus.interop.requirePerseusViewModelStoreOwner
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.sample.keys.ProfileKey
@@ -22,7 +22,7 @@ import org.koin.core.annotation.Single
 import org.koin.core.parameter.parametersOf
 
 @Single
-class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
+class ProfileFragmentProvider : FragmentScreenProvider<ProfileKey> {
     override fun canProvide(key: NavigationKey) = key is ProfileKey
 
     override fun provide(key: ProfileKey): Fragment = ProfileFragment()

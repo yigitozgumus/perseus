@@ -37,6 +37,8 @@ import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.awaitResult
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.perseusGraph
+import com.yigitozgumus.perseus.popCurrentTabToRoot
+import com.yigitozgumus.perseus.popToRoot
 import com.yigitozgumus.perseus.popUntilKeyType
 import com.yigitozgumus.perseus.sample.recipe.ui.BackStackVisualizer
 import com.yigitozgumus.perseus.sample.recipe.ui.RecipeButton

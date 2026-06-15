@@ -23,7 +23,7 @@ import com.yigitozgumus.perseus.key.NavigationKey
 /**
  * Composable that wraps an existing Fragment for use in Navigation3.
  *
- * Enables incremental migration: existing [ScreenProvider] implementations
+ * Enables incremental migration: existing [FragmentScreenProvider] implementations
  * continue to work while new screens can be pure Compose.
  *
  * The [NavigationContext] is stored in fragment arguments as:
@@ -37,7 +37,7 @@ import com.yigitozgumus.perseus.key.NavigationKey
 @Composable
 public fun <K : NavigationKey> FragmentEntry(
     key: K,
-    provider: ScreenProvider<K>,
+    provider: FragmentScreenProvider<K>,
     context: NavigationContext<K>,
     viewModelStoreProvider: PerseusViewModelStoreProvider,
     modifier: Modifier = Modifier,

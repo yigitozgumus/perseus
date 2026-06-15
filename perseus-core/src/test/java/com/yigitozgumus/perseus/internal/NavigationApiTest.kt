@@ -10,6 +10,7 @@ import com.yigitozgumus.perseus.RootBackBehavior
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.TabBackBehavior
 import com.yigitozgumus.perseus.createTestPerseusNavigationOwner
+import com.yigitozgumus.perseus.popToRoot
 import com.yigitozgumus.perseus.currentBackStack
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.shouldInstallPerseusBackHandler

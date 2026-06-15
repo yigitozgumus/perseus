@@ -309,7 +309,7 @@ data class FullScreenDetailKey(val id: String) : NavigationKey {
 
 ## Rendering Compose screens
 
-Implement `ScreenProvider<K>` for each key type.
+Implement `ScreenProvider<K>` for each Compose key type.
 
 ```kotlin
 class ProductProvider : ScreenProvider<ProductKey> {
@@ -846,7 +846,7 @@ implementation(project(":perseus-interop"))
 Create a Fragment provider:
 
 ```kotlin
-class ProfileFragmentProvider : ScreenProvider<ProfileKey> {
+class ProfileFragmentProvider : FragmentScreenProvider<ProfileKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is ProfileKey
 
     override fun provide(key: ProfileKey): Fragment = ProfileFragment()
