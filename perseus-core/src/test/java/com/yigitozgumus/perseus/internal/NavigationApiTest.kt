@@ -2,6 +2,7 @@ package com.yigitozgumus.perseus.internal
 
 import com.yigitozgumus.perseus.LaunchMode
 import com.yigitozgumus.perseus.MultiStackSpec
+import com.yigitozgumus.perseus.NavigationContext
 import com.yigitozgumus.perseus.PerseusBackBehavior
 import com.yigitozgumus.perseus.PerseusResult
 import com.yigitozgumus.perseus.PopUpTo
@@ -158,6 +159,26 @@ class NavigationApiTest {
         owner.navigator.pop()
 
         assertEquals(PerseusResult.Cancelled, withTimeout(1_000) { handle.awaitResult(NavigationResult::class) })
+    }
+
+    @Test
+    fun sameHandleCanReadCompletedResultMoreThanOnce() = runBlocking {
+        val owner = createTestPerseusNavigationOwner(SingleStackSpec(NavigationHome))
+        val handle = owner.navigator.navigateTo(NavigationDetail(1))
+        val result = NavigationResult("done")
+
+        val entry = owner.impl.stateHolder.state.currentBackStack.last()
+        owner.navigator.sendResult(
+            NavigationContext(
+                key = entry.routeKey(),
+                entryId = entry.backStackId(),
+                correlationId = entry.correlationId() ?: error("missing correlation"),
+            ),
+            result,
+        )
+
+        assertEquals(PerseusResult.Success(result), withTimeout(1_000) { handle.awaitResult(NavigationResult::class) })
+        assertEquals(PerseusResult.Success(result), withTimeout(1_000) { handle.awaitResult(NavigationResult::class) })
     }
 
     @Test

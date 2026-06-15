@@ -34,15 +34,19 @@ internal class ResultBusAdapter {
 
     /** Create a [NavigationHandle] that observes results for the given correlation ID. */
     fun createHandle(correlationId: String): NavigationHandle =
-        HandleImpl(correlationId, this)
+        HandleImpl(correlationId, streamFor(correlationId), this)
 
-    suspend fun <T : Any> awaitResult(correlationId: String, type: KClass<T>): PerseusResult<T> {
-        val stream = streamFor(correlationId)
-        return try {
-            stream.completion.filterNotNull().first().toPublicResult(type, correlationId)
-        } finally {
-            if (stream.isComplete) streams.remove(correlationId, stream)
-        }
+    suspend fun <T : Any> awaitResult(correlationId: String, type: KClass<T>): PerseusResult<T> =
+        awaitResult(correlationId, streamFor(correlationId), type)
+
+    private suspend fun <T : Any> awaitResult(
+        correlationId: String,
+        stream: ResultStream,
+        type: KClass<T>,
+    ): PerseusResult<T> = try {
+        stream.completion.filterNotNull().first().toPublicResult(type, correlationId)
+    } finally {
+        if (stream.isComplete) streams.remove(correlationId, stream)
     }
 
     fun <T : Any> resultFlow(correlationId: String, type: KClass<T>): Flow<PerseusResult<T>> = flow {
@@ -64,13 +68,15 @@ internal class ResultBusAdapter {
 
     private class HandleImpl(
         override val correlationId: String,
+        private val stream: ResultStream,
         private val resultBus: ResultBusAdapter,
     ) : NavigationHandle {
         override suspend fun <T : Any> awaitResult(type: KClass<T>): PerseusResult<T> =
-            resultBus.awaitResult(correlationId, type)
+            resultBus.awaitResult(correlationId, stream, type)
 
-        override fun <T : Any> resultFlow(type: KClass<T>): Flow<PerseusResult<T>> =
-            resultBus.resultFlow(correlationId, type)
+        override fun <T : Any> resultFlow(type: KClass<T>): Flow<PerseusResult<T>> = flow {
+            emit(awaitResult(type))
+        }
 
         @Deprecated(
             message = "Use awaitResult(type) or resultFlow(type) for typed success/cancellation handling.",
