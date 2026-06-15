@@ -30,7 +30,6 @@ Perseus is designed around three ideas:
 - [Tabs with `MultiStackSpec`](#tabs-with-multistackspec)
 - [Scope navigation: replacing or stacking app surfaces](#scope-navigation-replacing-or-stacking-app-surfaces)
 - [Returning results](#returning-results)
-- [Deep links](#deep-links)
 - [Dialogs and bottom sheets](#dialogs-and-bottom-sheets)
 - [Fragment interop](#fragment-interop)
 - [Transitions](#transitions)
@@ -1253,7 +1252,7 @@ The sample app contains focused recipes for Perseus features:
 | ViewModel Lifetime | Entry-scoped ViewModel stores |
 | Back Behavior Policy | Root and tab back behavior controls |
 | Scope Results | `pushScopeForResult` and `removeScope(result)` |
-| Navigation Helpers | Deep links, pop helpers, graph builder, and provider validation |
+| Navigation Helpers | Pop helpers, graph builder, and provider validation |
 | Restore Guards | `NonRestorableKey` and `ScopeRestorePolicy` |
 | Full Demo | Multi-feature sample |
 
