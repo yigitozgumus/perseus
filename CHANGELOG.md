@@ -13,7 +13,8 @@ Perseus follows semantic versioning once a stable `1.0.0` API is published. Befo
 - Result cancellation when entries/scopes are removed before sending a result.
 - `LaunchMode.SingleTop`, `PopUpTo`, and `replaceWith` navigation primitives.
 - Official Fragment helpers for `requirePerseusKey` and `perseusViewModels`.
-- CI workflow covering build, unit tests, lint, and Maven Local publish dry run.
+- CI workflow covering build, unit tests, lint, and a JitPack-compatible publish dry run.
+- JitPack build configuration for core and interop release publications.
 - Maven POM metadata for core and interop artifacts.
 
 ### Changed

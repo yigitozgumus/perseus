@@ -123,7 +123,29 @@ scopeNavigator.removeScope(flow)
 
 ## Installation
 
-Perseus currently lives in this repository as Android library modules.
+Perseus is published through JitPack from Git tags, branches, or commits.
+
+```kotlin
+repositories {
+    google()
+    mavenCentral()
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.yigitozgumus.perseus:perseus-core:<version>")
+
+    // Optional: Fragment interop support
+    implementation("com.github.yigitozgumus.perseus:perseus-interop:<version>")
+}
+```
+
+For this branch before tagging a release, use JitPack's branch snapshot version:
+
+```kotlin
+implementation("com.github.yigitozgumus.perseus:perseus-core:v5-SNAPSHOT")
+implementation("com.github.yigitozgumus.perseus:perseus-interop:v5-SNAPSHOT")
+```
 
 For an app module in this project:
 
@@ -159,8 +181,8 @@ dependencies {
 }
 ```
 
-If Perseus is published later, replace the snapshot coordinates with the
-published version.
+The repository includes `jitpack.yml`; JitPack builds the release publications
+with `publishReleasePublicationToMavenLocal` for both library modules.
 
 ---
 

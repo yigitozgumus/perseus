@@ -8,7 +8,7 @@ Branch: `v5`
 - `./gradlew test` — PASS before hardening work.
 - `./gradlew test` — PASS after hardening work.
 - `./gradlew lint` — PASS after hardening work.
-- `./gradlew :perseus-core:publishReleasePublicationToMavenLocal :perseus-interop:publishReleasePublicationToMavenLocal` — PASS after hardening work.
+- `./gradlew :perseus-core:publishReleasePublicationToMavenLocal :perseus-interop:publishReleasePublicationToMavenLocal` — PASS after hardening work; this matches the JitPack install command.
 - Connected Android tests were not run in this environment because no device/emulator was confirmed.
 
 ## Test matrix and current coverage
@@ -32,7 +32,7 @@ Branch: `v5`
 - Phase 3: explicit typed one-shot result delivery with cancellation and mismatch errors.
 - Phase 4: official Fragment helpers for key/context/ViewModel access.
 - Phase 5: `LaunchMode.SingleTop`, `PopUpTo`, and `replaceWith` primitives.
-- Phase 6: CI, Maven POM metadata, changelog, and README API policy.
+- Phase 6: CI, JitPack config, Maven POM metadata, changelog, and README API policy.
 
 ## Deferred work
 
