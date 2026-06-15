@@ -2,19 +2,27 @@
 
 <div class="grid cards" markdown>
 
--   :material-compass-outline: **Type-safe navigation**
+-   :material-compass-outline:{ .lg .middle } **Type-safe navigation**
+
+    ---
 
     Route with serializable `NavigationKey` objects instead of strings.
 
--   :material-layers-triple-outline: **Scopes and tabs**
+-   :material-layers-triple-outline:{ .lg .middle } **Scopes and tabs**
+
+    ---
 
     Model single-stack flows, tabbed apps, and stacked app surfaces explicitly.
 
--   :material-android: **Compose + Fragment interop**
+-   :material-android:{ .lg .middle } **Compose + Fragment interop**
+
+    ---
 
     Use Navigation 3 for new Compose screens while keeping existing Fragments alive.
 
--   :material-restore: **Process death ready**
+-   :material-restore:{ .lg .middle } **Process death ready**
+
+    ---
 
     Restore keys, entry metadata, results, and ViewModel stores with Android lifecycles in mind.
 

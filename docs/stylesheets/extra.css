@@ -54,8 +54,11 @@
   transform: translateY(-1px);
 }
 
-.md-typeset .twemoji svg {
+.md-typeset .twemoji {
   color: var(--md-accent-fg-color);
+}
+
+.md-typeset .twemoji svg {
   fill: currentcolor;
 }
 
