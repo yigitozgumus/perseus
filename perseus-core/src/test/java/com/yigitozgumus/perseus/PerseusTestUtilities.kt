@@ -6,16 +6,16 @@ import com.yigitozgumus.perseus.internal.PerseusNavigationState
 import com.yigitozgumus.perseus.internal.PerseusNavigationStateHolder
 import com.yigitozgumus.perseus.internal.PerseusViewModelStoreRegistry
 import com.yigitozgumus.perseus.internal.ResultBusAdapter
-import com.yigitozgumus.perseus.provider.ComposeSceneProvider
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.SceneProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 
 /** Creates an attached navigation owner for JVM tests without composing [PerseusNavHost]. */
 internal fun createTestPerseusNavigationOwner(
     initialScope: StackScopeSpec,
-    composeProviders: List<ComposeScreenProvider<*>> = emptyList(),
+    composeProviders: List<ScreenProvider<*>> = emptyList(),
     fragmentProviders: List<FragmentProviderMarker> = emptyList(),
-    sceneProviders: List<ComposeSceneProvider<*>> = emptyList(),
+    sceneProviders: List<SceneProvider<*>> = emptyList(),
     logger: PerseusLogger = EmptyPerseusLogger,
 ): PerseusNavigationOwner {
     val state = PerseusNavigationState.fromSpec(initialScope)

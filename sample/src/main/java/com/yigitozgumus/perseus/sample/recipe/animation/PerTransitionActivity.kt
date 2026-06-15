@@ -32,7 +32,7 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 import kotlinx.serialization.Serializable
 
@@ -85,7 +85,7 @@ class PerTransitionActivity : ComponentActivity() {
 
     // -- Providers --
 
-    inner class ScreenProviderA : ComposeScreenProvider<ScreenA> {
+    inner class ScreenProviderA : ScreenProvider<ScreenA> {
         override fun canProvide(key: NavigationKey) = key is ScreenA
         @Composable
         override fun Content(key: ScreenA) = ColoredScreen(
@@ -97,7 +97,7 @@ class PerTransitionActivity : ComponentActivity() {
         )
     }
 
-    inner class ScreenProviderB : ComposeScreenProvider<ScreenB> {
+    inner class ScreenProviderB : ScreenProvider<ScreenB> {
         override fun canProvide(key: NavigationKey) = key is ScreenB
         @Composable
         override fun Content(key: ScreenB) = ColoredScreen(
@@ -109,7 +109,7 @@ class PerTransitionActivity : ComponentActivity() {
         )
     }
 
-    inner class ScreenProviderC : ComposeScreenProvider<ScreenC> {
+    inner class ScreenProviderC : ScreenProvider<ScreenC> {
         override fun canProvide(key: NavigationKey) = key is ScreenC
         @Composable
         override fun Content(key: ScreenC) = ColoredScreen(
@@ -121,7 +121,7 @@ class PerTransitionActivity : ComponentActivity() {
         )
     }
 
-    inner class ScreenProviderD : ComposeScreenProvider<ScreenD> {
+    inner class ScreenProviderD : ScreenProvider<ScreenD> {
         override fun canProvide(key: NavigationKey) = key is ScreenD
         @Composable
         override fun Content(key: ScreenD) = ColoredScreen(

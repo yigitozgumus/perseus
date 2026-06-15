@@ -8,7 +8,7 @@ import com.yigitozgumus.perseus.PerseusResult
 import com.yigitozgumus.perseus.ScopeRestorePolicy
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -111,8 +111,8 @@ class RestoreAndValidationTest {
         assertEquals(PerseusResult.Success("done"), result)
     }
 
-    private inline fun <reified K : NavigationKey> providerFor(): ComposeScreenProvider<K> =
-        object : ComposeScreenProvider<K> {
+    private inline fun <reified K : NavigationKey> providerFor(): ScreenProvider<K> =
+        object : ScreenProvider<K> {
             override fun canProvide(key: NavigationKey): Boolean = key is K
 
             @Composable

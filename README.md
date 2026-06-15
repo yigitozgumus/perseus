@@ -64,12 +64,12 @@ Keys should be `@Serializable` so Perseus can restore navigation state after
 process death. If you already have Android `Parcelable` keys, Perseus can also
 restore those as a fallback without requiring a kotlinx.serialization migration.
 
-### `ComposeScreenProvider`
+### `ScreenProvider`
 
 A provider renders one key type.
 
 ```kotlin
-class HomeProvider : ComposeScreenProvider<HomeKey> {
+class HomeProvider : ScreenProvider<HomeKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is HomeKey
 
     @Composable
@@ -203,7 +203,7 @@ data class DetailKey(val itemId: Int) : NavigationKey
 ```kotlin
 class HomeProvider(
     private val navigator: PerseusNavigator,
-) : ComposeScreenProvider<HomeKey> {
+) : ScreenProvider<HomeKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is HomeKey
 
     @Composable
@@ -216,7 +216,7 @@ class HomeProvider(
 
 class DetailProvider(
     private val navigator: PerseusNavigator,
-) : ComposeScreenProvider<DetailKey> {
+) : ScreenProvider<DetailKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is DetailKey
 
     @Composable
@@ -309,10 +309,10 @@ data class FullScreenDetailKey(val id: String) : NavigationKey {
 
 ## Rendering Compose screens
 
-Implement `ComposeScreenProvider<K>` for each key type.
+Implement `ScreenProvider<K>` for each key type.
 
 ```kotlin
-class ProductProvider : ComposeScreenProvider<ProductKey> {
+class ProductProvider : ScreenProvider<ProductKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is ProductKey
 
     @Composable
@@ -780,7 +780,7 @@ data object ConfirmDeleteKey : NavigationKey, DialogKey
 Render it with a normal Compose provider:
 
 ```kotlin
-class ConfirmDeleteProvider : ComposeScreenProvider<ConfirmDeleteKey> {
+class ConfirmDeleteProvider : ScreenProvider<ConfirmDeleteKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is ConfirmDeleteKey
 
     @Composable
@@ -833,10 +833,10 @@ Button(onClick = { actions.dismiss() }) {
 }
 ```
 
-For more complex scenes, use `ComposeSceneProvider<K>`:
+For more complex scenes, use `SceneProvider<K>`:
 
 ```kotlin
-class InfoSheetProvider : ComposeSceneProvider<InfoSheetKey> {
+class InfoSheetProvider : SceneProvider<InfoSheetKey> {
     override fun canProvide(key: NavigationKey): Boolean = key is InfoSheetKey
 
     @Composable

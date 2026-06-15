@@ -32,7 +32,7 @@ import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.interop.DefaultFragmentEntryFactory
 import com.yigitozgumus.perseus.interop.ScreenProvider
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.provider.FragmentProviderMarker
 import com.yigitozgumus.perseus.sample.keys.FragmentScreenKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
@@ -60,7 +60,7 @@ class InteropActivity : FragmentActivity() {
         }
     }
 
-    inner class InteropHomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class InteropHomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable

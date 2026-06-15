@@ -15,7 +15,7 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.SearchKey
@@ -56,12 +56,12 @@ class TabsActivity : ComponentActivity() {
         }
     }
 
-    inner class HomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class HomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
         @Composable override fun Content(key: HomeKey) = TabContent("Home", 100)
     }
 
-    inner class SearchProvider : ComposeScreenProvider<SearchKey> {
+    inner class SearchProvider : ScreenProvider<SearchKey> {
         override fun canProvide(key: NavigationKey) = key is SearchKey
         @Composable override fun Content(key: SearchKey) = TabContent("Search", 200)
     }
@@ -82,7 +82,7 @@ class TabsActivity : ComponentActivity() {
         }
     }
 
-    inner class DetailProvider : ComposeScreenProvider<DetailKey> {
+    inner class DetailProvider : ScreenProvider<DetailKey> {
         override fun canProvide(key: NavigationKey) = key is DetailKey
         @Composable
         override fun Content(key: DetailKey) {

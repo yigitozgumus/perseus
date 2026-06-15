@@ -33,7 +33,7 @@ import com.yigitozgumus.perseus.PerseusScopeNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.StackScopeKind
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.DetailKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.LoginKey
@@ -80,7 +80,7 @@ class ScopeActivity : ComponentActivity() {
         }
     }
 
-    inner class LoginProvider : ComposeScreenProvider<LoginKey> {
+    inner class LoginProvider : ScreenProvider<LoginKey> {
         override fun canProvide(key: NavigationKey) = key is LoginKey
 
         @Composable
@@ -99,7 +99,7 @@ class ScopeActivity : ComponentActivity() {
         }
     }
 
-    inner class HomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class HomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
@@ -127,7 +127,7 @@ class ScopeActivity : ComponentActivity() {
         }
     }
 
-    inner class SearchProvider : ComposeScreenProvider<SearchKey> {
+    inner class SearchProvider : ScreenProvider<SearchKey> {
         override fun canProvide(key: NavigationKey) = key is SearchKey
 
         @Composable
@@ -143,7 +143,7 @@ class ScopeActivity : ComponentActivity() {
         }
     }
 
-    inner class ScopeFlowProvider : ComposeScreenProvider<ScopeFlowKey> {
+    inner class ScopeFlowProvider : ScreenProvider<ScopeFlowKey> {
         override fun canProvide(key: NavigationKey) = key is ScopeFlowKey
 
         @Composable
@@ -167,7 +167,7 @@ class ScopeActivity : ComponentActivity() {
         }
     }
 
-    inner class DetailProvider : ComposeScreenProvider<DetailKey> {
+    inner class DetailProvider : ScreenProvider<DetailKey> {
         override fun canProvide(key: NavigationKey) = key is DetailKey
 
         @Composable

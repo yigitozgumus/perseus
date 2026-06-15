@@ -20,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.LocalNavigationContext
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.key.NavigationKey
@@ -32,7 +32,7 @@ import org.koin.core.annotation.Single
 import org.koin.core.parameter.parametersOf
 
 @Single
-class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
+class HomeScreenProvider : ScreenProvider<HomeKey> {
 
     override fun canProvide(key: NavigationKey) = key is HomeKey
 
@@ -50,7 +50,7 @@ class HomeScreenProvider : ComposeScreenProvider<HomeKey> {
 }
 
 @Single
-class DetailScreenProvider : ComposeScreenProvider<DetailKey> {
+class DetailScreenProvider : ScreenProvider<DetailKey> {
 
     override fun canProvide(key: NavigationKey) = key is DetailKey
 

@@ -14,13 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.key.NavigationKey
 import com.yigitozgumus.perseus.sample.keys.LoginKey
 import org.koin.core.annotation.Single
 
 @Single
-class LoginScreenProvider : ComposeScreenProvider<LoginKey> {
+class LoginScreenProvider : ScreenProvider<LoginKey> {
     override fun canProvide(key: NavigationKey) = key is LoginKey
 
     @Composable

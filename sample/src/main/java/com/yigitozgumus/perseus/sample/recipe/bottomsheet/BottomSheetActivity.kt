@@ -26,7 +26,7 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.keys.InfoSheetKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
@@ -51,7 +51,7 @@ class BottomSheetActivity : ComponentActivity() {
         }
     }
 
-    inner class SheetHomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class SheetHomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
@@ -83,7 +83,7 @@ class BottomSheetActivity : ComponentActivity() {
         }
     }
 
-    inner class InfoSheetProvider : ComposeScreenProvider<InfoSheetKey> {
+    inner class InfoSheetProvider : ScreenProvider<InfoSheetKey> {
         override fun canProvide(key: NavigationKey) = key is InfoSheetKey
 
         @Composable

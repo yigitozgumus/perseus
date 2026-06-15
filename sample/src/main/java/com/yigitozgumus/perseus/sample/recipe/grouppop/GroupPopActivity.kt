@@ -13,7 +13,7 @@ import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.GroupName
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.CheckoutStepKey
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
@@ -41,7 +41,7 @@ class GroupPopActivity : ComponentActivity() {
         }
     }
 
-    inner class HomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class HomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
         @Composable override fun Content(key: HomeKey) {
             RecipeScaffold(title = "Group pop", subtitle = "Demonstrates GroupName + popUntil") {
@@ -53,7 +53,7 @@ class GroupPopActivity : ComponentActivity() {
         }
     }
 
-    inner class CheckoutProvider : ComposeScreenProvider<CheckoutStepKey> {
+    inner class CheckoutProvider : ScreenProvider<CheckoutStepKey> {
         override fun canProvide(key: NavigationKey) = key is CheckoutStepKey
         @Composable override fun Content(key: CheckoutStepKey) {
             RecipeScaffold(title = "Checkout step ${key.step}", subtitle = "All steps share the checkout group") {

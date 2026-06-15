@@ -18,7 +18,7 @@ import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.PerseusNavigator
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.CounterKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 import com.yigitozgumus.perseus.sample.recipe.ui.RecipeButton
@@ -46,7 +46,7 @@ class ViewModelLifetimeActivity : ComponentActivity() {
         }
     }
 
-    inner class CounterProvider : ComposeScreenProvider<CounterKey> {
+    inner class CounterProvider : ScreenProvider<CounterKey> {
         override fun canProvide(key: NavigationKey) = key is CounterKey
         @Composable override fun Content(key: CounterKey) {
             val owner = checkNotNull(LocalViewModelStoreOwner.current)

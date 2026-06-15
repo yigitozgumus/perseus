@@ -38,7 +38,7 @@ import com.yigitozgumus.perseus.PerseusNavHost
 import com.yigitozgumus.perseus.PerseusNavigationOwner
 import com.yigitozgumus.perseus.SingleStackSpec
 import com.yigitozgumus.perseus.key.NavigationKey
-import com.yigitozgumus.perseus.provider.ComposeScreenProvider
+import com.yigitozgumus.perseus.provider.ScreenProvider
 import com.yigitozgumus.perseus.sample.keys.HomeKey
 import com.yigitozgumus.perseus.sample.recipe.createNavigationOwner
 
@@ -61,7 +61,7 @@ class CustomSheetActivity : ComponentActivity() {
         }
     }
 
-    inner class CustomHomeProvider : ComposeScreenProvider<HomeKey> {
+    inner class CustomHomeProvider : ScreenProvider<HomeKey> {
         override fun canProvide(key: NavigationKey) = key is HomeKey
 
         @Composable
