@@ -9,8 +9,8 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
-version = "0.1.0"
-group = "com.yigitozgumus.perseus"
+version = project.property("LIBRARY_VERSION")
+group = project.property("LIBRARY_GROUP")
 
 
 android {
