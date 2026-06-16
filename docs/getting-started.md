@@ -4,32 +4,21 @@ Perseus is a small layer over AndroidX Navigation 3. You model destinations as K
 
 ## Installation
 
-Perseus is published through JitPack from Git tags, branches, or commits.
+Perseus is published to Maven Central.
 
 ```kotlin
 repositories {
     google()
     mavenCentral()
-    maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("com.github.yigitozgumus.perseus:perseus-core:<version>")
+    implementation("com.yigitozgumus.perseus:perseus-core:0.1.1")
 
     // Optional: Fragment interop support
-    implementation("com.github.yigitozgumus.perseus:perseus-interop:<version>")
+    implementation("com.yigitozgumus.perseus:perseus-interop:0.1.1")
 }
 ```
-
-For the current `main` branch before a tagged release:
-
-```kotlin
-implementation("com.github.yigitozgumus.perseus:perseus-core:main-SNAPSHOT")
-implementation("com.github.yigitozgumus.perseus:perseus-interop:main-SNAPSHOT")
-```
-
-!!! note
-    Use a Git tag once releases are cut. Branch snapshots are convenient for testing, not stable dependency coordinates.
 
 ## 1. Define keys
 

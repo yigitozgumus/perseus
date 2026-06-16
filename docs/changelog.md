@@ -4,7 +4,12 @@ All notable changes to Perseus will be documented in this file.
 
 Perseus follows semantic versioning once a stable `1.0.0` API is published. Before `1.0.0`, minor versions may include source or binary breaking API changes.
 
-## 0.1.0-SNAPSHOT
+## 0.1.1
+
+- Centralized library version in `gradle.properties`.
+- Switched dependency coordinates from JitPack to Maven Central (`com.yigitozgumus.perseus`).
+
+## 0.1.0
 
 ### Added
 
@@ -13,8 +18,8 @@ Perseus follows semantic versioning once a stable `1.0.0` API is published. Befo
 - Result cancellation when entries/scopes are removed before sending a result.
 - `LaunchMode.SingleTop`, `PopUpTo`, and `replaceWith` navigation primitives.
 - Official Fragment helpers for `requirePerseusKey` and `perseusViewModels`.
-- CI workflow covering build, unit tests, lint, and a JitPack-compatible publish dry run.
-- JitPack build configuration for core and interop release publications.
+- CI workflow covering build, unit tests, lint, and a Maven Central publish dry run.
+- Maven Central publish configuration for core and interop release publications.
 - Maven POM metadata for core and interop artifacts.
 
 ### Changed

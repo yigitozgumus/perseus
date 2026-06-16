@@ -26,28 +26,20 @@ Start here:
 
 ## Install
 
-Perseus is published through JitPack from Git tags, branches, or commits.
+Perseus is published to Maven Central.
 
 ```kotlin
 repositories {
     google()
     mavenCentral()
-    maven("https://jitpack.io")
 }
 
 dependencies {
-    implementation("com.github.yigitozgumus.perseus:perseus-core:<version>")
+    implementation("com.yigitozgumus.perseus:perseus-core:0.1.1")
 
     // Optional: Fragment interop support
-    implementation("com.github.yigitozgumus.perseus:perseus-interop:<version>")
+    implementation("com.yigitozgumus.perseus:perseus-interop:0.1.1")
 }
-```
-
-For the current `main` branch before tagging a release:
-
-```kotlin
-implementation("com.github.yigitozgumus.perseus:perseus-core:main-SNAPSHOT")
-implementation("com.github.yigitozgumus.perseus:perseus-interop:main-SNAPSHOT")
 ```
 
 ## Quick start
