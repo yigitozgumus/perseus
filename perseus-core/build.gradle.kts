@@ -9,8 +9,8 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
-version = project.property("LIBRARY_VERSION")
-group = project.property("LIBRARY_GROUP")
+version = requireNotNull(project.property("LIBRARY_VERSION")) { "LIBRARY_VERSION not set" }
+group = requireNotNull(project.property("LIBRARY_GROUP")) { "LIBRARY_GROUP not set" }
 
 
 android {
